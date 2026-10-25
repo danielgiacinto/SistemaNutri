@@ -1,0 +1,7 @@
+-- Datos de demostración para el entorno local (`npm run bd:reiniciar`).
+-- Nunca se aplica en producción: `supabase db push` no ejecuta este archivo.
+--
+-- La fase 1 no requiere datos de ejemplo: las cuentas se crean desde la
+-- aplicación para ejercitar el flujo real de registro.
+-- TODO (fase 2): agregar pacientes, turnos y mediciones de demostración,
+-- identificados con el prefijo "[DEMO]" y asociados a un consultorio de prueba.

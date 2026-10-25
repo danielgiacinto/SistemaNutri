@@ -1,0 +1,110 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { MailCheck } from "lucide-react";
+import { toast } from "sonner";
+import { registrarse } from "@/acciones/autenticacion";
+import { esquemaRegistro } from "@/esquemas/autenticacion";
+import { aplicarErroresServidor } from "@/lib/formularios";
+import { RUTAS } from "@/autorizacion/rutas";
+import { CampoContrasena, CampoTexto } from "@/componentes/formularios/campo-texto";
+import { BotonEnvio } from "@/componentes/formularios/boton-envio";
+import { FieldGroup } from "@/componentes/ui/field";
+import { Button } from "@/componentes/ui/button";
+
+export function FormularioRegistro() {
+  const [pendiente, iniciarTransicion] = useTransition();
+  const [correoEnviado, setCorreoEnviado] = useState<string | null>(null);
+  const formulario = useForm({
+    resolver: zodResolver(esquemaRegistro),
+    defaultValues: { nombre: "", apellido: "", correo: "", contrasena: "", confirmacion: "" },
+  });
+  const { errors: errores } = formulario.formState;
+
+  const alEnviar = formulario.handleSubmit((datos) =>
+    iniciarTransicion(async () => {
+      const resultado = await registrarse(datos);
+      if (!resultado) return;
+      if (!resultado.ok) {
+        aplicarErroresServidor(formulario.setError, resultado);
+        toast.error(resultado.mensaje);
+        return;
+      }
+      setCorreoEnviado(datos.correo);
+    }),
+  );
+
+  if (correoEnviado) {
+    return (
+      <div className="flex flex-col items-center gap-4 text-center" role="status">
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+          <MailCheck className="size-6" aria-hidden="true" />
+        </span>
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold">Revisá tu correo</h2>
+          <p className="text-sm text-muted-foreground">
+            Si <strong className="text-foreground">{correoEnviado}</strong> es válido, te enviamos un enlace para
+            confirmar la cuenta. Puede tardar unos minutos; revisá también la carpeta de spam.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="h-10 w-full">
+          <Link href={RUTAS.ingresar}>Volver a ingresar</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={alEnviar} noValidate>
+      <FieldGroup>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <CampoTexto
+            id="nombre"
+            etiqueta="Nombre"
+            autoComplete="given-name"
+            error={errores.nombre?.message}
+            {...formulario.register("nombre")}
+          />
+          <CampoTexto
+            id="apellido"
+            etiqueta="Apellido"
+            autoComplete="family-name"
+            error={errores.apellido?.message}
+            {...formulario.register("apellido")}
+          />
+        </div>
+        <CampoTexto
+          id="correo"
+          etiqueta="Correo electrónico"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          placeholder="nombre@ejemplo.com"
+          error={errores.correo?.message}
+          {...formulario.register("correo")}
+        />
+        <CampoContrasena
+          id="contrasena"
+          etiqueta="Contraseña"
+          autoComplete="new-password"
+          descripcion="Al menos 8 caracteres, con letras y números."
+          error={errores.contrasena?.message}
+          {...formulario.register("contrasena")}
+        />
+        <CampoContrasena
+          id="confirmacion"
+          etiqueta="Repetí la contraseña"
+          autoComplete="new-password"
+          error={errores.confirmacion?.message}
+          {...formulario.register("confirmacion")}
+        />
+        <BotonEnvio pendiente={pendiente} textoPendiente="Creando cuenta…" size="lg" className="h-10 w-full">
+          Crear cuenta
+        </BotonEnvio>
+      </FieldGroup>
+    </form>
+  );
+}
