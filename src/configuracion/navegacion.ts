@@ -104,21 +104,19 @@ export const NAVEGACION = {
       href: "/portal/turnos",
       icono: CalendarDays,
       descripcion: "Próximos turnos y turnos anteriores.",
-      fasePendiente: 3,
     },
     {
       titulo: "Mi plan",
       href: "/portal/plan",
       icono: Salad,
       descripcion: "El plan alimentario que tu nutricionista publicó para vos.",
-      fasePendiente: 3,
+      fasePendiente: 4,
     },
     {
       titulo: "Progreso",
       href: "/portal/progreso",
       icono: LineChart,
       descripcion: "Objetivos y mediciones compartidas por tu nutricionista.",
-      fasePendiente: 3,
     },
     {
       titulo: "Comunidad",

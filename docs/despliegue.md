@@ -86,7 +86,7 @@ aplicarle las migraciones con `supabase db push`.
 | Pieza | Valor |
 | --- | --- |
 | Proyecto | `sistemanutri`, región São Paulo (`sa-east-1`), ref `zisacjleazvlrklwilap` |
-| Migraciones aplicadas | `fundamentos_identidad` y `gestion_clinica` |
+| Migraciones aplicadas | `fundamentos_identidad`, `gestion_clinica` y `portal_paciente_invitaciones` |
 | App local | `npm run dev` → [http://localhost:3000](http://localhost:3000) con `.env.local` |
 | Auth | Plantillas Nutrisfera publicadas; SMTP de prueba con Gmail (ver `docs/autenticacion.md`) |
 | Site URL | `http://localhost:3000` |

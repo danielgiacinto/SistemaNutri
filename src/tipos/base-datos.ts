@@ -546,6 +546,47 @@ export type Database = {
           },
         ]
       }
+      invitaciones_paciente: {
+        Row: {
+          aceptada_en: string | null
+          consultorio_id: string
+          consultorio_nombre: string
+          correo: string
+          creada_por: string | null
+          creado_en: string
+          expira_en: string
+          id: string
+          paciente_id: string
+          revocada_en: string | null
+        }
+        Insert: {
+          aceptada_en?: string | null
+          consultorio_id: string
+          consultorio_nombre: string
+          correo: string
+          creada_por?: string | null
+          creado_en?: string
+          expira_en: string
+          id?: string
+          paciente_id: string
+          revocada_en?: string | null
+          token_hash: string
+        }
+        Update: {
+          aceptada_en?: string | null
+          consultorio_id?: string
+          consultorio_nombre?: string
+          correo?: string
+          creada_por?: string | null
+          creado_en?: string
+          expira_en?: string
+          id?: string
+          paciente_id?: string
+          revocada_en?: string | null
+          token_hash?: string
+        }
+        Relationships: []
+      }
       mediciones: {
         Row: {
           actualizado_en: string
@@ -613,6 +654,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aceptar_invitacion: {
+        Args: { p_huella?: string }
+        Returns: undefined
+      }
       crear_consultorio_inicial: {
         Args: { p_nombre: string; p_zona_horaria?: string }
         Returns: string

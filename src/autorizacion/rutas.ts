@@ -8,6 +8,7 @@ export const RUTAS = {
   confirmar: "/auth/confirmar",
   destino: "/auth/destino",
   bienvenida: "/bienvenida",
+  invitacionAceptar: "/invitacion/aceptar",
   cuentaInactiva: "/cuenta-inactiva",
   panel: "/panel",
   portal: "/portal",

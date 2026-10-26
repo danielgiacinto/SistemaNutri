@@ -15,7 +15,7 @@ hacen cambios manuales desde el panel de Supabase.
 - Los errores de negocio se lanzan con una clave (`raise exception 'consultorio_existente'`)
   que `src/servicios` traduce a mensajes en español.
 
-## Modelo actual (fases 1 y 2)
+## Modelo actual (fases 1 a 3)
 
 | Tabla | Propósito | Escritura desde la API |
 | --- | --- | --- |
@@ -24,7 +24,8 @@ hacen cambios manuales desde el panel de Supabase.
 | `miembros_consultorio` | Relación usuario–consultorio con rol `titular`/`colaborador`. | Ninguna (vía `crear_consultorio_inicial`). |
 | `administradores_plataforma` | Superadministradores. | Ninguna. Sin políticas: invisible para la API. |
 | `registros_auditoria` | Quién hizo qué, sobre qué entidad y cuándo. Nunca contenido clínico. | Ninguna (vía funciones y triggers). |
-| `pacientes` | Personas del consultorio. `usuario_id` se vincula en la fase 3. | Alta y edición; sin borrar (se desactiva). |
+| `pacientes` | Personas del consultorio. `usuario_id` se vincula al aceptar una invitación. | Alta y edición; sin borrar (se desactiva). `usuario_id` no es editable por la API. |
+| `invitaciones_paciente` | Invitación al portal. Se guarda la huella del token, no el token. | El consultorio crea y revoca. La persona invitada ve las suyas pendientes. |
 | `horarios_atencion` | Franjas locales de atención. Si no hay filas, la agenda no restringe. | Miembros. |
 | `bloqueos_agenda` | Intervalos no reservables. | Miembros. |
 | `turnos` | Reservas. No se eliminan: se cancelan. | Miembros. El trigger rechaza solapes, bloqueos y horarios inválidos. |
@@ -42,6 +43,9 @@ El superadministrador **no** tiene políticas sobre las tablas clínicas.
   y usuarios que ya tienen consultorio.
 - `obtener_mi_contexto()`: perfil, consultorio y rol de plataforma del usuario actual
   (`SECURITY INVOKER`: solo devuelve lo que RLS ya permite ver).
+- `aceptar_invitacion(p_huella)`: vincula `pacientes.usuario_id` y asigna `tipo_cuenta = paciente`.
+  Rechaza cuentas que ya son de un consultorio. Si `p_huella` es nula, acepta la única
+  invitación pendiente del correo de la sesión.
 
 ## Políticas RLS
 

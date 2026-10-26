@@ -22,7 +22,7 @@
 - **Ley 27.706** (digitalización de historias clínicas) y **Ley 25.506** (firma digital):
   evaluar requisitos de interoperabilidad y firma para las evoluciones clínicas.
 
-## Medidas implementadas (fases 1 y 2)
+## Medidas implementadas (fases 1 a 3)
 
 - Autenticación con Supabase Auth (contraseñas con hash gestionado por Supabase,
   confirmación de correo, OAuth con Google, límites de intentos).
@@ -35,6 +35,8 @@
   nunca los datos enviados. El registro de argumentos de Server Actions de Next en
   desarrollo está desactivado (`logging.serverFunctions: false`).
 - Auditoría de altas y cambios del consultorio (registra qué campos cambiaron, no sus valores).
+- El portal del paciente solo lee su ficha, sus turnos y las filas clínicas marcadas como visibles.
+  El tipo de cuenta paciente se asigna al aceptar la invitación, no desde el cliente.
 - Pacientes, turnos, evoluciones, objetivos y mediciones aislados por `consultorio_id` con RLS.
   Un id ajeno en la URL responde 404. Las evoluciones nacen privadas y en borrador; compartir
   una nota en borrador está prohibido por constraint. Cada edición de evolución deja una versión.

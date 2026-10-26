@@ -12,7 +12,7 @@ el servidor valida la sesión con `supabase.auth.getClaims()`.
 | Google | `/ingresar` o `/registro` → `POST /auth/google` → Google → `/auth/confirmar?code=…` → `/auth/destino` |
 | Recuperación | `/recuperar-contrasena` → correo → `/auth/confirmar?type=recovery` → `/restablecer-contrasena` |
 | Alta profesional | `/bienvenida` → `crear_consultorio_inicial()` → `/panel` |
-| Paciente | Invitación del profesional (fase 3) → `/portal` |
+| Paciente | Ficha → Visibilidad → invitar → `/invitacion/…` → aceptar → `/portal` |
 
 `/auth/destino` decide el área según el rol verificado en el servidor
 (`calcularDestino` en `src/autorizacion/contexto.ts`).

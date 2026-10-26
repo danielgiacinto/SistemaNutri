@@ -4,29 +4,38 @@ import { redirect } from "next/navigation";
 import { HeartPulse } from "lucide-react";
 import { requerirUsuario } from "@/autorizacion/sesion";
 import { calcularDestino, nombreVisible } from "@/autorizacion/contexto";
+import { RUTAS } from "@/autorizacion/rutas";
 import { MarcoSimple } from "@/componentes/disposicion/marco-simple";
+import { crearClienteServidor } from "@/lib/supabase/servidor";
+import { listarInvitacionesPendientes } from "@/servicios/invitaciones";
 import { FormularioAltaConsultorio } from "@/componentes/consultorio/formulario-alta-consultorio";
 import { EsqueletoFormulario } from "@/componentes/autenticacion/esqueleto-formulario";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 
 export const metadata: Metadata = { title: "Bienvenida" };
 
-export default function PaginaBienvenida() {
+export default function PaginaBienvenida({ searchParams }: PageProps<"/bienvenida">) {
   return (
     <MarcoSimple>
       <div className="w-full max-w-lg space-y-6">
         <Suspense fallback={<EsqueletoFormulario />}>
-          <ContenidoBienvenida />
+          <ContenidoBienvenida parametros={searchParams} />
         </Suspense>
       </div>
     </MarcoSimple>
   );
 }
 
-async function ContenidoBienvenida() {
+async function ContenidoBienvenida({ parametros }: { parametros: PageProps<"/bienvenida">["searchParams"] }) {
   const contexto = await requerirUsuario();
   // Quien ya completó el alta no vuelve a esta pantalla.
   if (contexto.tipoCuenta !== null || contexto.esSuperadmin) redirect(calcularDestino(contexto));
+
+  const { omitir } = await parametros;
+  if (omitir !== "1") {
+    const pendientes = await listarInvitacionesPendientes(await crearClienteServidor());
+    if (pendientes.length === 1) redirect(RUTAS.invitacionAceptar);
+  }
 
   return (
     <>

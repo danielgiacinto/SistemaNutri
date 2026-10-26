@@ -18,6 +18,7 @@ export type EstadoObjetivo = Enumerado<"estado_objetivo">;
 export type CategoriaObjetivo = Enumerado<"categoria_objetivo">;
 
 export type Paciente = Fila<"pacientes">;
+export type InvitacionPaciente = Fila<"invitaciones_paciente">;
 export type Turno = Fila<"turnos">;
 export type Evolucion = Fila<"evoluciones">;
 export type Objetivo = Fila<"objetivos">;

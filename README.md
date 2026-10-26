@@ -6,16 +6,15 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
-Última actualización: 26 de octubre de 2026. El producto está en **fase 2 cerrada**:
-se puede registrar un consultorio y trabajar con pacientes, agenda e historia clínica
-sobre el proyecto de Supabase hospedado. Las fases 3 a 6 todavía no están implementadas
-(el menú muestra esas secciones como “en construcción”).
+Última actualización: 26 de octubre de 2026. El producto está en **fase 3**:
+se puede registrar un consultorio, trabajar la clínica e invitar al paciente a su portal.
+Las fases 4 a 6 todavía no están implementadas (el menú muestra esas secciones como “en construcción”).
 
 | Fase | Contenido | Estado |
 | --- | --- | --- |
 | 1 | Fundamentos: autenticación, roles, multi-tenencia con RLS, layouts, configuración | ✅ Listo para probar |
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
-| 3 | Portal del paciente e invitaciones | Pendiente |
+| 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
 | 4 | Planes alimentarios con versiones | Pendiente |
 | 5 | Suscripciones, pagos y administración | Pendiente |
 | 6 | Comunidad y desafíos | Pendiente |
@@ -26,11 +25,10 @@ sobre el proyecto de Supabase hospedado. Las fases 3 a 6 todavía no están impl
 2. Confirmar el correo (plantilla Nutrisfera, remitente de prueba `nutri.notificacion@gmail.com`).
 3. Crear el consultorio en `/bienvenida`.
 4. En `/panel`: pacientes, turnos, evoluciones, objetivos, mediciones, analíticas y configuración.
+5. En la ficha del paciente → **Visibilidad** → **Invitar al portal**. La persona acepta con ese correo y entra a `/portal` (turnos y lo marcado como visible). El plan alimentario sigue en la fase 4.
 
 No hay cuenta de prueba precargada: cada quien se registra. **Continuar con Google**
 está habilitado en el proyecto hospedado (alta e ingreso, ver `docs/autenticacion.md`).
-El portal del paciente (`/portal`) existe como cascarón y pide una cuenta de
-paciente, que se crea en la fase 3.
 
 ### Entorno
 

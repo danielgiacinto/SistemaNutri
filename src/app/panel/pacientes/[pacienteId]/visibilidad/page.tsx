@@ -1,19 +1,23 @@
 import type { Metadata } from "next";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
+import { FormularioInvitacion } from "@/componentes/pacientes/formulario-invitacion";
 import { listarEvoluciones } from "@/servicios/evoluciones";
+import { obtenerInvitacionPendiente } from "@/servicios/invitaciones";
 import { listarObjetivos } from "@/servicios/objetivos";
 import { listarMediciones } from "@/servicios/mediciones";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
+import { formatearFechaHora } from "@/lib/fechas";
 
 export const metadata: Metadata = { title: "Visibilidad para el paciente" };
 
 export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pacientes/[pacienteId]/visibilidad">) {
   const { pacienteId } = await params;
   const { paciente, contexto, cliente } = await requerirPacienteDelConsultorio(pacienteId);
-  const [evoluciones, objetivos, mediciones] = await Promise.all([
+  const [evoluciones, objetivos, mediciones, invitacion] = await Promise.all([
     listarEvoluciones(cliente, contexto.consultorio.id, paciente.id),
     listarObjetivos(cliente, contexto.consultorio.id, paciente.id),
     listarMediciones(cliente, contexto.consultorio.id, paciente.id),
+    paciente.usuario_id ? Promise.resolve(null) : obtenerInvitacionPendiente(cliente, paciente.id),
   ]);
 
   const compartidas = {
@@ -23,12 +27,25 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
   };
 
   return (
+    <div className="space-y-6">
+    <Card>
+      <CardHeader>
+        <CardTitle>Invitación al portal</CardTitle>
+        <CardDescription>
+          {invitacion
+            ? `Hay una invitación vigente para ${invitacion.correo} hasta el ${formatearFechaHora(new Date(invitacion.expira_en), contexto.consultorio.zonaHoraria)}.`
+            : "La persona entra con el correo de la ficha. En el portal solo ve turnos y lo que marques como visible."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <FormularioInvitacion pacienteId={paciente.id} correo={paciente.correo} vinculado={Boolean(paciente.usuario_id)} />
+      </CardContent>
+    </Card>
     <Card>
       <CardHeader>
         <CardTitle>Qué verá el paciente</CardTitle>
         <CardDescription>
-          Nada se comparte por defecto. El portal (fase 3) solo mostrará lo marcado como visible. Las notas en borrador nunca se
-          publican.
+          Nada se comparte por defecto. Las notas en borrador nunca se publican.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-3">
@@ -37,6 +54,7 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
         <Dato etiqueta="Mediciones visibles" valor={compartidas.mediciones} total={mediciones.length} />
       </CardContent>
     </Card>
+    </div>
   );
 }
 
