@@ -16,6 +16,10 @@ const MENSAJES_ERROR_AUTENTICACION: Record<string, string> = {
   flow_state_expired: "El enlace venció. Volvé a intentarlo.",
   flow_state_not_found: "El enlace no es válido o ya fue utilizado.",
   bad_code_verifier: "El enlace se abrió en otro navegador. Volvé a intentarlo desde el mismo navegador.",
+  bad_oauth_state: "El ingreso con Google expiró o se interrumpió. Volvé a intentarlo.",
+  oauth_provider_not_supported: "El ingreso con Google no está habilitado todavía.",
+  unexpected_failure: "Google no pudo completar el ingreso. Intentá nuevamente.",
+  access_denied: "Cancelaste el ingreso con Google.",
   session_not_found: "Tu sesión expiró. Ingresá nuevamente.",
   reauthentication_needed: "Por seguridad, volvé a ingresar antes de cambiar la contraseña.",
   sin_conexion: "No pudimos conectarnos con el servidor. Revisá tu conexión e intentá nuevamente.",
@@ -71,7 +75,11 @@ export async function iniciarIngresoConGoogle(
 ): Promise<ResultadoAccion<{ url: string }>> {
   const { data, error } = await cliente.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: urlRetorno },
+    options: {
+      redirectTo: urlRetorno,
+      skipBrowserRedirect: true,
+      queryParams: { prompt: "select_account" },
+    },
   });
   if (error || !data.url) return fallo("ingresar_google", error ?? { message: "Sin URL de Google" });
   return { ok: true, datos: { url: data.url } };

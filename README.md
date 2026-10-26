@@ -6,7 +6,7 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
-Última actualización: 25 de octubre de 2026. El producto está en **fase 2 cerrada**:
+Última actualización: 26 de octubre de 2026. El producto está en **fase 2 cerrada**:
 se puede registrar un consultorio y trabajar con pacientes, agenda e historia clínica
 sobre el proyecto de Supabase hospedado. Las fases 3 a 6 todavía no están implementadas
 (el menú muestra esas secciones como “en construcción”).
@@ -27,9 +27,10 @@ sobre el proyecto de Supabase hospedado. Las fases 3 a 6 todavía no están impl
 3. Crear el consultorio en `/bienvenida`.
 4. En `/panel`: pacientes, turnos, evoluciones, objetivos, mediciones, analíticas y configuración.
 
-No hay cuenta de prueba precargada: cada quien se registra. El ingreso con Google todavía
-no está configurado. El portal del paciente (`/portal`) existe como cascarón y pide una
-cuenta de paciente, que se crea en la fase 3.
+No hay cuenta de prueba precargada: cada quien se registra. **Continuar con Google**
+está habilitado en el proyecto hospedado (alta e ingreso, ver `docs/autenticacion.md`).
+El portal del paciente (`/portal`) existe como cascarón y pide una cuenta de
+paciente, que se crea en la fase 3.
 
 ### Entorno
 
@@ -39,7 +40,7 @@ cuenta de paciente, que se crea en la fase 3.
 | `.env.local` | Apunta al proyecto hospedado (no a Supabase local) |
 | Correos de Auth | Plantillas Nutrisfera publicadas + SMTP de prueba con Gmail |
 | Site URL | `http://localhost:3000` |
-| Redirect URLs / Google OAuth | Pendientes (hacen falta antes de ingresar con Google) |
+| Redirect URLs / Google OAuth | Habilitado en el proyecto hospedado (local + callback de Supabase) |
 | `SUPABASE_SECRET_KEY` | Vacía: el script de superadmin todavía no se puede usar |
 | Vercel y secretos de CI | Pendientes |
 

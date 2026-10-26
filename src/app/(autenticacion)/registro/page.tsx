@@ -1,14 +1,19 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CircleAlert } from "lucide-react";
+import { MENSAJES_ERROR_PANTALLA_ACCESO } from "@/autorizacion/mensajes";
 import { RUTAS } from "@/autorizacion/rutas";
 import { TarjetaAutenticacion } from "@/componentes/autenticacion/tarjeta-autenticacion";
 import { FormularioRegistro } from "@/componentes/autenticacion/formulario-registro";
 import { BotonGoogle } from "@/componentes/autenticacion/boton-google";
+import { EsqueletoFormulario } from "@/componentes/autenticacion/esqueleto-formulario";
+import { Alert, AlertDescription } from "@/componentes/ui/alert";
 import { SeparadorTexto } from "@/componentes/comunes/separador-texto";
 
 export const metadata: Metadata = { title: "Crear cuenta" };
 
-export default function PaginaRegistro() {
+export default function PaginaRegistro({ searchParams }: PageProps<"/registro">) {
   return (
     <TarjetaAutenticacion
       titulo="Creá la cuenta de tu consultorio"
@@ -25,9 +30,28 @@ export default function PaginaRegistro() {
         </div>
       }
     >
-      <BotonGoogle />
+      <Suspense fallback={<EsqueletoFormulario />}>
+        <ContenidoRegistro parametros={searchParams} />
+      </Suspense>
+    </TarjetaAutenticacion>
+  );
+}
+
+async function ContenidoRegistro({ parametros }: { parametros: PageProps<"/registro">["searchParams"] }) {
+  const { error } = await parametros;
+  const mensajeError = typeof error === "string" ? MENSAJES_ERROR_PANTALLA_ACCESO[error] : undefined;
+
+  return (
+    <>
+      {mensajeError && (
+        <Alert variant="destructive">
+          <CircleAlert aria-hidden="true" />
+          <AlertDescription>{mensajeError}</AlertDescription>
+        </Alert>
+      )}
+      <BotonGoogle paginaError="/registro" />
       <SeparadorTexto>o con tu correo</SeparadorTexto>
       <FormularioRegistro />
-    </TarjetaAutenticacion>
+    </>
   );
 }

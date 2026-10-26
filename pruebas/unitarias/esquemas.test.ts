@@ -79,6 +79,8 @@ describe("preferencias de apariencia", () => {
 describe("traducción de errores de autenticación", () => {
   it("traduce códigos conocidos y usa un mensaje genérico para el resto", () => {
     expect(traducirErrorAutenticacion("invalid_credentials")).toMatch(/correo o la contraseña/);
+    expect(traducirErrorAutenticacion("oauth_provider_not_supported")).toMatch(/ingreso con Google no está habilitado/);
+    expect(traducirErrorAutenticacion("access_denied")).toMatch(/Cancelaste/);
     expect(traducirErrorAutenticacion("codigo_desconocido")).toMatch(/No pudimos completar/);
     expect(traducirErrorAutenticacion(undefined)).toMatch(/No pudimos completar/);
   });

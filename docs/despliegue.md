@@ -81,7 +81,7 @@ aplicarle las migraciones con `supabase db push`.
 
 ## Entorno de desarrollo actual
 
-Última actualización: 25 de octubre de 2026.
+Última actualización: 26 de octubre de 2026.
 
 | Pieza | Valor |
 | --- | --- |
@@ -90,7 +90,7 @@ aplicarle las migraciones con `supabase db push`.
 | App local | `npm run dev` → [http://localhost:3000](http://localhost:3000) con `.env.local` |
 | Auth | Plantillas Nutrisfera publicadas; SMTP de prueba con Gmail (ver `docs/autenticacion.md`) |
 | Site URL | `http://localhost:3000` |
-| Redirect URLs | Todavía vacías; agregar `http://localhost:3000/auth/confirmar**` antes de Google |
+| Redirect URLs / Google OAuth | Habilitado en hospedado: proveedor Google, Redirect URLs de local y callback de Supabase en Google Cloud (`docs/autenticacion.md`) |
 | `SUPABASE_SECRET_KEY` | Vacía en `.env.local`: `npm run superadmin:crear` no corre hasta cargarla |
 | Vercel / secretos de GitHub Actions | Pendientes |
 

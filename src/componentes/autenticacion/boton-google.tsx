@@ -2,7 +2,6 @@
 
 import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
-import { ingresarConGoogle } from "@/acciones/autenticacion";
 import { Button } from "@/componentes/ui/button";
 
 function IconoGoogle() {
@@ -27,10 +26,17 @@ function ContenidoBoton() {
 }
 
 /** Inicia sesión (o crea la cuenta) con Google mediante OAuth gestionado por Supabase. */
-export function BotonGoogle({ siguiente }: { siguiente?: string | null }) {
+export function BotonGoogle({
+  siguiente,
+  paginaError = "/ingresar",
+}: {
+  siguiente?: string | null;
+  paginaError?: "/ingresar" | "/registro";
+}) {
   return (
-    <form action={ingresarConGoogle}>
+    <form action="/auth/google" method="post">
       {siguiente && <input type="hidden" name="siguiente" value={siguiente} />}
+      <input type="hidden" name="paginaError" value={paginaError} />
       <ContenidoBoton />
     </form>
   );

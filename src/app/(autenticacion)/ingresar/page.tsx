@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CircleAlert } from "lucide-react";
+import { MENSAJES_ERROR_PANTALLA_ACCESO } from "@/autorizacion/mensajes";
 import { RUTAS, sanearRutaSiguiente } from "@/autorizacion/rutas";
 import { TarjetaAutenticacion } from "@/componentes/autenticacion/tarjeta-autenticacion";
 import { EsqueletoFormulario } from "@/componentes/autenticacion/esqueleto-formulario";
@@ -11,11 +12,6 @@ import { Alert, AlertDescription } from "@/componentes/ui/alert";
 import { SeparadorTexto } from "@/componentes/comunes/separador-texto";
 
 export const metadata: Metadata = { title: "Ingresar" };
-
-const MENSAJES_ERROR: Record<string, string> = {
-  enlace_invalido: "El enlace no es válido o ya venció. Volvé a solicitarlo o ingresá con tu contraseña.",
-  google: "No pudimos iniciar el ingreso con Google. Intentá nuevamente.",
-};
 
 export default function PaginaIngreso({ searchParams }: PageProps<"/ingresar">) {
   return (
@@ -41,7 +37,7 @@ export default function PaginaIngreso({ searchParams }: PageProps<"/ingresar">) 
 async function ContenidoIngreso({ parametros }: { parametros: PageProps<"/ingresar">["searchParams"] }) {
   const { siguiente, error } = await parametros;
   const rutaSiguiente = sanearRutaSiguiente(typeof siguiente === "string" ? siguiente : null);
-  const mensajeError = typeof error === "string" ? MENSAJES_ERROR[error] : undefined;
+  const mensajeError = typeof error === "string" ? MENSAJES_ERROR_PANTALLA_ACCESO[error] : undefined;
 
   return (
     <>

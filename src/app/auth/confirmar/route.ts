@@ -1,6 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
-import { NextResponse, type NextRequest } from "next/server";
-import { crearClienteServidor } from "@/lib/supabase/servidor";
+import type { NextRequest } from "next/server";
+import { crearClienteRedireccion } from "@/lib/supabase/redireccion";
 import { registrarError } from "@/lib/errores";
 import { RUTAS, sanearRutaSiguiente } from "@/autorizacion/rutas";
 
@@ -17,8 +17,20 @@ export async function GET(peticion: NextRequest) {
   const tipo = parametros.get("type") as EmailOtpType | null;
   const codigo = parametros.get("code");
   const siguiente = sanearRutaSiguiente(parametros.get("siguiente"));
+  const errorOAuth = parametros.get("error");
 
-  const cliente = await crearClienteServidor();
+  const { cliente, redirigir } = crearClienteRedireccion(peticion);
+  const destinoError = new URL(RUTAS.ingresar, peticion.nextUrl.origin);
+
+  if (errorOAuth) {
+    registrarError("auth_confirmar", {
+      code: errorOAuth,
+      message: parametros.get("error_description") ?? errorOAuth,
+    });
+    destinoError.searchParams.set("error", "google");
+    return redirigir(destinoError);
+  }
+
   let error: { code?: string; message: string } | null = null;
 
   if (tokenHash && tipo && TIPOS_OTP_PERMITIDOS.includes(tipo)) {
@@ -31,11 +43,10 @@ export async function GET(peticion: NextRequest) {
 
   if (error) {
     registrarError("auth_confirmar", error);
-    const destinoError = new URL(RUTAS.ingresar, peticion.nextUrl.origin);
-    destinoError.searchParams.set("error", "enlace_invalido");
-    return NextResponse.redirect(destinoError);
+    destinoError.searchParams.set("error", error.code === "bad_code_verifier" ? "google" : "enlace_invalido");
+    return redirigir(destinoError);
   }
 
   const destino = tipo === "recovery" ? RUTAS.restablecerContrasena : (siguiente ?? RUTAS.destino);
-  return NextResponse.redirect(new URL(destino, peticion.nextUrl.origin));
+  return redirigir(new URL(destino, peticion.nextUrl.origin));
 }

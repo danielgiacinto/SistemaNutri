@@ -9,7 +9,7 @@ el servidor valida la sesión con `supabase.auth.getClaims()`.
 | --- | --- |
 | Registro con correo | `/registro` → correo de confirmación → `/auth/confirmar?token_hash=…&type=email` → `/auth/destino` → `/bienvenida` |
 | Ingreso con correo | `/ingresar` → `/auth/destino` (o la ruta `siguiente` saneada) |
-| Google | `/ingresar` o `/registro` → Google → `/auth/confirmar?code=…` → `/auth/destino` |
+| Google | `/ingresar` o `/registro` → `POST /auth/google` → Google → `/auth/confirmar?code=…` → `/auth/destino` |
 | Recuperación | `/recuperar-contrasena` → correo → `/auth/confirmar?type=recovery` → `/restablecer-contrasena` |
 | Alta profesional | `/bienvenida` → `crear_consultorio_inicial()` → `/panel` |
 | Paciente | Invitación del profesional (fase 3) → `/portal` |
@@ -22,9 +22,12 @@ Si alguien se registra de nuevo con un correo **ya confirmado**, Supabase respon
 contraseña). La pantalla de registro lo aclara e incluye ingreso, reenvío (solo sirve
 si la cuenta sigue sin confirmar) y restablecer contraseña.
 
-Borrar filas en el **Table Editor** (`public.perfiles`, consultorios, etc.) no elimina
-la cuenta. El alta mira `auth.users`. Para re-probar un registro hay que borrar el
-usuario en **Authentication → Users** (o `delete from auth.users`).
+Borrar filas en el **Table Editor** (`public.perfiles`, consultorios, etc.) **no**
+elimina la cuenta ni permite un alta nueva con Google: Auth reutiliza el mismo
+`auth.users` (vincula la identidad). Para probar el registro desde cero hay que
+borrar el usuario en **Authentication → Users** (o `delete from auth.users`) y
+las cookies de `localhost`. El trigger vuelve a crear el perfil al insertar el
+usuario.
 
 Decisiones de seguridad:
 
@@ -83,17 +86,60 @@ se guarda en el repositorio.
 
 ## Google OAuth
 
-1. En [Google Cloud Console](https://console.cloud.google.com/) crear un proyecto y
-   configurar la **pantalla de consentimiento OAuth** (tipo externo, nombre de la app,
-   correo de soporte, dominios autorizados).
-2. Crear credenciales **ID de cliente de OAuth → Aplicación web**:
-   - *Orígenes autorizados*: `http://localhost:3000` y `https://tu-dominio`.
-   - *URI de redireccionamiento*: `https://<ref-del-proyecto>.supabase.co/auth/v1/callback`
-     (y `http://127.0.0.1:54321/auth/v1/callback` para Supabase local).
-3. En Supabase → **Authentication → Providers → Google**: pegar el Client ID y el Secret.
-4. Para Supabase local, completar `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` y
-   `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` en `.env.local` antes de `npm run bd:iniciar`.
+La app ya inicia el flujo PKCE en el servidor (`POST /auth/google`) y guarda el
+verificador en cookies junto con la redirección a Google. El retorno es
+`/auth/confirmar?code=…`. El trigger `privado.crear_perfil_para_usuario_nuevo()`
+copia `given_name` / `family_name` / `picture` al perfil.
 
-Una cuenta creada con Google pasa por la misma pantalla de bienvenida que una cuenta
-con correo. Si el usuario ya tenía cuenta con el mismo correo verificado, Supabase vincula
-ambas identidades automáticamente.
+En el proyecto hospedado `sistemanutri` el proveedor Google **está habilitado**
+(26 de octubre de 2026): Client ID/Secret cargados, Redirect URLs de local y
+callback `https://zisacjleazvlrklwilap.supabase.co/auth/v1/callback` en el
+cliente OAuth de Google Cloud. Si Auth responde
+`Unsupported provider: provider is not enabled`, el interruptor de Google se
+apagó en el dashboard.
+
+### 1. Google Cloud
+
+1. En [Google Auth Platform](https://console.cloud.google.com/auth/clients) crear un
+   proyecto (o usar uno existente) y configurar la **pantalla de consentimiento**:
+   tipo *externo*, nombre **Nutrisfera**, correo de soporte. En modo Testing hay
+   que agregar como usuarios de prueba cada cuenta de Google que vaya a ingresar.
+2. En **Data Access (Scopes)** dejar: `openid`, `.../auth/userinfo.email` y
+   `.../auth/userinfo.profile`.
+3. Crear un cliente **OAuth → Aplicación web**:
+   - *Orígenes autorizados*: `http://localhost:3000` (y `https://tu-dominio` en producción).
+   - *URI de redireccionamiento* (callback de Supabase, no el de Next):
+     `https://zisacjleazvlrklwilap.supabase.co/auth/v1/callback`
+     (en local con Docker: `http://127.0.0.1:54321/auth/v1/callback`).
+4. Guardar el Client ID y el Client Secret. No se suben al repositorio.
+
+### 2. Supabase (proyecto remoto)
+
+En **Authentication → URL Configuration** agregar a Redirect URLs:
+
+- `http://localhost:3000/auth/confirmar`
+- `http://localhost:3000/auth/confirmar**`
+
+En **Authentication → Providers → Google**: activar el proveedor y pegar el
+Client ID y el Secret.
+
+Equivalente por API (no deja las credenciales en git):
+
+```bash
+$env:SUPABASE_ACCESS_TOKEN="sbp_…"
+$env:SUPABASE_PROJECT_ID="zisacjleazvlrklwilap"
+$env:GOOGLE_CLIENT_ID="….apps.googleusercontent.com"
+$env:GOOGLE_CLIENT_SECRET="GOCSPX-…"
+node scripts/configurar-google-oauth.mjs
+```
+
+### 3. Supabase local
+
+Completar `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` y
+`SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` en `.env.local` antes de `npm run bd:iniciar`.
+`config.toml` ya tiene `[auth.external.google]` habilitado.
+
+Una cuenta nueva con Google cae en `/bienvenida`, igual que una cuenta con correo.
+Si ya existía una cuenta con el **mismo correo verificado**, Supabase vincula ambas
+identidades y entra al consultorio existente. Para probar un alta limpia hace falta
+una cuenta de Google que no esté en **Authentication → Users**.

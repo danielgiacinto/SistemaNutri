@@ -5,7 +5,11 @@ const encabezadosDeSeguridad = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
-  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  // HSTS solo en producción: en local Chrome lo muestra como "307 Internal Redirect"
+  // hacia https://localhost y el `next dev` no escucha TLS.
+  ...(process.env.NODE_ENV === "production"
+    ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }]
+    : []),
   // TODO: definir una Content-Security-Policy con nonce cuando se incorporen pagos y recursos externos.
 ];
 

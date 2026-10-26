@@ -43,7 +43,7 @@ describe("clasificación de rutas", () => {
     },
   );
 
-  it.each(["/", "/ingresar", "/registro", "/auth/confirmar", "/panelito"])("%s es pública", (ruta) => {
+  it.each(["/", "/ingresar", "/registro", "/auth/confirmar", "/auth/google", "/panelito"])("%s es pública", (ruta) => {
     expect(esRutaProtegida(ruta)).toBe(false);
   });
 

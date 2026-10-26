@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { registrarError } from "@/lib/errores";
@@ -21,6 +22,9 @@ import { ZONA_HORARIA_PREDETERMINADA } from "@/configuracion/producto";
  * `cache` evita repetir la consulta dentro de un mismo renderizado.
  */
 export const obtenerContextoUsuario = cache(async (): Promise<ContextoUsuario | null> => {
+  // getClaims compara el vencimiento del JWT con Date.now(). En Cache Components
+  // eso no puede entrar al prerender: hay que esperar el request.
+  await connection();
   const supabase = await crearClienteServidor();
 
   // getClaims valida la firma del JWT; getSession no debe usarse para autorizar.

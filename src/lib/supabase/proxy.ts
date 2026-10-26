@@ -58,7 +58,9 @@ export async function actualizarSesion(peticion: NextRequest): Promise<NextRespo
 }
 
 function redirigirConservandoCookies(destino: URL, respuestaBase: NextResponse): NextResponse {
-  const redireccion = NextResponse.redirect(destino);
+  // 303 (See Other): el navegador sigue con GET. Un 307 reenviaría un POST
+  // (alta, Google, Server Action) hacia /auth/destino, que solo acepta GET.
+  const redireccion = NextResponse.redirect(destino, 303);
   for (const cookie of respuestaBase.cookies.getAll()) {
     redireccion.cookies.set(cookie);
   }
