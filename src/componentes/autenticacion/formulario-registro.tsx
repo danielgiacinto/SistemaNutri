@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MailCheck } from "lucide-react";
 import { toast } from "sonner";
-import { registrarse } from "@/acciones/autenticacion";
+import { reenviarConfirmacion, registrarse } from "@/acciones/autenticacion";
 import { esquemaRegistro } from "@/esquemas/autenticacion";
 import { aplicarErroresServidor } from "@/lib/formularios";
 import { RUTAS } from "@/autorizacion/rutas";
@@ -37,6 +37,17 @@ export function FormularioRegistro() {
     }),
   );
 
+  const reenviar = () =>
+    iniciarTransicion(async () => {
+      if (!correoEnviado) return;
+      const resultado = await reenviarConfirmacion(correoEnviado);
+      if (!resultado.ok) {
+        toast.error(resultado.mensaje);
+        return;
+      }
+      toast.success(resultado.mensaje);
+    });
+
   if (correoEnviado) {
     return (
       <div className="flex flex-col items-center gap-4 text-center" role="status">
@@ -46,13 +57,22 @@ export function FormularioRegistro() {
         <div className="space-y-2">
           <h2 className="text-lg font-semibold">Revisá tu correo</h2>
           <p className="text-sm text-muted-foreground">
-            Si <strong className="text-foreground">{correoEnviado}</strong> es válido, te enviamos un enlace para
-            confirmar la cuenta. Puede tardar unos minutos; revisá también la carpeta de spam.
+            Si <strong className="text-foreground">{correoEnviado}</strong> es una cuenta nueva, te enviamos un enlace
+            para confirmarla. Puede tardar un minuto; mirá también spam.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Si ya habías confirmado esa cuenta, no llega un correo nuevo. Ingresá con tu contraseña o restablecela.
           </p>
         </div>
-        <Button asChild variant="outline" className="h-10 w-full">
-          <Link href={RUTAS.ingresar}>Volver a ingresar</Link>
+        <Button type="button" variant="outline" className="h-10 w-full" disabled={pendiente} onClick={reenviar}>
+          {pendiente ? "Reenviando…" : "Reenviar correo de confirmación"}
         </Button>
+        <Button asChild className="h-10 w-full">
+          <Link href={RUTAS.ingresar}>Ingresar</Link>
+        </Button>
+        <Link href={RUTAS.recuperarContrasena} className="text-sm font-medium text-primary underline-offset-4 hover:underline">
+          ¿Olvidaste tu contraseña?
+        </Link>
       </div>
     );
   }

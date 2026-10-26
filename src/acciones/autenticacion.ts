@@ -21,6 +21,7 @@ import {
   cerrarSesionActual,
   iniciarIngresoConGoogle,
   ingresarConContrasena,
+  reenviarConfirmacionCorreo,
   registrarCuenta,
   solicitarRecuperacionContrasena,
 } from "@/servicios/autenticacion";
@@ -51,7 +52,22 @@ export async function registrarse(datos: DatosRegistro): Promise<ResultadoAccion
 
   return {
     ok: true,
-    mensaje: "Si el correo es válido, te enviamos un enlace para confirmar la cuenta.",
+    mensaje: "Si el correo es válido y todavía no está confirmado, te enviamos un enlace para activar la cuenta.",
+  };
+}
+
+export async function reenviarConfirmacion(correo: string): Promise<ResultadoAccion> {
+  const validacion = esquemaRecuperacion.safeParse({ correo });
+  if (!validacion.success) return resultadoDeValidacion(validacion.error);
+
+  const cliente = await crearClienteServidor();
+  const urlConfirmacion = new URL(RUTAS.confirmar, await obtenerUrlSitio()).toString();
+  const resultado = await reenviarConfirmacionCorreo(cliente, validacion.data.correo, urlConfirmacion);
+  if (!resultado.ok) return resultado;
+
+  return {
+    ok: true,
+    mensaje: "Si el correo es válido y todavía no está confirmado, te enviamos el enlace de nuevo.",
   };
 }
 

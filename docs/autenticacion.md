@@ -17,6 +17,15 @@ el servidor valida la sesión con `supabase.auth.getClaims()`.
 `/auth/destino` decide el área según el rol verificado en el servidor
 (`calcularDestino` en `src/autorizacion/contexto.ts`).
 
+Si alguien se registra de nuevo con un correo **ya confirmado**, Supabase responde 200
+(`user_repeated_signup`) y **no envía otro correo de confirmación** (tampoco cambia la
+contraseña). La pantalla de registro lo aclara e incluye ingreso, reenvío (solo sirve
+si la cuenta sigue sin confirmar) y restablecer contraseña.
+
+Borrar filas en el **Table Editor** (`public.perfiles`, consultorios, etc.) no elimina
+la cuenta. El alta mira `auth.users`. Para re-probar un registro hay que borrar el
+usuario en **Authentication → Users** (o `delete from auth.users`).
+
 Decisiones de seguridad:
 
 - Los mensajes de registro y recuperación son idénticos exista o no la cuenta, para no
@@ -38,7 +47,9 @@ En **Authentication → Providers → Email**: activar *Confirm email*. Contrase
 de 8 caracteres con letras y números (igual que `supabase/config.toml`).
 
 En **Authentication → Email Templates** pegar el HTML de `supabase/plantillas/`
-(o aplicarlas con `PATCH /v1/projects/{ref}/config/auth`). Asuntos y archivos:
+(o aplicarlas con `PATCH /v1/projects/{ref}/config/auth`). En el proyecto hospedado
+`sistemanutri` ya están publicadas (25 de octubre de 2026), incluida la notificación
+*Password changed*. Asuntos y archivos:
 
 | Plantilla | Asunto | Archivo |
 | --- | --- | --- |
@@ -60,8 +71,15 @@ Para publicarlo en el proyecto hospedado: `node scripts/publicar-plantillas-corr
 En **Authentication → SMTP Settings** el nombre del remitente puede ser
 `Nutrisfera`. En local, `config.toml` ya apunta a estas plantillas.
 
-En producción configurar un **SMTP propio** (Authentication → SMTP Settings): el
-servicio de correo incluido en Supabase tiene límites muy bajos y no es apto para uso real.
+En el proyecto hospedado hay un **SMTP de prueba** (Gmail `nutri.notificacion@gmail.com`,
+remitente Nutrisfera). Sirve para probar altas y recuperación con otros correos, con el
+límite de envío de Gmail. No desactivar ese SMTP: al apagarlo Supabase restablece las
+plantillas por defecto en inglés.
+
+En producción reemplazar Gmail por un **SMTP propio con dominio verificado**
+(Resend, Brevo o SES): el servicio incluido en Supabase tiene límites muy bajos, y
+Gmail de consumidor no es un remitente transaccional. La App Password de Gmail no
+se guarda en el repositorio.
 
 ## Google OAuth
 

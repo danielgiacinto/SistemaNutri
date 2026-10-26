@@ -6,14 +6,46 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
+Última actualización: 25 de octubre de 2026. El producto está en **fase 2 cerrada**:
+se puede registrar un consultorio y trabajar con pacientes, agenda e historia clínica
+sobre el proyecto de Supabase hospedado. Las fases 3 a 6 todavía no están implementadas
+(el menú muestra esas secciones como “en construcción”).
+
 | Fase | Contenido | Estado |
 | --- | --- | --- |
-| 1 | Fundamentos: autenticación, roles, multi-tenencia con RLS, layouts, configuración | ✅ |
-| 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ |
+| 1 | Fundamentos: autenticación, roles, multi-tenencia con RLS, layouts, configuración | ✅ Listo para probar |
+| 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | Pendiente |
 | 4 | Planes alimentarios con versiones | Pendiente |
 | 5 | Suscripciones, pagos y administración | Pendiente |
 | 6 | Comunidad y desafíos | Pendiente |
+
+### Qué se puede probar ahora (profesional)
+
+1. Abrir [http://localhost:3000](http://localhost:3000) → **Crear cuenta**.
+2. Confirmar el correo (plantilla Nutrisfera, remitente de prueba `nutri.notificacion@gmail.com`).
+3. Crear el consultorio en `/bienvenida`.
+4. En `/panel`: pacientes, turnos, evoluciones, objetivos, mediciones, analíticas y configuración.
+
+No hay cuenta de prueba precargada: cada quien se registra. El ingreso con Google todavía
+no está configurado. El portal del paciente (`/portal`) existe como cascarón y pide una
+cuenta de paciente, que se crea en la fase 3.
+
+### Entorno
+
+| Pieza | Estado |
+| --- | --- |
+| Proyecto Supabase `sistemanutri` (São Paulo) | Creado; las dos migraciones ya están aplicadas |
+| `.env.local` | Apunta al proyecto hospedado (no a Supabase local) |
+| Correos de Auth | Plantillas Nutrisfera publicadas + SMTP de prueba con Gmail |
+| Site URL | `http://localhost:3000` |
+| Redirect URLs / Google OAuth | Pendientes (hacen falta antes de ingresar con Google) |
+| `SUPABASE_SECRET_KEY` | Vacía: el script de superadmin todavía no se puede usar |
+| Vercel y secretos de CI | Pendientes |
+
+Detalle de Auth y SMTP: [`docs/autenticacion.md`](docs/autenticacion.md).
+Detalle de despliegue y variables: [`docs/despliegue.md`](docs/despliegue.md).
+Decisiones de arquitectura: [`docs/arquitectura.md`](docs/arquitectura.md).
 
 ## Stack
 

@@ -77,6 +77,23 @@ export async function iniciarIngresoConGoogle(
   return { ok: true, datos: { url: data.url } };
 }
 
+export async function reenviarConfirmacionCorreo(
+  cliente: ClienteSupabase,
+  correo: string,
+  urlConfirmacion: string,
+): Promise<ResultadoAccion> {
+  const { error } = await cliente.auth.resend({
+    type: "signup",
+    email: correo,
+    options: { emailRedirectTo: urlConfirmacion },
+  });
+  if (error?.code === "over_email_send_rate_limit" || error?.code === "over_request_rate_limit") {
+    return fallo("reenviar_confirmacion", error);
+  }
+  if (error) registrarError("reenviar_confirmacion", error);
+  return { ok: true };
+}
+
 export async function solicitarRecuperacionContrasena(
   cliente: ClienteSupabase,
   correo: string,

@@ -107,7 +107,8 @@ primer pintado.
   entidad fuera de Argentina para cobrar. La decisión final se documentará antes de
   integrar, verificando condiciones vigentes, y siempre con webhooks autenticados e idempotentes.
 - **Envío de correos transaccionales** (recordatorios de turnos): la columna
-  `turnos.recordatorio_enviado_en` ya existe. Falta elegir SMTP de producción y el job de envío.
+  `turnos.recordatorio_enviado_en` ya existe. Los correos de Auth ya salen por un SMTP
+  de prueba (Gmail). Falta SMTP de producción con dominio propio y el job de recordatorios.
 - **Calendario:** vistas día/semana/mes propias, con hora local del consultorio, en lugar de
   una biblioteca de calendario pesada. Los selectores de fecha y hora usan controles nativos
   (mejor en celular). El gráfico de peso usa Recharts.
@@ -123,3 +124,6 @@ primer pintado.
 | 4 | Planes alimentarios con versiones y publicación | Pendiente |
 | 5 | Suscripciones, pagos y panel de administración completo | Pendiente |
 | 6 | Comunidad y desafíos | Pendiente |
+
+El detalle de lo que se puede probar hoy, el entorno de Supabase y lo operativo
+pendiente está en el README (sección Estado) y en `docs/despliegue.md`.

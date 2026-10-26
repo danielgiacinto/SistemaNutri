@@ -79,6 +79,24 @@ npm run bd:tipos        # regenera los tipos de TypeScript
 Sin Docker, usar un proyecto de Supabase de desarrollo (no el de producción) y
 aplicarle las migraciones con `supabase db push`.
 
+## Entorno de desarrollo actual
+
+Última actualización: 25 de octubre de 2026.
+
+| Pieza | Valor |
+| --- | --- |
+| Proyecto | `sistemanutri`, región São Paulo (`sa-east-1`), ref `zisacjleazvlrklwilap` |
+| Migraciones aplicadas | `fundamentos_identidad` y `gestion_clinica` |
+| App local | `npm run dev` → [http://localhost:3000](http://localhost:3000) con `.env.local` |
+| Auth | Plantillas Nutrisfera publicadas; SMTP de prueba con Gmail (ver `docs/autenticacion.md`) |
+| Site URL | `http://localhost:3000` |
+| Redirect URLs | Todavía vacías; agregar `http://localhost:3000/auth/confirmar**` antes de Google |
+| `SUPABASE_SECRET_KEY` | Vacía en `.env.local`: `npm run superadmin:crear` no corre hasta cargarla |
+| Vercel / secretos de GitHub Actions | Pendientes |
+
+Este entorno es de desarrollo. Antes de datos reales de pacientes: dominio propio,
+SMTP transaccional, OAuth, CI y la revisión legal de `docs/seguridad-y-privacidad.md`.
+
 > El repositorio está dentro de OneDrive. La sincronización de `node_modules` y `.next`
 > puede volver lenta la instalación o bloquear archivos; si ocurre, excluí esas carpetas
 > de la sincronización o mové el proyecto fuera de OneDrive.
