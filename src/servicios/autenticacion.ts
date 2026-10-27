@@ -50,14 +50,24 @@ export async function registrarCuenta(
   cliente: ClienteSupabase,
   datos: { nombre: string; apellido: string; correo: string; contrasena: string },
   urlConfirmacion: string,
+  consultorio?: string | null,
 ): Promise<ResultadoAccion<{ sesionIniciada: boolean }>> {
+  const datosDescriptivos: { nombre: string; apellido: string; cuenta?: string; consultorio?: string } = {
+    nombre: datos.nombre,
+    apellido: datos.apellido,
+  };
+  // Solo para el texto del correo. El tipo de cuenta no se lee de acá.
+  if (consultorio) {
+    datosDescriptivos.cuenta = "paciente";
+    datosDescriptivos.consultorio = consultorio;
+  }
+
   const { data, error } = await cliente.auth.signUp({
     email: datos.correo,
     password: datos.contrasena,
     options: {
       emailRedirectTo: urlConfirmacion,
-      // Solo datos descriptivos: el rol nunca se toma de estos metadatos.
-      data: { nombre: datos.nombre, apellido: datos.apellido },
+      data: datosDescriptivos,
     },
   });
 
@@ -118,7 +128,10 @@ export async function solicitarRecuperacionContrasena(
 }
 
 export async function cambiarContrasena(cliente: ClienteSupabase, contrasena: string): Promise<ResultadoAccion> {
-  const { error } = await cliente.auth.updateUser({ password: contrasena });
+  const { error } = await cliente.auth.updateUser({
+    password: contrasena,
+    data: { debe_elegir_contrasena: false },
+  });
   if (error) return fallo("cambiar_contrasena", error);
   return { ok: true };
 }

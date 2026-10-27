@@ -9,13 +9,13 @@ import { toast } from "sonner";
 import { reenviarConfirmacion, registrarse } from "@/acciones/autenticacion";
 import { esquemaRegistro } from "@/esquemas/autenticacion";
 import { aplicarErroresServidor } from "@/lib/formularios";
-import { RUTAS } from "@/autorizacion/rutas";
+import { RUTAS, rutaConSiguiente } from "@/autorizacion/rutas";
 import { CampoContrasena, CampoTexto } from "@/componentes/formularios/campo-texto";
 import { BotonEnvio } from "@/componentes/formularios/boton-envio";
 import { FieldGroup } from "@/componentes/ui/field";
 import { Button } from "@/componentes/ui/button";
 
-export function FormularioRegistro() {
+export function FormularioRegistro({ siguiente }: { siguiente: string | null }) {
   const [pendiente, iniciarTransicion] = useTransition();
   const [correoEnviado, setCorreoEnviado] = useState<string | null>(null);
   const formulario = useForm({
@@ -26,7 +26,7 @@ export function FormularioRegistro() {
 
   const alEnviar = formulario.handleSubmit((datos) =>
     iniciarTransicion(async () => {
-      const resultado = await registrarse(datos);
+      const resultado = await registrarse(datos, siguiente);
       if (!resultado) return;
       if (!resultado.ok) {
         aplicarErroresServidor(formulario.setError, resultado);
@@ -40,7 +40,7 @@ export function FormularioRegistro() {
   const reenviar = () =>
     iniciarTransicion(async () => {
       if (!correoEnviado) return;
-      const resultado = await reenviarConfirmacion(correoEnviado);
+      const resultado = await reenviarConfirmacion(correoEnviado, siguiente);
       if (!resultado.ok) {
         toast.error(resultado.mensaje);
         return;
@@ -68,7 +68,7 @@ export function FormularioRegistro() {
           {pendiente ? "Reenviando…" : "Reenviar correo de confirmación"}
         </Button>
         <Button asChild className="h-10 w-full">
-          <Link href={RUTAS.ingresar}>Ingresar</Link>
+          <Link href={rutaConSiguiente(RUTAS.ingresar, siguiente)}>Ingresar</Link>
         </Button>
         <Link href={RUTAS.recuperarContrasena} className="text-sm font-medium text-primary underline-offset-4 hover:underline">
           ¿Olvidaste tu contraseña?

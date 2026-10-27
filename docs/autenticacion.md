@@ -7,15 +7,20 @@ el servidor valida la sesión con `supabase.auth.getClaims()`.
 
 | Flujo | Recorrido |
 | --- | --- |
-| Registro con correo | `/registro` → correo de confirmación → `/auth/confirmar?token_hash=…&type=email` → `/auth/destino` → `/bienvenida` |
+| Registro con correo | `/registro` → correo de confirmación → `/auth/confirmar?token_hash=…&type=email` → `/auth/destino` → `/bienvenida`. Si el alta viene de una invitación, el correo habla del paciente y nombra el consultorio. |
 | Ingreso con correo | `/ingresar` → `/auth/destino` (o la ruta `siguiente` saneada) |
 | Google | `/ingresar` o `/registro` → `POST /auth/google` → Google → `/auth/confirmar?code=…` → `/auth/destino` |
 | Recuperación | `/recuperar-contrasena` → correo → `/auth/confirmar?type=recovery` → `/restablecer-contrasena` |
 | Alta profesional | `/bienvenida` → `crear_consultorio_inicial()` → `/panel` |
-| Paciente | Ficha → Visibilidad → invitar → `/invitacion/…` → aceptar → `/portal` |
+| Paciente | Ficha → Visibilidad → copiar `/invitacion/…` → **crear cuenta** (contraseña o Google, mismo correo) → confirmar → aceptar → `/portal` |
 
 `/auth/destino` decide el área según el rol verificado en el servidor
 (`calcularDestino` en `src/autorizacion/contexto.ts`).
+
+Al invitar se envía un correo con el SMTP de Auth (`signInWithOtp`). Ese enlace
+abre la sesión una sola vez. Antes de aceptar, la persona elige una contraseña
+o continúa con Google **con el mismo correo de la ficha**. El enlace copiable
+de Visibilidad también ofrece Google en crear cuenta e ingresar.
 
 Si alguien se registra de nuevo con un correo **ya confirmado**, Supabase responde 200
 (`user_repeated_signup`) y **no envía otro correo de confirmación** (tampoco cambia la
@@ -56,7 +61,7 @@ En **Authentication → Email Templates** pegar el HTML de `supabase/plantillas/
 
 | Plantilla | Asunto | Archivo |
 | --- | --- | --- |
-| Confirm signup | Confirmá tu cuenta en Nutrisfera | `confirmacion.html` |
+| Confirm signup | Confirmá tu cuenta en Nutrisfera. Si el alta es de un paciente invitado: Confirmá tu registro de paciente · Nutrisfera | `confirmacion.html` |
 | Reset password | Restablecé tu contraseña · Nutrisfera | `recuperacion.html` |
 | Invite user | Te invitaron a Nutrisfera | `invitacion.html` |
 | Magic link | Tu enlace de ingreso · Nutrisfera | `enlace-magico.html` |

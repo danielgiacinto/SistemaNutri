@@ -658,6 +658,14 @@ export type Database = {
         Args: { p_huella?: string }
         Returns: undefined
       }
+      tiene_ingreso_propio: {
+        Args: never
+        Returns: boolean
+      }
+      nombre_consultorio_invitacion: {
+        Args: { p_correo?: string; p_huella?: string }
+        Returns: string
+      }
       crear_consultorio_inicial: {
         Args: { p_nombre: string; p_zona_horaria?: string }
         Returns: string

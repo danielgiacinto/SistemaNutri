@@ -34,7 +34,7 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
         <CardDescription>
           {invitacion
             ? `Hay una invitación vigente para ${invitacion.correo} hasta el ${formatearFechaHora(new Date(invitacion.expira_en), contexto.consultorio.zonaHoraria)}.`
-            : "La persona entra con el correo de la ficha. En el portal solo ve turnos y lo que marques como visible."}
+            : "Le enviamos un correo al de la ficha. Al abrirlo elige una contraseña y acepta. En el portal solo ve turnos y lo que marques como visible."}
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -25,6 +25,7 @@ import {
   registrarCuenta,
   solicitarRecuperacionContrasena,
 } from "@/servicios/autenticacion";
+import { huellaInvitacion, nombreConsultorioInvitacion } from "@/servicios/invitaciones";
 import type { ResultadoAccion } from "@/tipos/acciones";
 
 export async function ingresar(datos: DatosIngreso, siguiente?: string | null): Promise<ResultadoAccion> {
@@ -38,17 +39,27 @@ export async function ingresar(datos: DatosIngreso, siguiente?: string | null): 
   redirect(sanearRutaSiguiente(siguiente) ?? RUTAS.destino);
 }
 
-export async function registrarse(datos: DatosRegistro): Promise<ResultadoAccion> {
+export async function registrarse(datos: DatosRegistro, siguiente?: string | null): Promise<ResultadoAccion> {
   const validacion = esquemaRegistro.safeParse(datos);
   if (!validacion.success) return resultadoDeValidacion(validacion.error);
 
+  const rutaSiguiente = sanearRutaSiguiente(siguiente);
   const cliente = await crearClienteServidor();
-  const urlConfirmacion = new URL(RUTAS.confirmar, await obtenerUrlSitio()).toString();
-  const resultado = await registrarCuenta(cliente, validacion.data, urlConfirmacion);
+  const consultorio = await nombreConsultorioInvitacion(
+    cliente,
+    validacion.data.correo,
+    huellaDeInvitacion(rutaSiguiente),
+  );
+  const resultado = await registrarCuenta(
+    cliente,
+    validacion.data,
+    await urlConfirmacionConSiguiente(rutaSiguiente),
+    consultorio,
+  );
   if (!resultado.ok) return resultado;
 
   // Si la confirmación de correo está desactivada, Supabase ya inicia la sesión.
-  if (resultado.datos?.sesionIniciada) redirect(RUTAS.destino);
+  if (resultado.datos?.sesionIniciada) redirect(rutaSiguiente ?? RUTAS.destino);
 
   return {
     ok: true,
@@ -56,13 +67,16 @@ export async function registrarse(datos: DatosRegistro): Promise<ResultadoAccion
   };
 }
 
-export async function reenviarConfirmacion(correo: string): Promise<ResultadoAccion> {
+export async function reenviarConfirmacion(correo: string, siguiente?: string | null): Promise<ResultadoAccion> {
   const validacion = esquemaRecuperacion.safeParse({ correo });
   if (!validacion.success) return resultadoDeValidacion(validacion.error);
 
   const cliente = await crearClienteServidor();
-  const urlConfirmacion = new URL(RUTAS.confirmar, await obtenerUrlSitio()).toString();
-  const resultado = await reenviarConfirmacionCorreo(cliente, validacion.data.correo, urlConfirmacion);
+  const resultado = await reenviarConfirmacionCorreo(
+    cliente,
+    validacion.data.correo,
+    await urlConfirmacionConSiguiente(sanearRutaSiguiente(siguiente)),
+  );
   if (!resultado.ok) return resultado;
 
   return {
@@ -116,4 +130,16 @@ export async function cerrarSesion(): Promise<void> {
   const cliente = await crearClienteServidor();
   await cerrarSesionActual(cliente);
   redirect(RUTAS.ingresar);
+}
+
+async function urlConfirmacionConSiguiente(siguiente: string | null): Promise<string> {
+  const url = new URL(RUTAS.confirmar, await obtenerUrlSitio());
+  if (siguiente) url.searchParams.set("siguiente", siguiente);
+  return url.toString();
+}
+
+function huellaDeInvitacion(ruta: string | null): string | null {
+  const coincidencia = ruta?.match(/^\/invitacion\/([A-Za-z0-9_-]{32,80})$/);
+  if (!coincidencia) return null;
+  return huellaInvitacion(coincidencia[1]);
 }

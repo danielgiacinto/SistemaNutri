@@ -40,6 +40,19 @@ export function esRutaSoloInvitados(ruta: string): boolean {
   return RUTAS_SOLO_INVITADOS.some((prefijo) => coincideConPrefijo(ruta, prefijo));
 }
 
+/** Invitación al portal: alta del paciente o aceptación pendiente. */
+export function esRutaInvitacion(ruta: string | null | undefined): boolean {
+  if (!ruta) return false;
+  const camino = ruta.split("?")[0] ?? "";
+  return coincideConPrefijo(camino, "/invitacion");
+}
+
+/** Arma `/ingresar?siguiente=…` o similar cuando hay un destino interno. */
+export function rutaConSiguiente(ruta: string, siguiente: string | null): string {
+  if (!siguiente) return ruta;
+  return `${ruta}?siguiente=${encodeURIComponent(siguiente)}`;
+}
+
 /**
  * Devuelve la ruta interna a la que se puede redirigir después de autenticarse,
  * o `null` si el valor no es seguro. Evita redirecciones abiertas a otros dominios

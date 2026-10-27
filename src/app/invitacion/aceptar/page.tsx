@@ -3,12 +3,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { obtenerContextoUsuario } from "@/autorizacion/sesion";
-import { RUTAS } from "@/autorizacion/rutas";
+import { RUTAS, rutaConSiguiente } from "@/autorizacion/rutas";
 import { BotonAceptarInvitacion } from "@/componentes/portal/boton-aceptar-invitacion";
+import { PedirClaveParaVolver } from "@/componentes/portal/pedir-clave";
 import { MarcoSimple } from "@/componentes/disposicion/marco-simple";
 import { EsqueletoFormulario } from "@/componentes/autenticacion/esqueleto-formulario";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
-import { listarInvitacionesPendientes } from "@/servicios/invitaciones";
+import { listarInvitacionesPendientes, tieneIngresoPropio } from "@/servicios/invitaciones";
 
 export const metadata: Metadata = { title: "Aceptar invitación" };
 
@@ -26,7 +27,7 @@ export default function PaginaAceptarInvitacion() {
 
 async function Contenido() {
   const contexto = await obtenerContextoUsuario();
-  if (!contexto) redirect(`${RUTAS.ingresar}?siguiente=${encodeURIComponent(RUTAS.invitacionAceptar)}`);
+  if (!contexto) redirect(rutaConSiguiente(RUTAS.ingresar, RUTAS.invitacionAceptar));
   if (contexto.tipoCuenta === "paciente") redirect(RUTAS.portal);
   if (contexto.tipoCuenta === "profesional" || contexto.esSuperadmin) {
     return (
@@ -37,7 +38,17 @@ async function Contenido() {
     );
   }
 
-  const invitaciones = await listarInvitacionesPendientes(await crearClienteServidor());
+  const cliente = await crearClienteServidor();
+  const invitaciones = await listarInvitacionesPendientes(cliente);
+  if (!(await tieneIngresoPropio(cliente))) {
+    return (
+      <PedirClaveParaVolver
+        siguiente={RUTAS.invitacionAceptar}
+        consultorioNombre={invitaciones.length === 1 ? invitaciones[0].consultorio_nombre : null}
+      />
+    );
+  }
+
   if (invitaciones.length === 0) {
     return (
       <Aviso

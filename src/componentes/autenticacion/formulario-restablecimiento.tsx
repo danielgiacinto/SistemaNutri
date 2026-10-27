@@ -13,7 +13,13 @@ import { CampoContrasena } from "@/componentes/formularios/campo-texto";
 import { BotonEnvio } from "@/componentes/formularios/boton-envio";
 import { FieldGroup } from "@/componentes/ui/field";
 
-export function FormularioRestablecimiento() {
+export function FormularioRestablecimiento({
+  continuar = "destino",
+  registro = false,
+}: {
+  continuar?: "destino" | "refrescar";
+  registro?: boolean;
+}) {
   const enrutador = useRouter();
   const [pendiente, iniciarTransicion] = useTransition();
   const formulario = useForm({
@@ -31,6 +37,10 @@ export function FormularioRestablecimiento() {
         return;
       }
       toast.success(resultado.mensaje);
+      if (continuar === "refrescar") {
+        enrutador.refresh();
+        return;
+      }
       enrutador.replace(RUTAS.destino);
     }),
   );
@@ -40,7 +50,7 @@ export function FormularioRestablecimiento() {
       <FieldGroup>
         <CampoContrasena
           id="contrasena"
-          etiqueta="Nueva contraseña"
+          etiqueta={registro ? "Contraseña" : "Nueva contraseña"}
           autoComplete="new-password"
           descripcion="Al menos 8 caracteres, con letras y números."
           error={errores.contrasena?.message}
@@ -48,13 +58,13 @@ export function FormularioRestablecimiento() {
         />
         <CampoContrasena
           id="confirmacion"
-          etiqueta="Repetí la nueva contraseña"
+          etiqueta={registro ? "Repetí la contraseña" : "Repetí la nueva contraseña"}
           autoComplete="new-password"
           error={errores.confirmacion?.message}
           {...formulario.register("confirmacion")}
         />
         <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" size="lg" className="h-10 w-full">
-          Guardar contraseña
+          {registro ? "Registrarme" : "Guardar contraseña"}
         </BotonEnvio>
       </FieldGroup>
     </form>

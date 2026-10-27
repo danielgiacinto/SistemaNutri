@@ -56,7 +56,8 @@ export function FormularioInvitacion({
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
         La invitación es para <strong className="text-foreground">{correo}</strong>. Dura 7 días y reemplaza a la anterior
-        si todavía no se aceptó.
+        si todavía no se aceptó. Le llega un correo: al abrirlo elige una contraseña y después acepta. Si el correo no
+        sale, copiá el enlace.
       </p>
       <BotonEnvio type="button" pendiente={pendiente} textoPendiente="Enviando…" onClick={invitar}>
         <Mail aria-hidden="true" />

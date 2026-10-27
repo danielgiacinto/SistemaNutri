@@ -118,15 +118,18 @@ const plantillas = [
   {
     archivo: "confirmacion.html",
     tituloDocumento: `Confirmá tu cuenta · ${NOMBRE_PRODUCTO}`,
-    preencabezado: `Confirmá tu correo para activar tu consultorio en ${NOMBRE_PRODUCTO}.`,
-    titulo: "Confirmá tu cuenta",
+    preencabezado: `{{ if .Data.consultorio }}Te invitaron a registrarte como paciente de {{ .Data.consultorio }}.{{ else }}Confirmá tu correo para activar tu consultorio en ${NOMBRE_PRODUCTO}.{{ end }}`,
+    titulo: `{{ if .Data.consultorio }}Confirmá tu registro de paciente{{ else }}Confirmá tu cuenta{{ end }}`,
     parrafos: [
       SALUDO,
-      `Recibimos una solicitud para crear una cuenta en ${NOMBRE_PRODUCTO} con <strong>{{ .Email }}</strong>. Para activarla y configurar tu consultorio, confirmá tu correo electrónico.`,
+      `{{ if .Data.consultorio }}Te invitaron a registrarte como paciente de <strong>{{ .Data.consultorio }}</strong>. Confirmá la cuenta de <strong>{{ .Email }}</strong> para entrar al portal de ese consultorio.{{ else }}Recibimos una solicitud para crear una cuenta en ${NOMBRE_PRODUCTO} con <strong>{{ .Email }}</strong>. Para activarla y configurar tu consultorio, confirmá tu correo electrónico.{{ end }}`,
       "El enlace vence en una hora y solo se puede usar una vez.",
     ],
-    boton: { etiqueta: "Confirmar mi cuenta", href: enlaceConfirmacion("email") },
-    nota: "Si no creaste una cuenta, ignorá este mensaje. No vamos a usar tu correo hasta que lo confirmes.",
+    boton: {
+      etiqueta: `{{ if .Data.consultorio }}Confirmar mi registro{{ else }}Confirmar mi cuenta{{ end }}`,
+      href: enlaceConfirmacion("email"),
+    },
+    nota: `{{ if .Data.consultorio }}Si no esperabas esta invitación, ignorá el mensaje.{{ else }}Si no creaste una cuenta, ignorá este mensaje. No vamos a usar tu correo hasta que lo confirmes.{{ end }}`,
   },
   {
     archivo: "recuperacion.html",
@@ -156,16 +159,16 @@ const plantillas = [
   },
   {
     archivo: "enlace-magico.html",
-    tituloDocumento: `Tu enlace de ingreso · ${NOMBRE_PRODUCTO}`,
-    preencabezado: `Ingresá a ${NOMBRE_PRODUCTO} con este enlace de un solo uso.`,
-    titulo: "Ingresá a tu cuenta",
+    tituloDocumento: `Tu invitación al portal · ${NOMBRE_PRODUCTO}`,
+    preencabezado: `Tu nutricionista te invitó al portal de ${NOMBRE_PRODUCTO}.`,
+    titulo: "Te invitaron al portal",
     parrafos: [
       SALUDO,
-      `Usá el botón para ingresar a ${NOMBRE_PRODUCTO} con <strong>{{ .Email }}</strong>. No hace falta contraseña en este paso.`,
-      "El enlace vence en una hora y solo se puede usar una vez.",
+      `Tu nutricionista te invitó a ver tus turnos y lo que compartan con vos. El botón abre la invitación para <strong>{{ .Email }}</strong>.`,
+      "En el primer ingreso te vamos a pedir una contraseña. Esa es la que vas a usar las próximas veces. El enlace vence en una hora.",
     ],
-    boton: { etiqueta: "Ingresar ahora", href: enlaceConfirmacion("magiclink") },
-    nota: "Si no pediste este enlace, ignorá el mensaje. Nadie puede ingresar a tu cuenta sin él.",
+    boton: { etiqueta: "Abrir invitación", href: enlaceConfirmacion("magiclink") },
+    nota: "Si no esperabas esta invitación, ignorá el mensaje.",
   },
   {
     archivo: "cambio-correo.html",

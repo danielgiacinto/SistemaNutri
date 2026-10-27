@@ -25,7 +25,7 @@ Las fases 4 a 6 todavía no están implementadas (el menú muestra esas seccione
 2. Confirmar el correo (plantilla Nutrisfera, remitente de prueba `nutri.notificacion@gmail.com`).
 3. Crear el consultorio en `/bienvenida`.
 4. En `/panel`: pacientes, turnos, evoluciones, objetivos, mediciones, analíticas y configuración.
-5. En la ficha del paciente → **Visibilidad** → **Invitar al portal**. La persona acepta con ese correo y entra a `/portal` (turnos y lo marcado como visible). El plan alimentario sigue en la fase 4.
+5. En la ficha del paciente → **Visibilidad** → **Invitar al portal**. Llega un correo: al abrirlo elige una contraseña, acepta y entra a `/portal` (turnos y lo marcado como visible). El plan alimentario sigue en la fase 4.
 
 No hay cuenta de prueba precargada: cada quien se registra. **Continuar con Google**
 está habilitado en el proyecto hospedado (alta e ingreso, ver `docs/autenticacion.md`).

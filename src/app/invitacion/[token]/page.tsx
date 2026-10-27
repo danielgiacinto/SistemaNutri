@@ -3,10 +3,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { obtenerContextoUsuario } from "@/autorizacion/sesion";
-import { RUTAS } from "@/autorizacion/rutas";
+import { RUTAS, rutaConSiguiente } from "@/autorizacion/rutas";
 import { BotonAceptarInvitacion } from "@/componentes/portal/boton-aceptar-invitacion";
+import { PedirClaveParaVolver } from "@/componentes/portal/pedir-clave";
 import { MarcoSimple } from "@/componentes/disposicion/marco-simple";
 import { EsqueletoFormulario } from "@/componentes/autenticacion/esqueleto-formulario";
+import { crearClienteServidor } from "@/lib/supabase/servidor";
+import { listarInvitacionesPendientes, tieneIngresoPropio } from "@/servicios/invitaciones";
 
 export const metadata: Metadata = { title: "Invitación" };
 
@@ -38,25 +41,31 @@ async function Contenido({ params }: { params: PageProps<"/invitacion/[token]">[
   const contexto = await obtenerContextoUsuario();
   const siguiente = `/invitacion/${token}`;
   if (!contexto) {
-    const destino = encodeURIComponent(siguiente);
     return (
       <div className="space-y-4">
         <h1 className="text-2xl font-bold tracking-tight">Tenés una invitación</h1>
         <p className="text-muted-foreground">
-          Ingresá o creá una cuenta con el correo que te indicó tu nutricionista. Después vas a poder aceptar.
+          El enlace no inicia sesión. La primera vez tenés que crear una cuenta con el mismo correo que te indicó tu
+          nutricionista, eligiendo una contraseña o Google. Después volvés acá para aceptar.
         </p>
         <div className="flex flex-col gap-3">
           <Link
-            href={`${RUTAS.ingresar}?siguiente=${destino}`}
+            href={rutaConSiguiente(RUTAS.registro, siguiente)}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
           >
-            Ingresar
+            Crear mi cuenta
           </Link>
           <Link
-            href={`${RUTAS.registro}?siguiente=${destino}`}
+            href={rutaConSiguiente(RUTAS.ingresar, siguiente)}
             className="inline-flex h-10 items-center justify-center rounded-lg border px-4 text-sm font-medium"
           >
-            Crear cuenta
+            Ya tengo cuenta
+          </Link>
+          <Link
+            href={RUTAS.recuperarContrasena}
+            className="text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Nunca definí una contraseña
           </Link>
         </div>
       </div>
@@ -72,6 +81,17 @@ async function Contenido({ params }: { params: PageProps<"/invitacion/[token]">[
           Cerrá sesión e ingresá con el correo de la invitación, no con la cuenta del consultorio.
         </p>
       </div>
+    );
+  }
+
+  const cliente = await crearClienteServidor();
+  if (!(await tieneIngresoPropio(cliente))) {
+    const invitaciones = await listarInvitacionesPendientes(cliente);
+    return (
+      <PedirClaveParaVolver
+        siguiente={siguiente}
+        consultorioNombre={invitaciones.length === 1 ? invitaciones[0].consultorio_nombre : null}
+      />
     );
   }
 

@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light">
     <meta name="supported-color-schemes" content="light">
-    <title>Tu enlace de ingreso · Nutrisfera</title>
+    <title>Tu invitación al portal · Nutrisfera</title>
   </head>
   <body style="margin:0;padding:0;background-color:#f7f9fc;font-family:'Plus Jakarta Sans','Segoe UI',Arial,Helvetica,sans-serif;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
-      Ingresá a Nutrisfera con este enlace de un solo uso.
+      Tu nutricionista te invitó al portal de Nutrisfera.
     </div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f7f9fc;">
       <tr>
@@ -33,16 +33,16 @@
             </tr>
             <tr>
               <td style="padding:32px;font-family:'Plus Jakarta Sans','Segoe UI',Arial,Helvetica,sans-serif;color:#141b24;">
-                <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;letter-spacing:-0.02em;color:#141b24;">Ingresá a tu cuenta</h1>
+                <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;letter-spacing:-0.02em;color:#141b24;">Te invitaron al portal</h1>
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#141b24;">{{ with .Data }}{{ if .nombre }}Hola, {{ .nombre }}.{{ else }}Hola.{{ end }}{{ else }}Hola.{{ end }}</p>
-                <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#141b24;">Usá el botón para ingresar a Nutrisfera con <strong>{{ .Email }}</strong>. No hace falta contraseña en este paso.</p>
-                <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#141b24;">El enlace vence en una hora y solo se puede usar una vez.</p>
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#141b24;">Tu nutricionista te invitó a ver tus turnos y lo que compartan con vos. El botón abre la invitación para <strong>{{ .Email }}</strong>.</p>
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#141b24;">En el primer ingreso te vamos a pedir una contraseña. Esa es la que vas a usar las próximas veces. El enlace vence en una hora.</p>
                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 24px;">
                   <tr>
                     <td align="center" bgcolor="#158561" style="border-radius:10px;">
                       <a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&amp;type=magiclink" target="_blank" rel="noopener noreferrer"
                          style="display:inline-block;padding:13px 22px;font-size:15px;font-weight:700;line-height:1.2;color:#ffffff;text-decoration:none;border-radius:10px;">
-                        Ingresar ahora
+                        Abrir invitación
                       </a>
                     </td>
                   </tr>
@@ -51,7 +51,7 @@
                   Si el botón no funciona,
                   <a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&amp;type=magiclink" target="_blank" rel="noopener noreferrer" style="color:#158561;text-decoration:underline;">abrí este enlace</a>.
                 </p>
-                <p style="margin:0;font-size:13px;line-height:1.55;color:#5c646f;">Si no pediste este enlace, ignorá el mensaje. Nadie puede ingresar a tu cuenta sin él.</p>
+                <p style="margin:0;font-size:13px;line-height:1.55;color:#5c646f;">Si no esperabas esta invitación, ignorá el mensaje.</p>
               </td>
             </tr>
             <tr>

@@ -14,6 +14,7 @@ grant usage on schema auth to anon, authenticated, service_role;
 create table auth.users (
   id uuid primary key default gen_random_uuid(),
   email text unique,
+  encrypted_password text,
   raw_user_meta_data jsonb default '{}'::jsonb,
   raw_app_meta_data jsonb default '{}'::jsonb,
   email_confirmed_at timestamptz,

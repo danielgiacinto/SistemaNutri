@@ -25,7 +25,8 @@ function leer(nombre) {
 
 const cuerpo = {
   smtp_sender_name: "Nutrisfera",
-  mailer_subjects_confirmation: "Confirmá tu cuenta en Nutrisfera",
+  mailer_subjects_confirmation:
+    '{{ if .Data.consultorio }}Confirmá tu registro de paciente · Nutrisfera{{ else }}Confirmá tu cuenta en Nutrisfera{{ end }}',
   mailer_templates_confirmation_content: leer("confirmacion.html"),
   mailer_subjects_recovery: "Restablecé tu contraseña · Nutrisfera",
   mailer_templates_recovery_content: leer("recuperacion.html"),

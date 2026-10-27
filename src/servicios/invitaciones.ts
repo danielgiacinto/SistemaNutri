@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { ClienteSupabase } from "@/lib/supabase/servidor";
 import { obtenerEntornoPublico } from "@/configuracion/entorno";
 import { MENSAJE_ERROR_INESPERADO, mensajeDeNegocio, registrarError } from "@/lib/errores";
+import { traducirErrorAutenticacion } from "@/servicios/autenticacion";
 import type { ResultadoAccion } from "@/tipos/acciones";
 import type { InvitacionPaciente } from "@/tipos/entidades";
 import type { Database } from "@/tipos/base-datos";
@@ -115,13 +116,13 @@ export async function crearInvitacionPaciente(
   }
 
   const enlace = `${urlSitio}/invitacion/${token}`;
-  const correoEnviado = await enviarIngresoPorCorreo(correo, paciente.nombre, paciente.apellido);
+  const envio = await enviarInvitacionPorCorreo(correo, paciente.nombre, paciente.apellido);
   return {
     ok: true,
-    mensaje: correoEnviado
-      ? "Enviamos un enlace de ingreso al correo de la ficha. También podés copiar la invitación."
-      : "La invitación quedó creada. No pudimos enviar el correo: copiá el enlace y compartilo.",
-    datos: { enlace, correoEnviado },
+    mensaje: envio.ok
+      ? "Enviamos la invitación al correo de la ficha. Al abrirla va a elegir una contraseña para poder volver a entrar. También podés copiar el enlace."
+      : `La invitación quedó creada, pero no pudimos enviar el correo${envio.detalle ? `: ${envio.detalle}` : ""}. Copiá el enlace y compartilo.`,
+    datos: { enlace, correoEnviado: envio.ok },
   };
 }
 
@@ -140,19 +141,53 @@ export async function aceptarInvitacion(
   return { ok: true, mensaje: "Listo. Ya podés entrar a tu portal." };
 }
 
-/** Manda el correo mágico de Supabase sin tocar la sesión de quien invita. */
-async function enviarIngresoPorCorreo(correo: string, nombre: string, apellido: string): Promise<boolean> {
+/** Avisa por el correo de Auth sin usar la sesión de quien invita. */
+async function enviarInvitacionPorCorreo(
+  correo: string,
+  nombre: string,
+  apellido: string,
+): Promise<{ ok: boolean; detalle?: string }> {
   const { supabaseUrl, supabaseClavePublica } = obtenerEntornoPublico();
   const suelto = createClient<Database>(supabaseUrl, supabaseClavePublica, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
   const { error } = await suelto.auth.signInWithOtp({
     email: correo,
-    options: { shouldCreateUser: true, data: { nombre, apellido } },
+    options: {
+      shouldCreateUser: true,
+      data: { nombre, apellido, debe_elegir_contrasena: true },
+    },
   });
   if (error) {
     registrarError("invitar_paciente_correo", error);
-    return false;
+    return { ok: false, detalle: traducirErrorAutenticacion(error.code) };
   }
-  return true;
+  return { ok: true };
+}
+
+/** True si esta sesión ya puede volver a entrar con contraseña o con Google. */
+export async function tieneIngresoPropio(cliente: ClienteSupabase): Promise<boolean> {
+  const { data, error } = await cliente.rpc("tiene_ingreso_propio");
+  if (error) {
+    registrarError("tiene_ingreso_propio", error);
+    throw new Error("No se pudo verificar la cuenta.");
+  }
+  return Boolean(data);
+}
+
+/** Nombre del consultorio de una invitación vigente, para el texto del correo. */
+export async function nombreConsultorioInvitacion(
+  cliente: ClienteSupabase,
+  correo: string,
+  huella: string | null,
+): Promise<string | null> {
+  const { data, error } = await cliente.rpc("nombre_consultorio_invitacion", {
+    p_correo: huella ? undefined : correo,
+    p_huella: huella ?? undefined,
+  });
+  if (error) {
+    registrarError("nombre_consultorio_invitacion", error);
+    return null;
+  }
+  return data;
 }

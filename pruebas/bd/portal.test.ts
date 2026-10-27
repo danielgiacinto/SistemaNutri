@@ -41,6 +41,15 @@ afterAll(async () => {
 });
 
 describe("invitación al portal", () => {
+  it("informa el consultorio de una invitación pendiente", async () => {
+    const porCorreo = await comoAnonimo(bd, (tx) =>
+      tx.query<{ nombre: string }>("select public.nombre_consultorio_invitacion($1, null) as nombre", [
+        "luz.portal@demo.test",
+      ]),
+    );
+    expect(porCorreo.rows[0].nombre).toBe("Consultorio Portal");
+  });
+
   it("vincula la ficha y asigna el tipo de cuenta al aceptar", async () => {
     await comoUsuario(bd, persona, (tx) => tx.query("select public.aceptar_invitacion($1)", [HUELLA]));
 
@@ -89,6 +98,43 @@ describe("invitación al portal", () => {
 
   it("un visitante anónimo no lee la ficha", async () => {
     await expect(comoAnonimo(bd, (tx) => tx.query("select id from public.pacientes"))).rejects.toThrow(/permission denied/);
+  });
+
+  it("exige una contraseña propia para volver a entrar", async () => {
+    const sinClave = await comoUsuario(bd, persona, (tx) =>
+      tx.query<{ tiene: boolean }>("select public.tiene_ingreso_propio() as tiene"),
+    );
+    expect(sinClave.rows[0].tiene).toBe(false);
+
+    await bd.query(
+      "update auth.users set encrypted_password = 'hash', raw_user_meta_data = '{\"debe_elegir_contrasena\": true}'::jsonb where id = $1",
+      [persona],
+    );
+    const pendiente = await comoUsuario(bd, persona, (tx) =>
+      tx.query<{ tiene: boolean }>("select public.tiene_ingreso_propio() as tiene"),
+    );
+    expect(pendiente.rows[0].tiene).toBe(false);
+
+    await bd.query(
+      `update auth.users
+       set raw_app_meta_data = '{"provider":"email","providers":["email","google"]}'::jsonb
+       where id = $1`,
+      [persona],
+    );
+    const conGoogle = await comoUsuario(bd, persona, (tx) =>
+      tx.query<{ tiene: boolean }>("select public.tiene_ingreso_propio() as tiene"),
+    );
+    expect(conGoogle.rows[0].tiene).toBe(true);
+
+    await bd.query("update auth.users set raw_app_meta_data = '{}'::jsonb where id = $1", [persona]);
+    await bd.query(
+      "update auth.users set raw_user_meta_data = raw_user_meta_data - 'debe_elegir_contrasena' where id = $1",
+      [persona],
+    );
+    const conClave = await comoUsuario(bd, persona, (tx) =>
+      tx.query<{ tiene: boolean }>("select public.tiene_ingreso_propio() as tiene"),
+    );
+    expect(conClave.rows[0].tiene).toBe(true);
   });
 
   it("rechaza una huella que no corresponde al correo de la sesión", async () => {
