@@ -14,6 +14,7 @@ export const ESTADOS_TURNO = ["programado", "confirmado", "completado", "cancela
 export const TIPOS_CONSULTA = ["primera_consulta", "seguimiento", "control", "otro"] as const;
 export const ESTADOS_OBJETIVO = ["pendiente", "en_progreso", "completado", "cancelado"] as const;
 export const CATEGORIAS_OBJETIVO = ["peso", "habito", "analitica", "bienestar", "otro"] as const;
+export const MOMENTOS_COMIDA = ["desayuno", "media_manana", "almuerzo", "merienda", "cena", "colacion"] as const;
 export const VISTAS_AGENDA = ["dia", "semana", "mes"] as const;
 
 export const ETIQUETAS_ESTADO_PACIENTE = {
@@ -49,6 +50,15 @@ export const ETIQUETAS_CATEGORIA_OBJETIVO = {
   analitica: "Analítica",
   bienestar: "Bienestar",
   otro: "Otro",
+} as const;
+
+export const ETIQUETAS_MOMENTO_COMIDA = {
+  desayuno: "Desayuno",
+  media_manana: "Media mañana",
+  almuerzo: "Almuerzo",
+  merienda: "Merienda",
+  cena: "Cena",
+  colacion: "Colación",
 } as const;
 
 export const DIAS_SEMANA = [

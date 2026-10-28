@@ -15,7 +15,7 @@ hacen cambios manuales desde el panel de Supabase.
 - Los errores de negocio se lanzan con una clave (`raise exception 'consultorio_existente'`)
   que `src/servicios` traduce a mensajes en español.
 
-## Modelo actual (fases 1 a 3)
+## Modelo actual (fases 1 a 4)
 
 | Tabla | Propósito | Escritura desde la API |
 | --- | --- | --- |
@@ -33,6 +33,10 @@ hacen cambios manuales desde el panel de Supabase.
 | `evoluciones_versiones` | Instantánea anterior de cada edición. | Solo SELECT. |
 | `objetivos` | Metas del paciente (no solo peso). | Miembros. |
 | `mediciones` | Antropometría puntual. El IMC no se persiste. | Miembros. |
+| `planes_alimentarios` | Borrador del plan. El paciente no lo lee. | Miembros. Borrar solo si nunca se publicó. |
+| `planes_comidas` | Comidas del borrador. | Miembros. |
+| `planes_publicaciones` | Copia inmutable al publicar. | Solo SELECT. La crea `publicar_plan`. |
+| `planes_publicaciones_comidas` | Comidas de esa copia. | Solo SELECT. |
 
 El superadministrador **no** tiene políticas sobre las tablas clínicas.
 
@@ -46,6 +50,8 @@ El superadministrador **no** tiene políticas sobre las tablas clínicas.
 - `aceptar_invitacion(p_huella)`: vincula `pacientes.usuario_id` y asigna `tipo_cuenta = paciente`.
   Rechaza cuentas que ya son de un consultorio. Si `p_huella` es nula, acepta la única
   invitación pendiente del correo de la sesión.
+- `guardar_plan` y `publicar_plan`: el borrador se edita sin tocar la copia que ve el paciente.
+  Publicar crea la versión siguiente.
 
 ## Políticas RLS
 

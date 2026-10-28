@@ -1,7 +1,6 @@
 import {
   Building2,
   CalendarDays,
-  ChartColumn,
   ClipboardList,
   CreditCard,
   HeartHandshake,
@@ -27,7 +26,7 @@ export type ElementoNavegacion = {
 
 export const NAVEGACION = {
   profesional: [
-    { titulo: "Inicio", href: "/panel", icono: LayoutDashboard, descripcion: "Resumen del día y accesos rápidos." },
+    { titulo: "Inicio", href: "/panel", icono: LayoutDashboard, descripcion: "El día del consultorio: indicadores, próximo paciente y actividad reciente." },
     {
       titulo: "Agenda",
       href: "/panel/agenda",
@@ -51,13 +50,6 @@ export const NAVEGACION = {
       href: "/panel/planes",
       icono: Salad,
       descripcion: "Planes alimentarios con versiones y publicación controlada.",
-      fasePendiente: 4,
-    },
-    {
-      titulo: "Analíticas",
-      href: "/panel/analiticas",
-      icono: ChartColumn,
-      descripcion: "Indicadores del consultorio calculados con datos reales.",
     },
     {
       titulo: "Comunidad",
@@ -65,6 +57,12 @@ export const NAVEGACION = {
       icono: HeartHandshake,
       descripcion: "Desafíos y actividades grupales para tus pacientes.",
       fasePendiente: 6,
+    },
+    {
+      titulo: "Facturación",
+      href: "/panel/facturacion",
+      icono: CreditCard,
+      descripcion: "Prueba gratuita, suscripción mensual y estado de los cobros.",
     },
     {
       titulo: "Configuración",
@@ -80,21 +78,18 @@ export const NAVEGACION = {
       href: "/admin/profesionales",
       icono: Building2,
       descripcion: "Cuentas profesionales, estado y fecha de alta.",
-      fasePendiente: 5,
     },
     {
       titulo: "Suscripciones",
       href: "/admin/suscripciones",
       icono: CreditCard,
       descripcion: "Planes, estados de suscripción y facturación.",
-      fasePendiente: 5,
     },
     {
       titulo: "Auditoría",
       href: "/admin/auditoria",
       icono: ScrollText,
       descripcion: "Registro de acciones administrativas relevantes.",
-      fasePendiente: 5,
     },
   ],
   paciente: [
@@ -110,7 +105,6 @@ export const NAVEGACION = {
       href: "/portal/plan",
       icono: Salad,
       descripcion: "El plan alimentario que tu nutricionista publicó para vos.",
-      fasePendiente: 4,
     },
     {
       titulo: "Progreso",

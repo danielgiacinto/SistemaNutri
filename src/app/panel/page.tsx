@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, CheckCircle2, ClipboardList, UserPlus, Users } from "lucide-react";
+import { CalendarClock, CalendarDays, CheckCircle2, ClipboardList, UserPlus, Users } from "lucide-react";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { obtenerDatosTablero } from "@/servicios/tablero";
@@ -54,6 +54,7 @@ async function ContenidoInicio() {
     { titulo: "Turnos hoy", valor: tablero.metricas.turnosHoy, detalle: "Programados para hoy", icono: CalendarDays, href: "/panel/agenda?vista=dia" },
     { titulo: "Atendidos hoy", valor: tablero.metricas.atendidosHoy, detalle: "Consultas completadas", icono: CheckCircle2, href: "/panel/agenda?vista=dia" },
     { titulo: "Pendientes", valor: tablero.metricas.consultasPendientes, detalle: "Turnos pasados sin cerrar", icono: ClipboardList, href: "/panel/agenda" },
+    { titulo: "Controles próximos", valor: tablero.metricas.proximosControles, detalle: "Turnos de tipo control a futuro", icono: CalendarClock, href: "/panel/agenda" },
   ];
 
   return (
@@ -101,9 +102,7 @@ async function ContenidoInicio() {
           <CardHeader>
             <CardTitle>{tablero.turnoEnCurso ? "En consulta" : "Próximo paciente"}</CardTitle>
             <CardDescription>
-              {tablero.metricas.proximosControles > 0
-                ? `${tablero.metricas.proximosControles} controles próximos en la agenda.`
-                : "Los controles se cuentan cuando el turno es de tipo control."}
+              {tablero.turnoEnCurso ? "La consulta está en curso." : "El siguiente turno de la agenda."}
             </CardDescription>
           </CardHeader>
           <CardContent>

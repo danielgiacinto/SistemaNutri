@@ -6,17 +6,18 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
-Última actualización: 26 de octubre de 2026. El producto está en **fase 3**:
-se puede registrar un consultorio, trabajar la clínica e invitar al paciente a su portal.
-Las fases 4 a 6 todavía no están implementadas (el menú muestra esas secciones como “en construcción”).
+Última actualización: 28 de octubre de 2026. El producto está en **fase 4**:
+se puede registrar un consultorio, trabajar la clínica, invitar al paciente y publicar planes alimentarios.
+La fase 6 todavía no está implementada (el menú muestra Comunidad como “en construcción”).
+La fase 5 tiene la prueba, el control de acceso y la integración de Mercado Pago preparada; los cobros reales esperan las credenciales.
 
 | Fase | Contenido | Estado |
 | --- | --- | --- |
 | 1 | Fundamentos: autenticación, roles, multi-tenencia con RLS, layouts, configuración | ✅ Listo para probar |
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
-| 4 | Planes alimentarios con versiones | Pendiente |
-| 5 | Suscripciones, pagos y administración | Pendiente |
+| 4 | Planes alimentarios con versiones | ✅ Listo para probar |
+| 5 | Suscripciones, pagos y administración | Base lista. Los cobros reales esperan las credenciales de Mercado Pago. |
 | 6 | Comunidad y desafíos | Pendiente |
 
 ### Qué se puede probar ahora (profesional)
@@ -24,8 +25,9 @@ Las fases 4 a 6 todavía no están implementadas (el menú muestra esas seccione
 1. Abrir [http://localhost:3000](http://localhost:3000) → **Crear cuenta**.
 2. Confirmar el correo (plantilla Nutrisfera, remitente de prueba `nutri.notificacion@gmail.com`).
 3. Crear el consultorio en `/bienvenida`.
-4. En `/panel`: pacientes, turnos, evoluciones, objetivos, mediciones, analíticas y configuración.
-5. En la ficha del paciente → **Visibilidad** → **Invitar al portal**. Llega un correo: al abrirlo elige una contraseña, acepta y entra a `/portal` (turnos y lo marcado como visible). El plan alimentario sigue en la fase 4.
+4. En `/panel`: el día del consultorio (indicadores, próximo paciente y evoluciones recientes), más pacientes, turnos, evoluciones, objetivos, mediciones y configuración.
+5. En la ficha del paciente → **Visibilidad** → **Invitar al portal**. Llega un correo: al abrirlo elige una contraseña, acepta y entra a `/portal`.
+6. En la ficha → **Planes**: el borrador no se comparte. **Publicar para el paciente** deja esa versión en `/portal/plan`.
 
 No hay cuenta de prueba precargada: cada quien se registra. **Continuar con Google**
 está habilitado en el proyecto hospedado (alta e ingreso, ver `docs/autenticacion.md`).

@@ -649,6 +649,363 @@ export type Database = {
           },
         ]
       }
+      planes_alimentarios: {
+        Row: {
+          actualizado_en: string
+          cambios_sin_publicar: boolean
+          consultorio_id: string
+          creado_en: string
+          id: string
+          indicaciones: string | null
+          paciente_id: string
+          profesional_id: string
+          titulo: string
+        }
+        Insert: {
+          actualizado_en?: string
+          cambios_sin_publicar?: boolean
+          consultorio_id: string
+          creado_en?: string
+          id?: string
+          indicaciones?: string | null
+          paciente_id: string
+          profesional_id?: string
+          titulo: string
+        }
+        Update: {
+          actualizado_en?: string
+          cambios_sin_publicar?: boolean
+          consultorio_id?: string
+          creado_en?: string
+          id?: string
+          indicaciones?: string | null
+          paciente_id?: string
+          profesional_id?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planes_alimentarios_paciente_id_consultorio_id_fkey"
+            columns: ["paciente_id", "consultorio_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id", "consultorio_id"]
+          },
+        ]
+      }
+      planes_comidas: {
+        Row: {
+          consultorio_id: string
+          detalle: string
+          id: string
+          momento: Database["public"]["Enums"]["momento_comida"]
+          orden: number
+          plan_id: string
+        }
+        Insert: {
+          consultorio_id: string
+          detalle: string
+          id?: string
+          momento: Database["public"]["Enums"]["momento_comida"]
+          orden: number
+          plan_id: string
+        }
+        Update: {
+          consultorio_id?: string
+          detalle?: string
+          id?: string
+          momento?: Database["public"]["Enums"]["momento_comida"]
+          orden?: number
+          plan_id?: string
+        }
+        Relationships: []
+      }
+      planes_publicaciones: {
+        Row: {
+          consultorio_id: string
+          id: string
+          indicaciones: string | null
+          numero: number
+          paciente_id: string
+          plan_id: string
+          publicada_en: string
+          titulo: string
+        }
+        Insert: {
+          consultorio_id: string
+          id?: string
+          indicaciones?: string | null
+          numero: number
+          paciente_id: string
+          plan_id: string
+          publicada_en?: string
+          titulo: string
+        }
+        Update: {
+          consultorio_id?: string
+          id?: string
+          indicaciones?: string | null
+          numero?: number
+          paciente_id?: string
+          plan_id?: string
+          publicada_en?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planes_publicaciones_plan_id_consultorio_id_fkey"
+            columns: ["plan_id", "consultorio_id"]
+            isOneToOne: false
+            referencedRelation: "planes_alimentarios"
+            referencedColumns: ["id", "consultorio_id"]
+          },
+        ]
+      }
+      planes_publicaciones_comidas: {
+        Row: {
+          consultorio_id: string
+          detalle: string
+          id: string
+          momento: Database["public"]["Enums"]["momento_comida"]
+          orden: number
+          publicacion_id: string
+        }
+        Insert: {
+          consultorio_id: string
+          detalle: string
+          id?: string
+          momento: Database["public"]["Enums"]["momento_comida"]
+          orden: number
+          publicacion_id: string
+        }
+        Update: {
+          consultorio_id?: string
+          detalle?: string
+          id?: string
+          momento?: Database["public"]["Enums"]["momento_comida"]
+          orden?: number
+          publicacion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planes_publicaciones_comidas_publicacion_id_fkey"
+            columns: ["publicacion_id"]
+            isOneToOne: false
+            referencedRelation: "planes_publicaciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      configuracion_comercial: {
+        Row: {
+          actualizado_en: string
+          dias_gracia: number
+          id: boolean
+          moneda: string
+          precio_mensual: number | null
+          prueba_cantidad: number
+          prueba_unidad: string
+          pruebas_habilitadas: boolean
+        }
+        Insert: {
+          actualizado_en?: string
+          dias_gracia?: number
+          id?: boolean
+          moneda?: string
+          precio_mensual?: number | null
+          prueba_cantidad?: number
+          prueba_unidad?: string
+          pruebas_habilitadas?: boolean
+        }
+        Update: {
+          actualizado_en?: string
+          dias_gracia?: number
+          id?: boolean
+          moneda?: string
+          precio_mensual?: number | null
+          prueba_cantidad?: number
+          prueba_unidad?: string
+          pruebas_habilitadas?: boolean
+        }
+        Relationships: []
+      }
+      pruebas_profesionales: {
+        Row: {
+          cantidad: number
+          consultorio_id: string | null
+          correo: string
+          creado_en: string
+          id: string
+          inicio: string
+          unidad: string
+          usuario_id: string | null
+          vence_en: string
+        }
+        Insert: {
+          cantidad: number
+          consultorio_id?: string | null
+          correo: string
+          creado_en?: string
+          id?: string
+          inicio: string
+          unidad: string
+          usuario_id?: string | null
+          vence_en: string
+        }
+        Update: {
+          cantidad?: number
+          consultorio_id?: string | null
+          correo?: string
+          creado_en?: string
+          id?: string
+          inicio?: string
+          unidad?: string
+          usuario_id?: string | null
+          vence_en?: string
+        }
+        Relationships: []
+      }
+      suscripciones: {
+        Row: {
+          actualizado_en: string
+          cancelada_en: string | null
+          cobertura_hasta: string | null
+          consultorio_id: string
+          estado_mp: string
+          id: string
+          moneda: string
+          mp_actualizado_en: string | null
+          mp_id: string | null
+          precio: number
+          proximo_cobro_en: string | null
+          ultimo_cobro_en: string | null
+        }
+        Insert: {
+          actualizado_en?: string
+          cancelada_en?: string | null
+          cobertura_hasta?: string | null
+          consultorio_id: string
+          estado_mp?: string
+          id?: string
+          moneda?: string
+          mp_actualizado_en?: string | null
+          mp_id?: string | null
+          precio: number
+          proximo_cobro_en?: string | null
+          ultimo_cobro_en?: string | null
+        }
+        Update: {
+          actualizado_en?: string
+          cancelada_en?: string | null
+          cobertura_hasta?: string | null
+          consultorio_id?: string
+          estado_mp?: string
+          id?: string
+          moneda?: string
+          mp_actualizado_en?: string | null
+          mp_id?: string | null
+          precio?: number
+          proximo_cobro_en?: string | null
+          ultimo_cobro_en?: string | null
+        }
+        Relationships: []
+      }
+      pagos_suscripcion: {
+        Row: {
+          cobrado_en: string | null
+          creado_en: string
+          estado: string
+          id: string
+          moneda: string
+          monto: number
+          mp_pago_id: string
+          periodo_desde: string | null
+          periodo_hasta: string | null
+          suscripcion_id: string
+        }
+        Insert: {
+          cobrado_en?: string | null
+          creado_en?: string
+          estado: string
+          id?: string
+          moneda: string
+          monto: number
+          mp_pago_id: string
+          periodo_desde?: string | null
+          periodo_hasta?: string | null
+          suscripcion_id: string
+        }
+        Update: {
+          cobrado_en?: string | null
+          creado_en?: string
+          estado?: string
+          id?: string
+          moneda?: string
+          monto?: number
+          mp_pago_id?: string
+          periodo_desde?: string | null
+          periodo_hasta?: string | null
+          suscripcion_id?: string
+        }
+        Relationships: []
+      }
+      avisos_comerciales: {
+        Row: {
+          codigo: string
+          consultorio_id: string
+          creado_en: string
+          id: string
+          visto_en: string | null
+        }
+        Insert: {
+          codigo: string
+          consultorio_id: string
+          creado_en?: string
+          id?: string
+          visto_en?: string | null
+        }
+        Update: {
+          codigo?: string
+          consultorio_id?: string
+          creado_en?: string
+          id?: string
+          visto_en?: string | null
+        }
+        Relationships: []
+      }
+      eventos_proveedor: {
+        Row: {
+          creado_en: string
+          error: string | null
+          id: string
+          id_evento: string
+          procesado_en: string | null
+          proveedor: string
+          recurso_id: string | null
+          tipo: string
+        }
+        Insert: {
+          creado_en?: string
+          error?: string | null
+          id?: string
+          id_evento: string
+          procesado_en?: string | null
+          proveedor?: string
+          recurso_id?: string | null
+          tipo: string
+        }
+        Update: {
+          creado_en?: string
+          error?: string | null
+          id?: string
+          id_evento?: string
+          procesado_en?: string | null
+          proveedor?: string
+          recurso_id?: string | null
+          tipo?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -665,6 +1022,43 @@ export type Database = {
       nombre_consultorio_invitacion: {
         Args: { p_correo?: string; p_huella?: string }
         Returns: string
+      }
+      guardar_plan: {
+        Args: { p_comidas: Json; p_indicaciones: string | null; p_plan_id: string; p_titulo: string }
+        Returns: undefined
+      }
+      publicar_plan: {
+        Args: { p_plan_id: string }
+        Returns: number
+      }
+      oferta_publica: {
+        Args: never
+        Returns: {
+          moneda: string
+          precio_mensual: number | null
+          prueba_cantidad: number
+          prueba_unidad: string
+          pruebas_habilitadas: boolean
+        }[]
+      }
+      estado_acceso_comercial: {
+        Args: { p_consultorio_id: string }
+        Returns: string
+      }
+      ajustar_prueba: {
+        Args: { p_consultorio_id: string; p_motivo: string; p_vence_en: string }
+        Returns: undefined
+      }
+      registrar_pago_verificado: {
+        Args: {
+          p_cobrado_en: string
+          p_estado: string
+          p_moneda: string
+          p_monto: number
+          p_mp_pago: string
+          p_mp_suscripcion: string
+        }
+        Returns: undefined
       }
       crear_consultorio_inicial: {
         Args: { p_nombre: string; p_zona_horaria?: string }
@@ -695,6 +1089,7 @@ export type Database = {
       estado_objetivo: "pendiente" | "en_progreso" | "completado" | "cancelado"
       estado_paciente: "activo" | "inactivo"
       estado_turno: "programado" | "confirmado" | "completado" | "cancelado" | "ausente"
+      momento_comida: "desayuno" | "media_manana" | "almuerzo" | "merienda" | "cena" | "colacion"
       preferencia_tema: "claro" | "oscuro" | "sistema"
       rol_consultorio: "titular" | "colaborador"
       tipo_consulta: "primera_consulta" | "seguimiento" | "control" | "otro"

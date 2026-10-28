@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, LineChart, NotebookPen } from "lucide-react";
+import { CalendarDays, LineChart, NotebookPen, Salad, Target } from "lucide-react";
 import { requerirPaciente } from "@/autorizacion/sesion";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { InsigniaTurno } from "@/componentes/comunes/insignia-estado";
@@ -10,7 +10,8 @@ import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { formatearFechaHora } from "@/lib/fechas";
 import { nombreNatural } from "@/lib/antropometria";
 import { ETIQUETAS_TIPO_CONSULTA } from "@/configuracion/clinica";
-import { listarMisEvoluciones, listarMisTurnos, obtenerFichaPortal } from "@/servicios/portal";
+import { listarMisEvoluciones, listarMisObjetivos, listarMisTurnos, obtenerFichaPortal } from "@/servicios/portal";
+import { listarPlanesPublicados } from "@/servicios/planes";
 
 export const metadata: Metadata = { title: "Mi portal" };
 
@@ -36,12 +37,19 @@ async function InicioPaciente() {
     );
   }
 
-  const [turnos, notas] = await Promise.all([listarMisTurnos(cliente), listarMisEvoluciones(cliente)]);
+  const [turnos, notas, objetivos, planes] = await Promise.all([
+    listarMisTurnos(cliente),
+    listarMisEvoluciones(cliente),
+    listarMisObjetivos(cliente),
+    listarPlanesPublicados(cliente),
+  ]);
   const ahora = new Date();
   const proximo = turnos
     .filter((turno) => ["programado", "confirmado"].includes(turno.estado) && new Date(turno.inicio) >= ahora)
     .sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime())[0];
   const ultimaNota = notas[0];
+  const plan = planes[0];
+  const objetivosActivos = objetivos.filter((objetivo) => objetivo.estado === "pendiente" || objetivo.estado === "en_progreso");
 
   return (
     <div className="space-y-6">
@@ -68,6 +76,40 @@ async function InicioPaciente() {
         />
       )}
 
+      {plan ? (
+        <Link href="/portal/plan" className="block space-y-2 rounded-2xl border bg-card p-5">
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Salad className="size-4" aria-hidden="true" />
+            Plan publicado
+          </p>
+          <h2 className="text-lg font-semibold">{plan.titulo}</h2>
+          {plan.indicaciones && <p className="line-clamp-3 whitespace-pre-wrap text-sm">{plan.indicaciones}</p>}
+          <p className="text-sm text-muted-foreground">Versión {plan.numero}</p>
+        </Link>
+      ) : (
+        <EstadoVacio
+          icono={Salad}
+          titulo="Todavía no hay un plan publicado"
+          descripcion="Cuando tu nutricionista publique uno, lo vas a ver acá."
+          className="py-8"
+        />
+      )}
+
+      {objetivosActivos.length > 0 ? (
+        <Link href="/portal/progreso" className="block space-y-2 rounded-2xl border bg-card p-5">
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Target className="size-4" aria-hidden="true" />
+            Objetivos compartidos
+          </p>
+          <ul className="space-y-1">
+            {objetivosActivos.slice(0, 3).map((objetivo) => (
+              <li key={objetivo.id} className="text-sm font-medium">
+                {objetivo.titulo}
+              </li>
+            ))}
+          </ul>
+        </Link>
+      ) : null}
       {ultimaNota ? (
         <article className="space-y-2 rounded-2xl border bg-card p-5">
           <p className="text-sm text-muted-foreground">Última nota compartida</p>
@@ -84,7 +126,7 @@ async function InicioPaciente() {
         <EstadoVacio
           icono={LineChart}
           titulo="Todavía no hay notas compartidas"
-          descripcion="Los objetivos y las mediciones visibles están en Progreso."
+          descripcion="Las mediciones visibles están en Progreso."
           className="py-8"
         />
       )}

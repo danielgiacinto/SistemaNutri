@@ -35,7 +35,8 @@
   nunca los datos enviados. El registro de argumentos de Server Actions de Next en
   desarrollo está desactivado (`logging.serverFunctions: false`).
 - Auditoría de altas y cambios del consultorio (registra qué campos cambiaron, no sus valores).
-- El portal del paciente solo lee su ficha, sus turnos y las filas clínicas marcadas como visibles.
+- El portal del paciente solo lee su ficha, sus turnos, las filas clínicas marcadas como visibles
+  y la última versión publicada de cada plan. El borrador del plan no se comparte.
   El tipo de cuenta paciente se asigna al aceptar la invitación, no desde el cliente.
 - Pacientes, turnos, evoluciones, objetivos y mediciones aislados por `consultorio_id` con RLS.
   Un id ajeno en la URL responde 404. Las evoluciones nacen privadas y en borrador; compartir

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { requerirProfesional } from "@/autorizacion/sesion";
+import { cargarProfesional } from "@/autorizacion/sesion";
 import { MarcoAplicacion } from "@/componentes/disposicion/marco-aplicacion";
 import { EsqueletoMarco } from "@/componentes/disposicion/esqueleto-marco";
 import { SincronizarPreferencias } from "@/componentes/tema/sincronizar-preferencias";
@@ -16,7 +16,7 @@ export default function LayoutPanel({ children }: LayoutProps<"/panel">) {
 
 async function MarcoPanel({ children }: { children: React.ReactNode }) {
   // Primera verificación del área; cada página y acción vuelve a verificar por su cuenta.
-  const contexto = await requerirProfesional();
+  const contexto = await cargarProfesional();
 
   return (
     <MarcoAplicacion

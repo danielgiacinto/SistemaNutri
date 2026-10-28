@@ -70,11 +70,29 @@ export async function requerirUsuario(): Promise<ContextoUsuario> {
   return contexto;
 }
 
-/** Exige un profesional con consultorio activo. */
+/** Exige un profesional con consultorio activo y cobertura comercial vigente. */
 export async function requerirProfesional(): Promise<ContextoProfesional> {
+  const contexto = await cargarProfesional();
+  await exigirCoberturaComercial(contexto.consultorio.id);
+  return contexto;
+}
+
+/** Sesión profesional sin mirar la suscripción. La usa el layout y la facturación. */
+export async function cargarProfesional(): Promise<ContextoProfesional> {
   const contexto = await requerirUsuario();
   if (!esProfesionalActivo(contexto)) redirect(calcularDestino(contexto));
   return contexto;
+}
+
+async function exigirCoberturaComercial(consultorioId: string): Promise<void> {
+  const supabase = await crearClienteServidor();
+  const { data, error } = await supabase.rpc("estado_acceso_comercial", { p_consultorio_id: consultorioId });
+  if (error) {
+    registrarError("estado_acceso_comercial", error);
+    throw new Error("No se pudo verificar la suscripción.");
+  }
+  if (data === "prueba" || data === "activo" || data === "gracia") return;
+  redirect(RUTAS.facturacion);
 }
 
 /** Exige un profesional titular de su consultorio (configuración y datos comerciales). */

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   ArrowRight,
   CalendarDays,
@@ -10,8 +11,10 @@ import {
   Smartphone,
   Target,
 } from "lucide-react";
+import { SeccionPlan } from "@/componentes/inicio/seccion-plan";
 import { Logo } from "@/componentes/marca/logo";
 import { Button } from "@/componentes/ui/button";
+import { Skeleton } from "@/componentes/ui/skeleton";
 import { RUTAS } from "@/autorizacion/rutas";
 import { NOMBRE_PRODUCTO } from "@/configuracion/producto";
 
@@ -43,8 +46,8 @@ const FUNCIONALIDADES = [
   },
   {
     icono: HeartHandshake,
-    titulo: "Comunidad y desafíos",
-    texto: "Motivación grupal entre pacientes, sin exponer datos de salud.",
+    titulo: "Cada paciente, con lo suyo",
+    texto: "Ficha, turnos, mediciones y el plan publicado quedan juntos. El paciente solo ve lo que decidís compartir.",
   },
 ];
 
@@ -57,6 +60,9 @@ export default function PaginaInicio() {
           <nav aria-label="Acceso" className="flex items-center gap-2">
             <Button asChild variant="ghost">
               <Link href={RUTAS.ingresar}>Ingresar</Link>
+            </Button>
+            <Button asChild variant="ghost" className="hidden sm:inline-flex">
+              <Link href="#plan">El plan</Link>
             </Button>
             <Button asChild>
               <Link href={RUTAS.registro}>Crear cuenta</Link>
@@ -87,7 +93,7 @@ export default function PaginaInicio() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-11 px-5">
-                <Link href={RUTAS.ingresar}>Ya tengo cuenta</Link>
+                <Link href="#plan">Ver precio y qué incluye</Link>
               </Button>
             </div>
           </div>
@@ -119,6 +125,10 @@ export default function PaginaInicio() {
             </div>
           </div>
         </section>
+
+        <Suspense fallback={<Skeleton className="mx-auto h-96 max-w-6xl" />}>
+          <SeccionPlan />
+        </Suspense>
 
         <section aria-labelledby="titulo-funcionalidades" className="border-t bg-card/50">
           <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">

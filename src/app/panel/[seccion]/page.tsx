@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { requerirProfesional } from "@/autorizacion/sesion";
 import { buscarSeccionPendiente, seccionesPendientes } from "@/configuracion/navegacion";
 import { SeccionEnConstruccion } from "@/componentes/comunes/seccion-en-construccion";
 
@@ -16,6 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/panel/[seccion]">
 
 export default async function PaginaSeccionPendiente({ params }: PageProps<"/panel/[seccion]">) {
   const { seccion } = await params;
+  await requerirProfesional();
   const elemento = buscarSeccionPendiente("profesional", seccion);
   if (!elemento) notFound();
   return <SeccionEnConstruccion seccion={elemento} />;

@@ -121,8 +121,8 @@ primer pintado.
 | 1 | Fundamentos: proyecto, auth, roles, RLS base, layouts, configuración | Implementada |
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones, gráficos | Implementada |
 | 3 | Portal del paciente e invitaciones | Implementada |
-| 4 | Planes alimentarios con versiones y publicación | Pendiente |
-| 5 | Suscripciones, pagos y panel de administración completo | Pendiente |
+| 4 | Planes alimentarios con versiones y publicación | Implementada |
+| 5 | Suscripciones, pagos y panel de administración completo | Base implementada. Cobros reales pendientes de credenciales. Ver `docs/facturacion.md`. |
 | 6 | Comunidad y desafíos | Pendiente |
 
 El detalle de lo que se puede probar hoy, el entorno de Supabase y lo operativo

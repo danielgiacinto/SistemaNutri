@@ -10,6 +10,7 @@ export const RUTAS = {
   bienvenida: "/bienvenida",
   invitacionAceptar: "/invitacion/aceptar",
   cuentaInactiva: "/cuenta-inactiva",
+  facturacion: "/panel/facturacion",
   panel: "/panel",
   portal: "/portal",
   admin: "/admin",

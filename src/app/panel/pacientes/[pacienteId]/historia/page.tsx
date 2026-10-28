@@ -16,6 +16,7 @@ const ETIQUETA_TIPO = {
   medicion: "Medición",
   objetivo: "Objetivo",
   turno: "Turno",
+  plan: "Plan",
 };
 
 export default async function PaginaHistoria({ params }: PageProps<"/panel/pacientes/[pacienteId]/historia">) {

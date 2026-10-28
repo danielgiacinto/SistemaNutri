@@ -267,3 +267,46 @@
     color-scheme: dark;
   }
 }
+
+/*
+ * Mercado Pago pisa estos contenedores con un alto de 150px y sin borde
+ * (selector por id). El !important los deja del tamaño de un campo normal.
+ */
+.campo-tarjeta-mp {
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 2.75rem !important;
+  min-height: 2.75rem !important;
+  max-height: 2.75rem !important;
+  padding-inline: 0.65rem !important;
+  overflow: hidden !important;
+  border: 1px solid var(--input) !important;
+  border-radius: var(--radius-lg) !important;
+  background: var(--card) !important;
+  color: var(--foreground);
+}
+
+.campo-tarjeta-mp[data-invalido="true"] {
+  border-color: var(--destructive) !important;
+}
+
+.campo-tarjeta-mp:focus-within {
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+
+html .campo-tarjeta-mp iframe {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 2.25rem !important;
+  border: 0 !important;
+  background: transparent !important;
+  color-scheme: light;
+}
+
+html.dark .campo-tarjeta-mp iframe {
+  color-scheme: dark;
+}
