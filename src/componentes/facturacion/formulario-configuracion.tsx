@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Save } from "lucide-react";
 import { guardarConfiguracionComercial } from "@/acciones/facturacion";
 import { Button } from "@/componentes/ui/button";
 import { Input } from "@/componentes/ui/input";
@@ -93,6 +94,7 @@ export function FormularioConfiguracionComercial({ inicial }: { inicial: Configu
         </div>
         <div className="flex items-end">
           <Button type="submit" disabled={pendiente}>
+            <Save aria-hidden="true" />
             {pendiente ? "Guardando…" : "Guardar"}
           </Button>
         </div>

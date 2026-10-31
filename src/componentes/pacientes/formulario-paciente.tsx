@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Save, UserPlus } from "lucide-react";
 import { registrarPaciente, guardarPaciente } from "@/acciones/pacientes";
 import {
   esquemaAltaPaciente,
@@ -143,7 +144,7 @@ export function FormularioPaciente(propiedades: PropiedadesAlta | PropiedadesEdi
           {...formulario.register("notasAdministrativas")}
         />
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente={esEdicion ? "Guardando…" : "Registrando…"} size="lg">
+          <BotonEnvio pendiente={pendiente} textoPendiente={esEdicion ? "Guardando…" : "Registrando…"} icono={esEdicion ? Save : UserPlus} size="lg">
             {esEdicion ? "Guardar cambios" : "Registrar paciente"}
           </BotonEnvio>
         </div>

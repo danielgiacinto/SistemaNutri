@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, CalendarPlus, ArrowUpRight } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { listarTurnosDelPaciente } from "@/servicios/turnos";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
@@ -20,7 +20,10 @@ export default async function PaginaTurnosPaciente({ params }: PageProps<"/panel
     <div className="space-y-4">
       <div className="flex justify-end">
         <Button asChild>
-          <Link href={`/panel/agenda/nuevo?paciente=${paciente.id}`}>Agendar turno</Link>
+          <Link href={`/panel/agenda/nuevo?paciente=${paciente.id}`}>
+            <CalendarPlus aria-hidden="true" />
+            Agendar turno
+          </Link>
         </Button>
       </div>
       {turnos.length === 0 ? (
@@ -36,7 +39,10 @@ export default async function PaginaTurnosPaciente({ params }: PageProps<"/panel
               <div className="flex items-center gap-3">
                 <InsigniaTurno estado={turno.estado} />
                 <Button asChild variant="ghost" size="sm">
-                  <Link href={`/panel/agenda/${turno.id}`}>Ver</Link>
+                  <Link href={`/panel/agenda/${turno.id}`}>
+                    <ArrowUpRight aria-hidden="true" />
+                    Ver
+                  </Link>
                 </Button>
               </div>
             </li>

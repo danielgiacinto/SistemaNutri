@@ -21,7 +21,7 @@ export function Pestanas({ items, actual }: { items: Pestana[]; actual: string }
                 href={item.href}
                 aria-current={activa ? "page" : undefined}
                 className={cn(
-                  "inline-flex h-10 items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap transition-colors",
+                  "inline-flex h-10 cursor-pointer items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap transition-colors",
                   activa
                     ? "border-primary text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground",

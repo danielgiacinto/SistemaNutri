@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MailCheck } from "lucide-react";
+import { MailCheck, Send } from "lucide-react";
 import { toast } from "sonner";
 import { solicitarRecuperacion } from "@/acciones/autenticacion";
 import { esquemaRecuperacion } from "@/esquemas/autenticacion";
@@ -57,7 +57,7 @@ export function FormularioRecuperacion() {
           error={errores.correo?.message}
           {...formulario.register("correo")}
         />
-        <BotonEnvio pendiente={pendiente} textoPendiente="Enviando…" size="lg" className="h-10 w-full">
+        <BotonEnvio pendiente={pendiente} textoPendiente="Enviando…" icono={Send} size="lg" className="h-10 w-full">
           Enviar enlace
         </BotonEnvio>
       </FieldGroup>

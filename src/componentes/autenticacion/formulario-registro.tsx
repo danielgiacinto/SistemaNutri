@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MailCheck } from "lucide-react";
+import { LogIn, MailCheck, RotateCcw, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { reenviarConfirmacion, registrarse } from "@/acciones/autenticacion";
 import { esquemaRegistro } from "@/esquemas/autenticacion";
@@ -65,10 +65,14 @@ export function FormularioRegistro({ siguiente }: { siguiente: string | null }) 
           </p>
         </div>
         <Button type="button" variant="outline" className="h-10 w-full" disabled={pendiente} onClick={reenviar}>
+          <RotateCcw aria-hidden="true" />
           {pendiente ? "Reenviando…" : "Reenviar correo de confirmación"}
         </Button>
         <Button asChild className="h-10 w-full">
-          <Link href={rutaConSiguiente(RUTAS.ingresar, siguiente)}>Ingresar</Link>
+          <Link href={rutaConSiguiente(RUTAS.ingresar, siguiente)}>
+            <LogIn aria-hidden="true" />
+            Ingresar
+          </Link>
         </Button>
         <Link href={RUTAS.recuperarContrasena} className="text-sm font-medium text-primary underline-offset-4 hover:underline">
           ¿Olvidaste tu contraseña?
@@ -121,7 +125,7 @@ export function FormularioRegistro({ siguiente }: { siguiente: string | null }) 
           error={errores.confirmacion?.message}
           {...formulario.register("confirmacion")}
         />
-        <BotonEnvio pendiente={pendiente} textoPendiente="Creando cuenta…" size="lg" className="h-10 w-full">
+        <BotonEnvio pendiente={pendiente} textoPendiente="Creando cuenta…" icono={UserPlus} size="lg" className="h-10 w-full">
           Crear cuenta
         </BotonEnvio>
       </FieldGroup>

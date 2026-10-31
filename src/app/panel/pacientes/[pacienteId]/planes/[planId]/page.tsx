@@ -4,6 +4,7 @@ import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { listarComidas, listarPublicaciones, obtenerPlan } from "@/servicios/planes";
 import { FormularioPlan } from "@/componentes/planes/formulario-plan";
 import { estadoDelPlan } from "@/componentes/planes/estado-plan";
+import { Volver } from "@/componentes/comunes/volver";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { esquemaUuid } from "@/esquemas/comunes";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -26,6 +27,7 @@ export default async function PaginaPlan({
 
   return (
     <div className="space-y-6">
+      <Volver href={`/panel/pacientes/${paciente.id}/planes`} etiqueta="Planes" />
       <Card>
         <CardHeader>
           <CardTitle>{plan.titulo}</CardTitle>

@@ -4,6 +4,8 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Send } from "lucide-react";
+import { useCerrarVentana } from "@/componentes/comunes/ventana-formulario";
 import { registrarActividad } from "@/acciones/comunidad";
 import { esquemaActividad, type DatosActividad } from "@/esquemas/comunidad";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -13,6 +15,7 @@ import { FieldGroup } from "@/componentes/ui/field";
 
 export function FormularioActividad({ desafioId }: { desafioId: string }) {
   const [pendiente, iniciarTransicion] = useTransition();
+  const cerrar = useCerrarVentana();
   const formulario = useForm<DatosActividad>({
     resolver: zodResolver(esquemaActividad),
     defaultValues: { desafioId, texto: "" },
@@ -29,6 +32,7 @@ export function FormularioActividad({ desafioId }: { desafioId: string }) {
       }
       formulario.reset({ desafioId, texto: "" });
       toast.success(resultado.mensaje ?? "Actividad publicada.");
+      cerrar();
     }),
   );
 
@@ -43,7 +47,7 @@ export function FormularioActividad({ desafioId }: { desafioId: string }) {
           {...formulario.register("texto")}
         />
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente="Publicando…">
+          <BotonEnvio pendiente={pendiente} textoPendiente="Publicando…" icono={Send}>
             Publicar
           </BotonEnvio>
         </div>

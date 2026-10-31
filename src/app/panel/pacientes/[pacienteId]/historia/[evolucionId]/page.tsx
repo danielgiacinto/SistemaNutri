@@ -4,6 +4,7 @@ import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { listarVersionesEvolucion, obtenerEvolucion } from "@/servicios/evoluciones";
 import { listarTurnosDelPaciente } from "@/servicios/turnos";
 import { FormularioEvolucion } from "@/componentes/clinica/formulario-evolucion";
+import { Volver } from "@/componentes/comunes/volver";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { formatearFechaHora } from "@/lib/fechas";
 import { esquemaUuid } from "@/esquemas/comunes";
@@ -26,6 +27,7 @@ export default async function PaginaEvolucion({
 
   return (
     <div className="space-y-6">
+      <Volver href={`/panel/pacientes/${paciente.id}/historia`} etiqueta="Historia" />
       <Card>
         <CardHeader>
           <CardTitle>{evolucion.titulo || "Evolución clínica"}</CardTitle>

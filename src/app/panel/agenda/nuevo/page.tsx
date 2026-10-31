@@ -37,7 +37,12 @@ async function Contenido({ searchParams }: { searchParams: PageProps<"/panel/age
 
   return (
     <div className="space-y-8">
-      <EncabezadoPagina titulo="Nuevo turno" descripcion="La agenda rechaza superposiciones, bloqueos y horarios fuera de atención." />
+      <EncabezadoPagina
+        titulo="Nuevo turno"
+        descripcion="Elegí paciente, día y horario."
+        volverA="/panel/agenda"
+        etiquetaVolver="Agenda"
+      />
       <Card>
         <CardContent>
           <FormularioTurno

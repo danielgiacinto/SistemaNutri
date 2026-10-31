@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { connection } from "next/server";
-import { Check } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { RUTAS } from "@/autorizacion/rutas";
 import { Button } from "@/componentes/ui/button";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
@@ -77,7 +77,10 @@ export async function SeccionPlan() {
             ))}
           </ul>
           <Button asChild size="lg" className="mt-8 h-11 w-full px-5 sm:w-auto">
-            <Link href={RUTAS.registro}>Crear mi consultorio</Link>
+            <Link href={RUTAS.registro}>
+              <ArrowRight aria-hidden="true" />
+              Crear mi consultorio
+            </Link>
           </Button>
           <p className="mt-4 text-xs text-muted-foreground">
             El pago recurrente lo procesa Mercado Pago. Este precio es el que configuró la administración y es el mismo

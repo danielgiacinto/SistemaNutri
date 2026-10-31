@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, ClipboardList, Scale, Target } from "lucide-react";
+import { CalendarDays, CalendarPlus, ClipboardList, ClipboardPen, Scale, Target } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { listarObjetivosActivos } from "@/servicios/objetivos";
 import { ultimaMedicion } from "@/servicios/mediciones";
@@ -58,7 +58,10 @@ async function Contenido({ params }: { params: PageProps<"/panel/pacientes/[paci
             ))
           )}
           <Button asChild variant="outline" size="sm">
-            <Link href={`/panel/pacientes/${paciente.id}/objetivos`}>Ver objetivos</Link>
+            <Link href={`/panel/pacientes/${paciente.id}/objetivos`}>
+              <Target aria-hidden="true" />
+              Ver objetivos
+            </Link>
           </Button>
         </CardContent>
       </Card>
@@ -89,7 +92,10 @@ async function Contenido({ params }: { params: PageProps<"/panel/pacientes/[paci
             <p className="text-sm text-muted-foreground">Registrá peso y talla para ver la evolución.</p>
           )}
           <Button asChild variant="outline" size="sm">
-            <Link href={`/panel/pacientes/${paciente.id}/mediciones`}>Ver mediciones</Link>
+            <Link href={`/panel/pacientes/${paciente.id}/mediciones`}>
+              <Scale aria-hidden="true" />
+              Ver mediciones
+            </Link>
           </Button>
         </CardContent>
       </Card>
@@ -111,7 +117,10 @@ async function Contenido({ params }: { params: PageProps<"/panel/pacientes/[paci
             <p className="text-sm text-muted-foreground">Todavía no hay notas clínicas.</p>
           )}
           <Button asChild variant="outline" size="sm">
-            <Link href={`/panel/pacientes/${paciente.id}/historia`}>Abrir historia</Link>
+            <Link href={`/panel/pacientes/${paciente.id}/historia`}>
+              <ClipboardList aria-hidden="true" />
+              Abrir historia
+            </Link>
           </Button>
         </CardContent>
       </Card>
@@ -125,10 +134,16 @@ async function Contenido({ params }: { params: PageProps<"/panel/pacientes/[paci
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link href={`/panel/agenda/nuevo?paciente=${paciente.id}`}>Agendar turno</Link>
+            <Link href={`/panel/agenda/nuevo?paciente=${paciente.id}`}>
+              <CalendarPlus aria-hidden="true" />
+              Agendar turno
+            </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href={`/panel/pacientes/${paciente.id}/historia/nueva`}>Nueva evolución</Link>
+            <Link href={`/panel/pacientes/${paciente.id}/historia/nueva`}>
+              <ClipboardPen aria-hidden="true" />
+              Nueva evolución
+            </Link>
           </Button>
         </CardContent>
       </Card>

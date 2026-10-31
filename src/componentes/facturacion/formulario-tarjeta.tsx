@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { CreditCard } from "lucide-react";
 import { autorizarSuscripcion } from "@/acciones/facturacion";
 import { Button } from "@/componentes/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
@@ -458,6 +459,7 @@ export function FormularioTarjeta({
               Las cuotas son solo de la validación de la tarjeta. El plan se cobra entero, una vez por mes.
             </p>
             <Button type="submit" className="h-11 w-full sm:w-auto" disabled={!listo || pendiente || Boolean(errorCarga)}>
+              <CreditCard aria-hidden="true" />
               {pendiente ? "Autorizando…" : `Autorizar ${precioVisible} por mes`}
             </Button>
           </div>

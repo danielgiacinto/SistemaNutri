@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { quitarBloqueo, quitarHorario } from "@/acciones/agenda";
 import { Button } from "@/componentes/ui/button";
@@ -21,6 +22,7 @@ export function BotonEliminarHorario({ id }: { id: string }) {
         })
       }
     >
+      <Trash2 aria-hidden="true" />
       Quitar
     </Button>
   );
@@ -42,6 +44,7 @@ export function BotonEliminarBloqueo({ id }: { id: string }) {
         })
       }
     >
+      <Trash2 aria-hidden="true" />
       Quitar
     </Button>
   );

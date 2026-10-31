@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
+import { LogIn } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ingresar } from "@/acciones/autenticacion";
@@ -59,7 +60,7 @@ export function FormularioIngreso({ siguiente }: { siguiente: string | null }) {
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
-        <BotonEnvio pendiente={pendiente} textoPendiente="Ingresando…" size="lg" className="h-10 w-full">
+        <BotonEnvio pendiente={pendiente} textoPendiente="Ingresando…" icono={LogIn} size="lg" className="h-10 w-full">
           Ingresar
         </BotonEnvio>
       </FieldGroup>

@@ -1,6 +1,6 @@
 "use client";
 
-import { TriangleAlert } from "lucide-react";
+import { RotateCcw, TriangleAlert } from "lucide-react";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { Button } from "@/componentes/ui/button";
 
@@ -17,7 +17,12 @@ export default function LimiteDeError({ error, reset }: { error: Error & { diges
             {error.digest && <span className="mt-2 block text-xs">Código de referencia: {error.digest}</span>}
           </>
         }
-        accion={<Button onClick={reset}>Reintentar</Button>}
+        accion={
+          <Button onClick={reset}>
+            <RotateCcw aria-hidden="true" />
+            Reintentar
+          </Button>
+        }
         className="w-full max-w-lg"
       />
     </main>

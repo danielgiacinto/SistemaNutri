@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { KeyRound, UserPlus } from "lucide-react";
 import { restablecerContrasena } from "@/acciones/autenticacion";
 import { esquemaRestablecimiento } from "@/esquemas/autenticacion";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -63,7 +64,7 @@ export function FormularioRestablecimiento({
           error={errores.confirmacion?.message}
           {...formulario.register("confirmacion")}
         />
-        <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" size="lg" className="h-10 w-full">
+        <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" icono={registro ? UserPlus : KeyRound} size="lg" className="h-10 w-full">
           {registro ? "Registrarme" : "Guardar contraseña"}
         </BotonEnvio>
       </FieldGroup>

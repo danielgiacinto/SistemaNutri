@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Salad } from "lucide-react";
+import { Salad, Search, X } from "lucide-react";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { esquemaUuid } from "@/esquemas/comunes";
@@ -62,11 +62,15 @@ async function Contenido({ parametros }: { parametros: PageProps<"/panel/planes"
         </label>
         <div className="flex gap-2">
           <Button type="submit" variant="outline">
+            <Search aria-hidden="true" />
             Filtrar
           </Button>
           {pacienteId && (
             <Button asChild variant="ghost">
-              <Link href="/panel/planes">Quitar filtro</Link>
+              <Link href="/panel/planes">
+                <X aria-hidden="true" />
+                Quitar filtro
+              </Link>
             </Button>
           )}
         </div>

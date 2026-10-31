@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { FormularioAltaPlan } from "@/componentes/planes/formulario-alta-plan";
+import { Volver } from "@/componentes/comunes/volver";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 
 export const metadata: Metadata = { title: "Nuevo plan" };
@@ -10,7 +11,9 @@ export default async function PaginaNuevoPlan({ params }: PageProps<"/panel/paci
   const { paciente } = await requerirPacienteDelConsultorio(pacienteId);
 
   return (
-    <Card>
+    <div className="space-y-4">
+      <Volver href={`/panel/pacientes/${paciente.id}/planes`} etiqueta="Planes" />
+      <Card>
       <CardHeader>
         <CardTitle>Nuevo plan</CardTitle>
         <CardDescription>Nace como borrador. El paciente no lo ve hasta que lo publiques.</CardDescription>
@@ -19,5 +22,6 @@ export default async function PaginaNuevoPlan({ params }: PageProps<"/panel/paci
         <FormularioAltaPlan pacienteId={paciente.id} />
       </CardContent>
     </Card>
+    </div>
   );
 }

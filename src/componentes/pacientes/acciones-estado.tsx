@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { UserMinus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { desactivarPaciente, reactivarPaciente } from "@/acciones/pacientes";
 import { Button } from "@/componentes/ui/button";
@@ -21,7 +22,17 @@ export function AccionesEstadoPaciente({ pacienteId, estado }: { pacienteId: str
         })
       }
     >
-      {estado === "activo" ? "Desactivar paciente" : "Reactivar paciente"}
+      {estado === "activo" ? (
+        <>
+          <UserMinus aria-hidden="true" />
+          Desactivar paciente
+        </>
+      ) : (
+        <>
+          <UserPlus aria-hidden="true" />
+          Reactivar paciente
+        </>
+      )}
     </Button>
   );
 }

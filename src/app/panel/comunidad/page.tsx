@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { HeartHandshake } from "lucide-react";
+import { HeartHandshake, Plus } from "lucide-react";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { listarDesafios } from "@/servicios/comunidad";
 import { FormularioDesafio } from "@/componentes/comunidad/formulario-desafio";
+import { VentanaFormulario } from "@/componentes/comunes/ventana-formulario";
 import { BotonBorrarActividad, ControlesDesafio } from "@/componentes/comunidad/controles-desafio";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { Badge } from "@/componentes/ui/badge";
@@ -36,16 +37,15 @@ async function Contenido() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Comunidad</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Armá un desafío para tus pacientes. Ellos escriben la actividad con sus palabras: acá no se cargan mediciones ni notas clínicas.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Comunidad</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Desafíos para tus pacientes. Sin datos clínicos.</p>
+        </div>
+        <VentanaFormulario icono={<Plus aria-hidden="true" />} etiqueta="Nuevo desafío" titulo="Nuevo desafío" descripcion="Título, consigna y fechas. Arranca como borrador.">
+          <FormularioDesafio />
+        </VentanaFormulario>
       </div>
-      <section className="rounded-2xl border bg-card p-5">
-        <h2 className="mb-4 text-lg font-semibold">Nuevo desafío</h2>
-        <FormularioDesafio />
-      </section>
       {desafios.length === 0 ? (
         <EstadoVacio
           icono={HeartHandshake}

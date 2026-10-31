@@ -20,7 +20,12 @@ async function Contenido() {
   await requerirProfesional();
   return (
     <div className="space-y-8">
-      <EncabezadoPagina titulo="Nuevo paciente" descripcion="Solo pedimos los datos necesarios para identificarlo y contactarlo." />
+      <EncabezadoPagina
+        titulo="Nuevo paciente"
+        descripcion="Nombre y un dato de contacto alcanzan para empezar."
+        volverA="/panel/pacientes"
+        etiquetaVolver="Pacientes"
+      />
       <Card>
         <CardContent>
           <FormularioPaciente modo="alta" />

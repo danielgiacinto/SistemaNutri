@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Scale } from "lucide-react";
 import { registrarMedicion } from "@/acciones/mediciones";
 import { esquemaAltaMedicion, type DatosAltaMedicion } from "@/esquemas/medicion";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -12,6 +13,7 @@ import { CampoArea } from "@/componentes/formularios/campo-area";
 import { CampoCasilla } from "@/componentes/formularios/campo-casilla";
 import { BotonEnvio } from "@/componentes/formularios/boton-envio";
 import { FieldGroup } from "@/componentes/ui/field";
+import { useCerrarVentana } from "@/componentes/comunes/ventana-formulario";
 
 export function FormularioMedicion({
   pacienteId,
@@ -23,6 +25,7 @@ export function FormularioMedicion({
   horaPredeterminada: string;
 }) {
   const [pendiente, iniciarTransicion] = useTransition();
+  const cerrar = useCerrarVentana();
   const formulario = useForm({
     resolver: zodResolver(esquemaAltaMedicion),
     defaultValues: {
@@ -51,6 +54,7 @@ export function FormularioMedicion({
       }
       if (resultado?.ok) {
         toast.success(resultado.mensaje ?? "Medición registrada.");
+        cerrar();
         formulario.reset({
           ...formulario.getValues(),
           pesoKg: "",
@@ -97,7 +101,7 @@ export function FormularioMedicion({
           )}
         />
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…">
+          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" icono={Scale}>
             Registrar medición
           </BotonEnvio>
         </div>

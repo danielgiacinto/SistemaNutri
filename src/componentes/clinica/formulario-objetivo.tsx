@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Save, Target } from "lucide-react";
 import { guardarObjetivo, registrarObjetivo } from "@/acciones/objetivos";
 import { esquemaAltaObjetivo, esquemaEdicionObjetivo, type DatosAltaObjetivo, type DatosEdicionObjetivo } from "@/esquemas/objetivo";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -13,6 +14,7 @@ import { CampoSelect } from "@/componentes/formularios/campo-select";
 import { CampoCasilla } from "@/componentes/formularios/campo-casilla";
 import { BotonEnvio } from "@/componentes/formularios/boton-envio";
 import { FieldGroup } from "@/componentes/ui/field";
+import { useCerrarVentana } from "@/componentes/comunes/ventana-formulario";
 import { ETIQUETAS_CATEGORIA_OBJETIVO, ETIQUETAS_ESTADO_OBJETIVO } from "@/configuracion/clinica";
 
 type Propiedades = {
@@ -23,6 +25,7 @@ type Propiedades = {
 
 export function FormularioObjetivo({ pacienteId, inicial, modo }: Propiedades) {
   const [pendiente, iniciarTransicion] = useTransition();
+  const cerrar = useCerrarVentana();
   const formulario = useForm<DatosEdicionObjetivo>({
     resolver: zodResolver(modo === "edicion" ? esquemaEdicionObjetivo : esquemaAltaObjetivo) as unknown as Resolver<DatosEdicionObjetivo>,
     defaultValues: {
@@ -55,6 +58,7 @@ export function FormularioObjetivo({ pacienteId, inicial, modo }: Propiedades) {
       if (resultado?.ok) {
         toast.success(resultado.mensaje ?? "Objetivo guardado.");
         if (modo === "alta") formulario.reset();
+        cerrar();
       }
     }),
   );
@@ -132,7 +136,7 @@ export function FormularioObjetivo({ pacienteId, inicial, modo }: Propiedades) {
           )}
         />
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…">
+          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" icono={modo === "alta" ? Target : Save}>
             {modo === "alta" ? "Agregar objetivo" : "Guardar cambios"}
           </BotonEnvio>
         </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { listarTurnosDelPaciente } from "@/servicios/turnos";
 import { FormularioEvolucion } from "@/componentes/clinica/formulario-evolucion";
+import { Volver } from "@/componentes/comunes/volver";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 
 export const metadata: Metadata = { title: "Nueva evolución" };
@@ -17,7 +18,9 @@ export default async function PaginaNuevaEvolucion({
   const turnos = await listarTurnosDelPaciente(cliente, contexto.consultorio.id, paciente.id);
 
   return (
-    <Card>
+    <div className="space-y-4">
+      <Volver href={`/panel/pacientes/${paciente.id}/historia`} etiqueta="Historia" />
+      <Card>
       <CardHeader>
         <CardTitle>Nueva evolución</CardTitle>
         <CardDescription>La nota nace privada y en borrador. Compartirla requiere una acción explícita.</CardDescription>
@@ -32,5 +35,6 @@ export default async function PaginaNuevaEvolucion({
         />
       </CardContent>
     </Card>
+    </div>
   );
 }

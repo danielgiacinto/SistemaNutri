@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Save, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { borrarPlan, guardarPlanActual } from "@/acciones/planes";
 import { esquemaPlan, type DatosPlan } from "@/esquemas/plan";
@@ -137,16 +137,18 @@ export function FormularioPlan({ pacienteId, planId, titulo, indicaciones, comid
         <div className="flex flex-wrap items-center justify-between gap-3">
           {puedeBorrar ? (
             <Button type="button" variant="outline" disabled={pendiente} onClick={eliminar}>
+              <Trash2 aria-hidden="true" />
               Eliminar borrador
             </Button>
           ) : (
             <p className="text-sm text-muted-foreground">Las versiones ya publicadas se conservan.</p>
           )}
           <div className="flex flex-wrap gap-2">
-            <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" variant="outline">
+            <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" variant="outline" icono={Save}>
               Guardar borrador
             </BotonEnvio>
             <Button type="button" disabled={pendiente} onClick={() => void enviar(true)}>
+              <Send aria-hidden="true" />
               Publicar para el paciente
             </Button>
           </div>

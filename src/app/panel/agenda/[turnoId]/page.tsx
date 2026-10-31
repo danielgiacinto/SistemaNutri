@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ClipboardPen, UserRound } from "lucide-react";
 import { requerirTurnoDelConsultorio } from "@/autorizacion/clinica";
 import { listarPacientesActivos } from "@/servicios/pacientes";
 import { obtenerDatosConsultorio } from "@/servicios/consultorios";
@@ -44,14 +45,22 @@ async function Contenido({ params }: { params: PageProps<"/panel/agenda/[turnoId
         titulo={turno.pacientes ? nombreNatural(turno.pacientes) : "Turno"}
         descripcion={formatearFechaHora(inicio, contexto.consultorio.zonaHoraria)}
         acciones={<InsigniaTurno estado={turno.estado} />}
+        volverA="/panel/agenda"
+        etiquetaVolver="Agenda"
       />
       <div className="flex flex-wrap gap-2">
         <Button asChild variant="outline">
-          <Link href={`/panel/pacientes/${paciente.id}`}>Abrir ficha</Link>
+          <Link href={`/panel/pacientes/${paciente.id}`}>
+            <UserRound aria-hidden="true" />
+            Abrir ficha
+          </Link>
         </Button>
         {turno.estado !== "cancelado" && (
           <Button asChild variant="outline">
-            <Link href={`/panel/pacientes/${paciente.id}/historia/nueva?turno=${turno.id}`}>Registrar evolución</Link>
+            <Link href={`/panel/pacientes/${paciente.id}/historia/nueva?turno=${turno.id}`}>
+              <ClipboardPen aria-hidden="true" />
+              Registrar evolución
+            </Link>
           </Button>
         )}
       </div>

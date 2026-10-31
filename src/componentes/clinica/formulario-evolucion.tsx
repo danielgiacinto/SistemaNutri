@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { ClipboardPen, Save } from "lucide-react";
 import { guardarEvolucion, registrarEvolucion } from "@/acciones/evoluciones";
 import { esquemaAltaEvolucion, esquemaEdicionEvolucion, type DatosAltaEvolucion, type DatosEdicionEvolucion } from "@/esquemas/evolucion";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -145,7 +146,7 @@ export function FormularioEvolucion({ pacienteId, zonaHoraria, turnos, inicial, 
           )}
         />
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" size="lg">
+          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" icono={modo === "alta" ? ClipboardPen : Save} size="lg">
             {modo === "alta" ? "Guardar evolución" : "Guardar cambios"}
           </BotonEnvio>
         </div>

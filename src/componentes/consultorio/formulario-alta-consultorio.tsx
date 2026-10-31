@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Building2 } from "lucide-react";
 import { crearConsultorio } from "@/acciones/consultorio";
 import { esquemaAltaConsultorio } from "@/esquemas/consultorio";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -55,7 +56,7 @@ export function FormularioAltaConsultorio() {
             />
           )}
         />
-        <BotonEnvio pendiente={pendiente} textoPendiente="Creando consultorio…" size="lg" className="h-10 w-full">
+        <BotonEnvio pendiente={pendiente} textoPendiente="Creando consultorio…" icono={Building2} size="lg" className="h-10 w-full">
           Crear mi consultorio
         </BotonEnvio>
       </FieldGroup>

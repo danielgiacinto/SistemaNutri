@@ -4,6 +4,8 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
+import { useCerrarVentana } from "@/componentes/comunes/ventana-formulario";
 import { registrarDesafio } from "@/acciones/comunidad";
 import { esquemaAltaDesafio, type DatosAltaDesafio } from "@/esquemas/comunidad";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -14,6 +16,7 @@ import { FieldGroup } from "@/componentes/ui/field";
 
 export function FormularioDesafio() {
   const [pendiente, iniciarTransicion] = useTransition();
+  const cerrar = useCerrarVentana();
   const formulario = useForm<DatosAltaDesafio>({
     resolver: zodResolver(esquemaAltaDesafio),
     defaultValues: { titulo: "", consigna: "", inicio: "", fin: "" },
@@ -30,6 +33,7 @@ export function FormularioDesafio() {
       }
       formulario.reset();
       toast.success(resultado.mensaje ?? "Desafío creado.");
+      cerrar();
     }),
   );
 
@@ -55,7 +59,7 @@ export function FormularioDesafio() {
           <CampoTexto id="desafio-fin" etiqueta="Fin" type="date" error={errores.fin?.message} {...formulario.register("fin")} />
         </div>
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente="Creando…">
+          <BotonEnvio pendiente={pendiente} textoPendiente="Creando…" icono={Plus}>
             Crear borrador
           </BotonEnvio>
         </div>

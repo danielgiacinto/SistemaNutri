@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SearchX } from "lucide-react";
+import { Home, SearchX } from "lucide-react";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { Button } from "@/componentes/ui/button";
 import { RUTAS } from "@/autorizacion/rutas";
@@ -13,7 +13,10 @@ export default function PaginaNoEncontrada() {
         descripcion="Puede que el enlace sea incorrecto o que no tengas acceso a este contenido."
         accion={
           <Button asChild>
-            <Link href={RUTAS.destino}>Ir al inicio</Link>
+            <Link href={RUTAS.destino}>
+              <Home aria-hidden="true" />
+              Ir al inicio
+            </Link>
           </Button>
         }
         className="w-full max-w-lg"

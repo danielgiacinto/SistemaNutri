@@ -1,11 +1,13 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { Ban, Clock } from "lucide-react";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { listarBloqueos, listarHorarios } from "@/servicios/agenda";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { FormularioHorario } from "@/componentes/agenda/formulario-horario";
 import { FormularioBloqueo } from "@/componentes/agenda/formulario-bloqueo";
+import { VentanaFormulario } from "@/componentes/comunes/ventana-formulario";
 import { BotonEliminarBloqueo, BotonEliminarHorario } from "@/componentes/agenda/boton-eliminar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { DIAS_SEMANA } from "@/configuracion/clinica";
@@ -35,7 +37,9 @@ async function Contenido() {
     <div className="space-y-8">
       <EncabezadoPagina
         titulo="Horarios y bloqueos"
-        descripcion="Si no cargás horarios, se puede agendar en cualquier momento. Cuando hay al menos uno, las reservas tienen que encajar en una franja."
+        descripcion="Sin franjas, se puede agendar a cualquier hora."
+        volverA="/panel/agenda"
+        etiquetaVolver="Agenda"
       />
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
@@ -59,7 +63,9 @@ async function Contenido() {
                 ))}
               </ul>
             )}
-            <FormularioHorario />
+            <VentanaFormulario icono={<Clock aria-hidden="true" />} etiqueta="Agregar franja" titulo="Nueva franja" descripcion="Hora local del consultorio." variante="outline">
+              <FormularioHorario />
+            </VentanaFormulario>
           </CardContent>
         </Card>
         <Card>
@@ -84,7 +90,9 @@ async function Contenido() {
                 ))}
               </ul>
             )}
-            <FormularioBloqueo fechaPredeterminada={hoy} />
+            <VentanaFormulario icono={<Ban aria-hidden="true" />} etiqueta="Agregar bloqueo" titulo="Nuevo bloqueo" descripcion="Ese intervalo no se puede reservar." variante="outline">
+              <FormularioBloqueo fechaPredeterminada={hoy} />
+            </VentanaFormulario>
           </CardContent>
         </Card>
       </div>

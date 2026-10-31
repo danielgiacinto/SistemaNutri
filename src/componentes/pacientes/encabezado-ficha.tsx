@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Volver } from "@/componentes/comunes/volver";
 import { Pestanas } from "@/componentes/comunes/pestanas";
 import { InsigniaPaciente } from "@/componentes/comunes/insignia-estado";
 import { nombreNatural } from "@/lib/antropometria";
@@ -25,6 +26,7 @@ export function EncabezadoFicha({
 
   return (
     <div className="space-y-6">
+      <Volver href="/panel/pacientes" etiqueta="Pacientes" />
       <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -46,7 +48,7 @@ export function EncabezadoFicha({
             <span className="text-muted-foreground">Próximo turno: </span>
             {proximoTurnoInicio ? formatearFechaHora(new Date(proximoTurnoInicio), zonaHoraria) : "Sin turnos próximos"}
           </p>
-          <Link href={`${base}/editar`} className="text-primary hover:underline">
+          <Link href={`${base}/editar`} className="cursor-pointer text-primary hover:underline">
             Editar ficha
           </Link>
         </div>

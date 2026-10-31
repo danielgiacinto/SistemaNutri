@@ -10,11 +10,16 @@ import { PACIENTES_POR_PAGINA } from "@/configuracion/clinica";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { InsigniaPaciente } from "@/componentes/comunes/insignia-estado";
+import { hrefListadoPacientes } from "@/componentes/pacientes/consulta-pacientes";
+import { FiltroPacientes } from "@/componentes/pacientes/filtro-pacientes";
 import { Button } from "@/componentes/ui/button";
-import { Input } from "@/componentes/ui/input";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { nombreNatural } from "@/lib/antropometria";
 import { formatearFechaHora } from "@/lib/fechas";
+import { cn } from "@/lib/utilidades";
+
+const COLUMNAS_PACIENTE =
+  "md:grid-cols-[minmax(0,1.5fr)_minmax(0,7.5rem)_6.5rem_minmax(0,1fr)_minmax(0,1fr)]";
 
 export const metadata: Metadata = { title: "Pacientes" };
 
@@ -33,14 +38,19 @@ export default function PaginaPacientes({ searchParams }: PageProps<"/panel/paci
           </Button>
         }
       />
-      <Suspense fallback={<Skeleton className="h-96" />}>
-        <ContenidoPacientes searchParams={searchParams} />
-      </Suspense>
+      <div className="space-y-4">
+        <Suspense fallback={<Skeleton className="h-24 rounded-2xl" />}>
+          <FiltroPacientes />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-72 rounded-2xl" />}>
+          <ListadoPacientes searchParams={searchParams} />
+        </Suspense>
+      </div>
     </div>
   );
 }
 
-async function ContenidoPacientes({ searchParams }: { searchParams: PageProps<"/panel/pacientes">["searchParams"] }) {
+async function ListadoPacientes({ searchParams }: { searchParams: PageProps<"/panel/pacientes">["searchParams"] }) {
   const contexto = await requerirProfesional();
   const parametros = await searchParams;
   const leido = esquemaFiltroPacientes.safeParse({
@@ -55,88 +65,75 @@ async function ContenidoPacientes({ searchParams }: { searchParams: PageProps<"/
   const paginas = Math.max(1, Math.ceil(total / PACIENTES_POR_PAGINA));
 
   return (
-    <div className="space-y-4">
-      <form className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-[1fr_10rem_10rem_auto] sm:items-end">
-        <label className="space-y-1 text-sm font-medium">
-          Buscar
-          <Input name="q" defaultValue={filtro.q} placeholder="Nombre, apellido, documento o correo" />
-        </label>
-        <label className="space-y-1 text-sm font-medium">
-          Estado
-          <select name="estado" defaultValue={filtro.estado} className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-sm">
-            <option value="activo">Activos</option>
-            <option value="inactivo">Inactivos</option>
-            <option value="todos">Todos</option>
-          </select>
-        </label>
-        <label className="space-y-1 text-sm font-medium">
-          Orden
-          <select name="orden" defaultValue={filtro.orden} className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-sm">
-            <option value="apellido">Apellido</option>
-            <option value="reciente">Más recientes</option>
-          </select>
-        </label>
-        <Button type="submit" variant="outline">
-          Filtrar
-        </Button>
-      </form>
-
+    <>
       {filas.length === 0 ? (
         <EstadoVacio
           icono={Users}
-          titulo={filtro.q ? "No hay resultados" : "Todavía no registraste pacientes"}
+          titulo={filtro.q || filtro.estado !== "activo" ? "No hay resultados" : "Todavía no registraste pacientes"}
           descripcion={
-            filtro.q
-              ? "Probá con otro nombre, documento o correo."
+            filtro.q || filtro.estado !== "activo"
+              ? "Probá con otro nombre, documento o estado."
               : "El alta es el primer paso para agenda, historia clínica y seguimiento."
           }
           accion={
-            !filtro.q ? (
+            !filtro.q && filtro.estado === "activo" ? (
               <Button asChild>
-                <Link href="/panel/pacientes/nuevo">Registrar paciente</Link>
+                <Link href="/panel/pacientes/nuevo">
+                  <UserPlus aria-hidden="true" />
+                  Registrar paciente
+                </Link>
               </Button>
             ) : undefined
           }
         />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border">
-          <table className="w-full text-sm">
-            <caption className="sr-only">Listado de pacientes</caption>
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Paciente</th>
-                <th className="px-4 py-3 font-medium">Documento</th>
-                <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium">Última consulta</th>
-                <th className="px-4 py-3 font-medium">Próximo turno</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filas.map((paciente) => (
-                <tr key={paciente.id} className="border-b last:border-0">
-                  <td className="px-4 py-3">
-                    <Link href={`/panel/pacientes/${paciente.id}`} className="font-medium hover:text-primary">
-                      {nombreNatural(paciente)}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{paciente.documento ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <InsigniaPaciente estado={paciente.estado} />
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {paciente.ultimaConsultaInicio
-                      ? formatearFechaHora(new Date(paciente.ultimaConsultaInicio), contexto.consultorio.zonaHoraria)
-                      : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {paciente.proximoTurnoInicio
-                      ? formatearFechaHora(new Date(paciente.proximoTurnoInicio), contexto.consultorio.zonaHoraria)
-                      : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="overflow-hidden rounded-2xl border">
+          <div
+            className={cn(
+              "hidden border-b bg-muted/40 px-4 py-2.5 text-sm font-medium text-muted-foreground md:grid md:items-center md:gap-4",
+              COLUMNAS_PACIENTE,
+            )}
+          >
+            <span>Paciente</span>
+            <span>Documento</span>
+            <span>Estado</span>
+            <span>Última consulta</span>
+            <span>Próximo turno</span>
+          </div>
+          <ul>
+            {filas.map((paciente) => {
+              const ultima = paciente.ultimaConsultaInicio
+                ? formatearFechaHora(new Date(paciente.ultimaConsultaInicio), contexto.consultorio.zonaHoraria)
+                : "Sin consultas";
+              const proximo = paciente.proximoTurnoInicio
+                ? formatearFechaHora(new Date(paciente.proximoTurnoInicio), contexto.consultorio.zonaHoraria)
+                : "Sin turno";
+              return (
+                <li key={paciente.id} className="border-b last:border-0">
+                  <Link
+                    href={`/panel/pacientes/${paciente.id}`}
+                    className={cn(
+                      "grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-muted/40 md:gap-4",
+                      COLUMNAS_PACIENTE,
+                    )}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">{nombreNatural(paciente)}</span>
+                      <span className="mt-0.5 block truncate text-sm text-muted-foreground md:hidden">
+                        {paciente.proximoTurnoInicio ? `Próximo: ${proximo}` : ultima}
+                      </span>
+                    </span>
+                    <span className="hidden min-w-0 truncate text-muted-foreground md:block">{paciente.documento ?? "—"}</span>
+                    <span className="justify-self-end md:justify-self-start">
+                      <InsigniaPaciente estado={paciente.estado} />
+                    </span>
+                    <span className="hidden min-w-0 truncate text-muted-foreground md:block">{ultima}</span>
+                    <span className="hidden min-w-0 truncate text-muted-foreground md:block">{proximo}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
 
@@ -145,7 +142,7 @@ async function ContenidoPacientes({ searchParams }: { searchParams: PageProps<"/
           {Array.from({ length: paginas }, (_, indice) => indice + 1).map((pagina) => (
             <Link
               key={pagina}
-              href={`?q=${encodeURIComponent(filtro.q)}&estado=${filtro.estado}&orden=${filtro.orden}&pagina=${pagina}`}
+              href={hrefListadoPacientes({ q: filtro.q, estado: filtro.estado, orden: filtro.orden, pagina })}
               className={pagina === filtro.pagina ? "font-semibold text-primary" : "text-muted-foreground hover:text-foreground"}
             >
               {pagina}
@@ -153,7 +150,7 @@ async function ContenidoPacientes({ searchParams }: { searchParams: PageProps<"/
           ))}
         </p>
       )}
-    </div>
+    </>
   );
 }
 

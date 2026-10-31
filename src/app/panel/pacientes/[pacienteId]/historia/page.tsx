@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, ArrowUpRight, ClipboardPen } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { obtenerLineaDeTiempo } from "@/servicios/linea-tiempo";
+import { listarTurnosDelPaciente } from "@/servicios/turnos";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
+import { VentanaFormulario } from "@/componentes/comunes/ventana-formulario";
+import { FormularioEvolucion } from "@/componentes/clinica/formulario-evolucion";
+import { Badge } from "@/componentes/ui/badge";
 import { Button } from "@/componentes/ui/button";
 import { formatearFechaHora } from "@/lib/fechas";
 import { ETIQUETAS_ESTADO_OBJETIVO, ETIQUETAS_ESTADO_TURNO } from "@/configuracion/clinica";
@@ -23,16 +27,23 @@ export default async function PaginaHistoria({ params }: PageProps<"/panel/pacie
   const { pacienteId } = await params;
   const { paciente, contexto, cliente } = await requerirPacienteDelConsultorio(pacienteId);
   const eventos = await obtenerLineaDeTiempo(cliente, contexto.consultorio.id, paciente.id);
+  const turnos = await listarTurnosDelPaciente(cliente, contexto.consultorio.id, paciente.id);
 
   return (
     <div className="space-y-6">
       <EncabezadoPagina
         titulo="Historia clínica"
-        descripcion="Línea de tiempo con evoluciones, mediciones, objetivos y turnos reales."
+        descripcion="Evoluciones, mediciones, objetivos y turnos."
         acciones={
-          <Button asChild>
-            <Link href={`/panel/pacientes/${paciente.id}/historia/nueva`}>Nueva evolución</Link>
-          </Button>
+          <VentanaFormulario icono={<ClipboardPen aria-hidden="true" />} etiqueta="Nueva evolución" titulo="Nueva evolución" descripcion="Nace como borrador y privada." className="max-w-2xl">
+            <FormularioEvolucion
+              modo="alta"
+              pacienteId={paciente.id}
+              zonaHoraria={contexto.consultorio.zonaHoraria}
+              turnos={turnos}
+              inicial={{ esBorrador: true, visibleParaPaciente: false }}
+            />
+          </VentanaFormulario>
         }
       />
       {eventos.length === 0 ? (
@@ -46,7 +57,7 @@ export default async function PaginaHistoria({ params }: PageProps<"/panel/pacie
           {eventos.map((evento) => (
             <li key={evento.id} className="rounded-2xl border bg-card p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{ETIQUETA_TIPO[evento.tipo]}</p>
+                <Badge variant="outline">{ETIQUETA_TIPO[evento.tipo]}</Badge>
                 <time className="text-xs text-muted-foreground" dateTime={evento.instante}>
                   {formatearFechaHora(new Date(evento.instante), contexto.consultorio.zonaHoraria)}
                 </time>
@@ -64,7 +75,10 @@ export default async function PaginaHistoria({ params }: PageProps<"/panel/pacie
               )}
               {evento.href && (
                 <Button asChild variant="ghost" size="sm" className="mt-2 px-0">
-                  <Link href={evento.href}>Ver detalle</Link>
+                  <Link href={evento.href}>
+                    <ArrowUpRight aria-hidden="true" />
+                    Ver detalle
+                  </Link>
                 </Button>
               )}
             </li>

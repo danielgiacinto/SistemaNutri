@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { FormularioPaciente } from "@/componentes/pacientes/formulario-paciente";
 import { AccionesEstadoPaciente } from "@/componentes/pacientes/acciones-estado";
+import { Volver } from "@/componentes/comunes/volver";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 
 export const metadata: Metadata = { title: "Editar paciente" };
@@ -12,6 +13,7 @@ export default async function PaginaEditarPaciente({ params }: PageProps<"/panel
 
   return (
     <div className="space-y-6">
+      <Volver href={`/panel/pacientes/${paciente.id}`} etiqueta="Ficha" />
       <Card>
         <CardHeader>
           <CardTitle>Datos personales</CardTitle>

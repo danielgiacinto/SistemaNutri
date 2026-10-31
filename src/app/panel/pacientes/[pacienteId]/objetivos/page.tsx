@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Target } from "lucide-react";
+import { Pencil, Plus, Target } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { listarObjetivos } from "@/servicios/objetivos";
 import { FormularioObjetivo } from "@/componentes/clinica/formulario-objetivo";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { InsigniaObjetivo } from "@/componentes/comunes/insignia-estado";
+import { VentanaFormulario } from "@/componentes/comunes/ventana-formulario";
+import { Badge } from "@/componentes/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { ETIQUETAS_CATEGORIA_OBJETIVO } from "@/configuracion/clinica";
 import { formatearFechaIso } from "@/lib/fechas";
@@ -20,15 +22,12 @@ export default async function PaginaObjetivos({ params }: PageProps<"/panel/paci
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Nuevo objetivo</CardTitle>
-          <CardDescription>Puede ser de peso, hábitos u otra categoría. No todos los objetivos son un peso meta.</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">En curso</h2>
+        <VentanaFormulario icono={<Plus aria-hidden="true" />} etiqueta="Nuevo objetivo" titulo="Nuevo objetivo" descripcion="Peso, hábito u otra meta.">
           <FormularioObjetivo modo="alta" pacienteId={paciente.id} />
-        </CardContent>
-      </Card>
+        </VentanaFormulario>
+      </div>
 
       {activos.length === 0 ? (
         <EstadoVacio icono={Target} titulo="Sin objetivos activos" descripcion="Definí un objetivo para destacarlo en la ficha." />
@@ -44,29 +43,36 @@ export default async function PaginaObjetivos({ params }: PageProps<"/panel/paci
                 <CardDescription>
                   {ETIQUETAS_CATEGORIA_OBJETIVO[objetivo.categoria]}
                   {objetivo.fecha_objetivo ? ` · meta ${formatearFechaIso(objetivo.fecha_objetivo)}` : ""}
-                  {objetivo.visible_para_paciente ? " · visible para el paciente" : " · privado"}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <FormularioObjetivo
-                  modo="edicion"
-                  pacienteId={paciente.id}
-                  inicial={{
-                    objetivoId: objetivo.id,
-                    pacienteId: paciente.id,
-                    titulo: objetivo.titulo,
-                    descripcion: objetivo.descripcion ?? "",
-                    categoria: objetivo.categoria,
-                    fechaObjetivo: objetivo.fecha_objetivo ?? "",
-                    estado: objetivo.estado,
-                    progreso: objetivo.progreso ?? "",
-                    valorInicial: objetivo.valor_inicial ?? "",
-                    valorObjetivo: objetivo.valor_objetivo ?? "",
-                    unidad: objetivo.unidad ?? "",
-                    observaciones: objetivo.observaciones ?? "",
-                    visibleParaPaciente: objetivo.visible_para_paciente,
-                  }}
-                />
+              <CardContent className="flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  {objetivo.descripcion ? <p>{objetivo.descripcion}</p> : null}
+                  <Badge variant={objetivo.visible_para_paciente ? "default" : "outline"}>
+                    {objetivo.visible_para_paciente ? "Visible en el portal" : "Privado"}
+                  </Badge>
+                </div>
+                <VentanaFormulario icono={<Pencil aria-hidden="true" />} etiqueta="Editar" titulo="Editar objetivo" variante="outline">
+                  <FormularioObjetivo
+                    modo="edicion"
+                    pacienteId={paciente.id}
+                    inicial={{
+                      objetivoId: objetivo.id,
+                      pacienteId: paciente.id,
+                      titulo: objetivo.titulo,
+                      descripcion: objetivo.descripcion ?? "",
+                      categoria: objetivo.categoria,
+                      fechaObjetivo: objetivo.fecha_objetivo ?? "",
+                      estado: objetivo.estado,
+                      progreso: objetivo.progreso ?? "",
+                      valorInicial: objetivo.valor_inicial ?? "",
+                      valorObjetivo: objetivo.valor_objetivo ?? "",
+                      unidad: objetivo.unidad ?? "",
+                      observaciones: objetivo.observaciones ?? "",
+                      visibleParaPaciente: objetivo.visible_para_paciente,
+                    }}
+                  />
+                </VentanaFormulario>
               </CardContent>
             </Card>
           ))}

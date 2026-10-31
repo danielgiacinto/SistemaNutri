@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Save } from "lucide-react";
 import { actualizarPerfil } from "@/acciones/perfil";
 import { esquemaDatosPerfil, type DatosPerfil } from "@/esquemas/perfil";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -60,7 +61,7 @@ export function FormularioPerfil({ inicial, correo }: { inicial: DatosPerfil; co
           descripcion="El correo se usa para ingresar y no se puede cambiar desde acá."
         />
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" disabled={!hayCambios}>
+          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" icono={Save} disabled={!hayCambios}>
             Guardar cambios
           </BotonEnvio>
         </div>

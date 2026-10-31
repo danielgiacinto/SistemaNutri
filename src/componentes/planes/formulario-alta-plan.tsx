@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 import { registrarPlan } from "@/acciones/planes";
 import { esquemaAltaPlan, type DatosAltaPlan } from "@/esquemas/plan";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -48,7 +49,7 @@ export function FormularioAltaPlan({ pacienteId }: { pacienteId: string }) {
           {...formulario.register("indicaciones")}
         />
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente="Creando…">
+          <BotonEnvio pendiente={pendiente} textoPendiente="Creando…" icono={Plus}>
             Crear borrador
           </BotonEnvio>
         </div>

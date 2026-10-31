@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarClock, CalendarDays, CheckCircle2, ClipboardList, UserPlus, Users } from "lucide-react";
+import { ArrowUpRight, CalendarClock, CalendarDays, CalendarPlus, CheckCircle2, ClipboardList, ClipboardPen, UserPlus, Users } from "lucide-react";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { obtenerDatosTablero } from "@/servicios/tablero";
@@ -133,10 +133,14 @@ async function ContenidoInicio() {
                 )}
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm">
-                    <Link href={`/panel/agenda/${destacado.id}`}>Ver turno</Link>
+                    <Link href={`/panel/agenda/${destacado.id}`}>
+                      <CalendarDays aria-hidden="true" />
+                      Ver turno
+                    </Link>
                   </Button>
                   <Button asChild size="sm" variant="outline">
                     <Link href={`/panel/pacientes/${destacado.paciente_id}/historia/nueva?turno=${destacado.id}`}>
+                      <ClipboardPen aria-hidden="true" />
                       Continuar historia
                     </Link>
                   </Button>
@@ -149,7 +153,10 @@ async function ContenidoInicio() {
                 descripcion="Cuando agendes una consulta, el próximo paciente va a aparecer acá."
                 accion={
                   <Button asChild>
-                    <Link href="/panel/agenda/nuevo">Agendar turno</Link>
+                    <Link href="/panel/agenda/nuevo">
+                      <CalendarPlus aria-hidden="true" />
+                      Agendar turno
+                    </Link>
                   </Button>
                 }
               />
@@ -200,7 +207,10 @@ async function ContenidoInicio() {
                     </p>
                   </div>
                   <Button asChild variant="ghost" size="sm">
-                    <Link href={`/panel/pacientes/${evolucion.paciente_id}/historia/${evolucion.id}`}>Abrir</Link>
+                    <Link href={`/panel/pacientes/${evolucion.paciente_id}/historia/${evolucion.id}`}>
+                      <ArrowUpRight aria-hidden="true" />
+                      Abrir
+                    </Link>
                   </Button>
                 </li>
               ))}

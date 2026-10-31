@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { CalendarPlus, Save } from "lucide-react";
 import { guardarTurno, registrarTurno } from "@/acciones/turnos";
 import { esquemaAltaTurno, esquemaEdicionTurno, type DatosAltaTurno, type DatosEdicionTurno } from "@/esquemas/turno";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -145,7 +146,7 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
           {...formulario.register("notasAdministrativas")}
         />
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" size="lg">
+          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" icono={modo === "alta" ? CalendarPlus : Save} size="lg">
             {modo === "alta" ? "Agendar turno" : "Guardar cambios"}
           </BotonEnvio>
         </div>

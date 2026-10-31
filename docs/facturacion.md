@@ -54,7 +54,7 @@ El aviso se muestra en Facturación. El correo de Auth sigue siendo solo el de l
 2. Copiar el access token de **prueba** y la clave pública a `.env.local`.
    Ese token es el vendedor. El pagador tiene que ser **otra** cuenta de prueba: el correo
    `test_user_…@testuser.com`, no el usuario que empieza con `TESTUSER`. Va en
-   `MERCADOPAGO_CORREO_PAGADOR_PRUEBA`. El formulario usa ese mismo correo para armar el token.
+   `MERCADOPAGO_CORREO_PAGADOR_PRUEBA`.
 3. En Webhooks, la URL es `https://tu-dominio/api/facturacion/mercadopago`.
    Se configura al desplegar en Vercel, no en localhost. Eventos: `subscription_preapproval` y `subscription_authorized_payment`.
 4. Copiar la clave secreta del webhook a `MERCADOPAGO_WEBHOOK_SECRETO`.
@@ -63,5 +63,5 @@ El aviso se muestra en Facturación. El correo de Auth sigue siendo solo el de l
 La firma del webhook se valida con HMAC-SHA256 del manifiesto oficial
 `id:{data.id};request-id:{x-request-id};ts:{ts};`. Un evento repetido no vuelve a extender la cobertura.
 
-No se usa el SDK de Node: son dos llamadas HTTP y la firma está documentada. El formulario
-de tarjeta usa el SDK de navegador de Mercado Pago, con campos en iframe.
+No se usa el SDK de Node: son dos llamadas HTTP y la firma está documentada.
+La pantalla de Facturación ya no pide la tarjeta. En la fase de pago, elegir el plan abre Mercado Pago.

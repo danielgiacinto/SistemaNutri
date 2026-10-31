@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Save } from "lucide-react";
 import { actualizarConsultorio } from "@/acciones/consultorio";
 import { esquemaDatosConsultorio, type DatosConsultorio } from "@/esquemas/consultorio";
 import { aplicarErroresServidor } from "@/lib/formularios";
@@ -97,7 +98,7 @@ export function FormularioConsultorio({ inicial }: { inicial: DatosConsultorio }
           )}
         />
         <div className="flex justify-end">
-          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" disabled={!hayCambios}>
+          <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" icono={Save} disabled={!hayCambios}>
             Guardar cambios
           </BotonEnvio>
         </div>

@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { cargarProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { credencialesMercadoPago, obtenerConfiguracionComercial } from "@/servicios/facturacion/mercadopago";
-import { FormularioTarjeta } from "@/componentes/facturacion/formulario-tarjeta";
+import { FranjaAviso } from "@/componentes/comunes/franja-aviso";
+import { Badge } from "@/componentes/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { LOCALE_PREDETERMINADO } from "@/configuracion/producto";
@@ -13,24 +14,24 @@ export const metadata: Metadata = { title: "Facturación" };
 
 const TEXTOS: Record<string, { titulo: string; texto: string }> = {
   prueba: {
-    titulo: "Estás en el período de prueba",
-    texto: "Podés usar el consultorio hasta la fecha de vencimiento. Para que el servicio no se corte, autorizá el cobro mensual antes de esa fecha.",
+    titulo: "Período de prueba",
+    texto: "El consultorio está habilitado hasta la fecha de vencimiento.",
   },
   activo: {
-    titulo: "Suscripción con cobertura vigente",
-    texto: "El acceso está habilitado por un cobro confirmado. Autorizar la suscripción no alcanza: hace falta un pago aprobado del precio mensual.",
+    titulo: "Cobertura vigente",
+    texto: "Hay un cobro confirmado del precio mensual.",
   },
   gracia: {
-    titulo: "El último cobro no se pudo confirmar",
-    texto: "Tenés un período de gracia para regularizar el medio de pago. Mercado Pago reintenta el cobro por su cuenta. No reintentamos el débito desde acá.",
+    titulo: "Cobro pendiente",
+    texto: "Mercado Pago reintenta el débito. El acceso sigue unos días.",
   },
   vencido: {
-    titulo: "El acceso comercial está suspendido",
-    texto: "La prueba terminó o no hay un período pago vigente. Los pacientes, turnos e historias se conservan. Autorizá la suscripción para volver a trabajar.",
+    titulo: "Acceso suspendido",
+    texto: "Los datos se conservan. El cobro se retoma al elegir el plan.",
   },
   suspendido_admin: {
-    titulo: "La cuenta fue suspendida por la administración",
-    texto: "Esta suspensión no es un rechazo de pago. Escribí al soporte de la plataforma. Tus datos clínicos no se borran.",
+    titulo: "Cuenta suspendida",
+    texto: "Escribí al soporte. Los datos clínicos no se borran.",
   },
 };
 
@@ -66,8 +67,13 @@ async function Contenido() {
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">Facturación</h1>
-        <p className="text-muted-foreground">La prueba y los cobros se verifican en el servidor. Volver de Mercado Pago no acredita un pago.</p>
+        <p className="text-sm text-muted-foreground">Precio, prueba y cobros confirmados.</p>
       </div>
+      {codigo === "prueba" && prueba.data ? (
+        <FranjaAviso>
+          Disfrutá tu prueba gratis. Tenés el consultorio completo, sin tarjeta, hasta el {fecha.format(new Date(prueba.data.vence_en))}.
+        </FranjaAviso>
+      ) : null}
       <Card>
         <CardHeader>
           <CardTitle>{aviso.titulo}</CardTitle>
@@ -90,7 +96,9 @@ async function Contenido() {
             </div>
             <div>
               <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Autorización en Mercado Pago</dt>
-              <dd className="mt-1 font-medium">{suscripcion.data?.estado_mp ?? "Sin autorizar"}</dd>
+              <dd className="mt-1 font-medium">
+                {suscripcion.data?.estado_mp ? <Badge variant="outline">{suscripcion.data.estado_mp}</Badge> : "Sin autorizar"}
+              </dd>
             </div>
             <div>
               <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Cobertura paga hasta</dt>
@@ -101,29 +109,22 @@ async function Contenido() {
           </dl>
         </CardContent>
       </Card>
-      {credenciales && configuracion.precioMensual && contexto.consultorio.rol === "titular" ? (
-        <FormularioTarjeta
-          clavePublica={credenciales.clavePublica}
-          precio={configuracion.precioMensual}
-          correo={(process.env.MERCADOPAGO_CORREO_PAGADOR_PRUEBA?.trim() || contexto.correo) ?? ""}
-          pagadorDePrueba={Boolean(process.env.MERCADOPAGO_CORREO_PAGADOR_PRUEBA?.trim())}
-        />
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Autorizar la suscripción</CardTitle>
-            <CardDescription>
-              {contexto.consultorio.rol !== "titular"
-                ? "Solo el titular puede autorizar el cobro."
-                : "Falta el precio o las credenciales de Mercado Pago en el servidor. No se simula ningún cobro."}
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Pago con Mercado Pago</CardTitle>
+          <CardDescription>
+            {contexto.consultorio.rol !== "titular"
+              ? "Solo el titular puede elegir el plan."
+              : credenciales && configuracion.precioMensual
+                ? "Al elegir el plan se abre Mercado Pago. La tarjeta no se carga en esta pantalla."
+                : "Falta el precio o las credenciales de Mercado Pago. No se simula ningún cobro."}
+          </CardDescription>
+        </CardHeader>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>Cobros</CardTitle>
-          <CardDescription>Solo aparecen pagos consultados en Mercado Pago. Un monto menor al precio es la validación de la tarjeta y no suma un mes.</CardDescription>
+          <CardDescription>Pagos confirmados por Mercado Pago. Un monto menor al precio no suma un mes.</CardDescription>
         </CardHeader>
         <CardContent>
           {(pagosLista.data ?? []).length === 0 ? (

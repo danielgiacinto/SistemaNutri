@@ -48,6 +48,7 @@ Cuando la clínica, el portal y los planes estén cerrados y el proyecto esté e
 2. Cargar `MERCADOPAGO_WEBHOOK_SECRETO` y `SUPABASE_SECRET_KEY`.
 3. Apuntar el webhook de Mercado Pago a `https://tu-dominio/api/facturacion/mercadopago`.
 4. Recién ahí: pago aprobado, cobertura extendida y un rechazo (titular `OTHE`).
+   El cobro se abre en Mercado Pago al elegir el plan. La pantalla de Facturación ya no pide los datos de la tarjeta.
 
 Hasta ese momento, autorizar la tarjeta en local no acredita un mes. El detalle está
 en [`docs/facturacion.md`](docs/facturacion.md).

@@ -32,7 +32,7 @@ export function ListaNavegacion({ variante, alNavegar }: PropiedadesLista) {
                 onClick={alNavegar}
                 aria-current={activo ? "page" : undefined}
                 className={cn(
-                  "group flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors outline-none",
+                  "group flex min-h-10 cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors outline-none",
                   "focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
                   activo
                     ? "bg-accent text-accent-foreground"

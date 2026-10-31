@@ -113,6 +113,14 @@ primer pintado.
   una biblioteca de calendario pesada. Los selectores de fecha y hora usan controles nativos
   (mejor en celular). El gráfico de peso usa Recharts.
 - **Content-Security-Policy** con nonce: pendiente hasta incorporar recursos externos.
+- **Ideas tomadas de SoloNutris, para una fase posterior** (no están en el producto):
+  - Al elegir el plan, abrir la pasarela de Mercado Pago. El formulario de tarjeta salió de Facturación a propósito.
+  - Catálogo de platos con foto y macros, y entrega del plan por link o PDF con la marca del consultorio.
+  - Reservas online con link o QR, con confirmación de la profesional.
+  - Recordatorios automáticos de turnos.
+  - Antropometría ISAK y calculadoras (requerimiento, percentiles, IMC en el embarazo).
+  - Importar pacientes desde una planilla.
+  - Registro del paciente en pasos, si el alta deja de ser un solo formulario corto.
 
 ## Plan por fases
 

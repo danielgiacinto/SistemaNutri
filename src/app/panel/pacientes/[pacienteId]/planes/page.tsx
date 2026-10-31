@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Salad } from "lucide-react";
+import { Plus, Salad } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { listarPlanesDelPaciente } from "@/servicios/planes";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
@@ -22,7 +22,10 @@ export default async function PaginaPlanesPaciente({ params }: PageProps<"/panel
         descripcion="El borrador se puede cambiar tranquilo. El paciente ve solo la versión que publiques."
         acciones={
           <Button asChild>
-            <Link href={`/panel/pacientes/${paciente.id}/planes/nuevo`}>Nuevo plan</Link>
+            <Link href={`/panel/pacientes/${paciente.id}/planes/nuevo`}>
+              <Plus aria-hidden="true" />
+              Nuevo plan
+            </Link>
           </Button>
         }
       />
@@ -33,7 +36,10 @@ export default async function PaginaPlanesPaciente({ params }: PageProps<"/panel
           descripcion="Creá un borrador, cargá las comidas y publicalo cuando esté listo."
           accion={
             <Button asChild>
-              <Link href={`/panel/pacientes/${paciente.id}/planes/nuevo`}>Crear borrador</Link>
+              <Link href={`/panel/pacientes/${paciente.id}/planes/nuevo`}>
+                <Plus aria-hidden="true" />
+                Crear borrador
+              </Link>
             </Button>
           }
         />

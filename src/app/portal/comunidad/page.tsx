@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Trophy } from "lucide-react";
+import { MessageSquare, Trophy } from "lucide-react";
 import { requerirPaciente } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { listarDesafios } from "@/servicios/comunidad";
 import { obtenerFichaPortal } from "@/servicios/portal";
 import { BotonBorrarActividad, BotonSumarse } from "@/componentes/comunidad/controles-desafio";
 import { FormularioActividad } from "@/componentes/comunidad/formulario-actividad";
+import { VentanaFormulario } from "@/componentes/comunes/ventana-formulario";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { Badge } from "@/componentes/ui/badge";
 import { Skeleton } from "@/componentes/ui/skeleton";
@@ -57,8 +58,6 @@ async function Contenido() {
                 {formatearFechaIso(desafio.inicio)} – {formatearFechaIso(desafio.fin)}
               </p>
               <p className="whitespace-pre-wrap text-sm">{desafio.consigna}</p>
-              {abierto && !sumado && <BotonSumarse desafioId={desafio.id} />}
-              {abierto && sumado && <FormularioActividad desafioId={desafio.id} />}
               {desafio.actividades_comunidad.length > 0 && (
                 <ul className="space-y-3 border-t pt-4">
                   {desafio.actividades_comunidad.map((actividad) => (
@@ -76,6 +75,12 @@ async function Contenido() {
                     </li>
                   ))}
                 </ul>
+              )}
+              {abierto && !sumado && <BotonSumarse desafioId={desafio.id} />}
+              {abierto && sumado && (
+                <VentanaFormulario icono={<MessageSquare aria-hidden="true" />} etiqueta="Contar cómo me fue" titulo="Tu actividad" descripcion="Lo leen las otras personas del grupo." variante="outline">
+                  <FormularioActividad desafioId={desafio.id} />
+                </VentanaFormulario>
               )}
             </article>
           );

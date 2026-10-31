@@ -80,32 +80,25 @@ async function ContenidoAdmin() {
               descripcion="Cuando un profesional complete su registro, va a aparecer en este listado."
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <caption className="sr-only">Consultorios registrados recientemente</caption>
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th scope="col" className="py-2 pr-4 font-medium">Consultorio</th>
-                    <th scope="col" className="py-2 pr-4 font-medium">Alta</th>
-                    <th scope="col" className="py-2 font-medium">Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recientes.map((consultorio) => (
-                    <tr key={consultorio.id} className="border-b last:border-0">
-                      <td className="py-3 pr-4 font-medium">{consultorio.nombre}</td>
-                      <td className="py-3 pr-4 whitespace-nowrap text-muted-foreground">
+            <div>
+              <ul className="divide-y text-sm">
+                {recientes.map((consultorio) => (
+                  <li key={consultorio.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto]">
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">{consultorio.nombre}</span>
+                      <span className="mt-0.5 block truncate text-muted-foreground sm:hidden">
                         {formatoFecha.format(new Date(consultorio.creado_en))}
-                      </td>
-                      <td className="py-3">
-                        <Badge variant={ETIQUETAS_ESTADO[consultorio.estado].variante}>
-                          {ETIQUETAS_ESTADO[consultorio.estado].texto}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </span>
+                    </span>
+                    <span className="hidden min-w-0 truncate text-muted-foreground sm:block">
+                      {formatoFecha.format(new Date(consultorio.creado_en))}
+                    </span>
+                    <Badge variant={ETIQUETAS_ESTADO[consultorio.estado].variante}>
+                      {ETIQUETAS_ESTADO[consultorio.estado].texto}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </CardContent>

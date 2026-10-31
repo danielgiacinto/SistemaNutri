@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { Lock, Send, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { borrarBorradorDesafio, cerrarDesafio, publicarDesafio, quitarActividad, unirseADesafio } from "@/acciones/comunidad";
 import { Button } from "@/componentes/ui/button";
@@ -21,15 +22,18 @@ export function ControlesDesafio({ desafioId, estado }: { desafioId: string; est
       {estado === "borrador" && (
         <>
           <Button type="button" disabled={pendiente} onClick={() => ejecutar(() => publicarDesafio(desafioId))}>
+            <Send aria-hidden="true" />
             Publicar
           </Button>
           <Button type="button" variant="outline" disabled={pendiente} onClick={() => ejecutar(() => borrarBorradorDesafio(desafioId))}>
+            <Trash2 aria-hidden="true" />
             Borrar borrador
           </Button>
         </>
       )}
       {estado === "publicado" && (
         <Button type="button" variant="outline" disabled={pendiente} onClick={() => ejecutar(() => cerrarDesafio(desafioId))}>
+          <Lock aria-hidden="true" />
           Cerrar
         </Button>
       )}
@@ -52,7 +56,7 @@ export function BotonSumarse({ desafioId }: { desafioId: string }) {
         })
       }
     >
-      {pendiente ? "Sumándote…" : "Sumarme"}
+      {pendiente ? "Sumándote…" : <><UserPlus aria-hidden="true" /> Sumarme</>}
     </Button>
   );
 }
@@ -74,6 +78,7 @@ export function BotonBorrarActividad({ actividadId }: { actividadId: string }) {
         })
       }
     >
+      <Trash2 aria-hidden="true" />
       Borrar
     </Button>
   );

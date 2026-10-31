@@ -7,8 +7,10 @@ import {
   HeartHandshake,
   LineChart,
   Lock,
+  LogIn,
   Salad,
   Smartphone,
+  Tag,
   Target,
 } from "lucide-react";
 import { SeccionPlan } from "@/componentes/inicio/seccion-plan";
@@ -59,13 +61,22 @@ export default function PaginaInicio() {
           <Logo />
           <nav aria-label="Acceso" className="flex items-center gap-2">
             <Button asChild variant="ghost">
-              <Link href={RUTAS.ingresar}>Ingresar</Link>
+              <Link href={RUTAS.ingresar}>
+                <LogIn aria-hidden="true" />
+                Ingresar
+              </Link>
             </Button>
             <Button asChild variant="ghost" className="hidden sm:inline-flex">
-              <Link href="#plan">El plan</Link>
+              <Link href="#plan">
+                <Tag aria-hidden="true" />
+                El plan
+              </Link>
             </Button>
             <Button asChild>
-              <Link href={RUTAS.registro}>Crear cuenta</Link>
+              <Link href={RUTAS.registro}>
+                <ArrowRight aria-hidden="true" />
+                Crear cuenta
+              </Link>
             </Button>
           </nav>
         </div>
@@ -93,7 +104,10 @@ export default function PaginaInicio() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-11 px-5">
-                <Link href="#plan">Ver precio y qué incluye</Link>
+                <Link href="#plan">
+                  <Tag aria-hidden="true" />
+                  Ver precio y qué incluye
+                </Link>
               </Button>
             </div>
           </div>
