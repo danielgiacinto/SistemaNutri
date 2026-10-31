@@ -973,6 +973,115 @@ export type Database = {
         }
         Relationships: []
       }
+      desafios: {
+        Row: {
+          consigna: string
+          consultorio_id: string
+          creado_en: string
+          creado_por: string | null
+          estado: Database["public"]["Enums"]["estado_desafio"]
+          fin: string
+          id: string
+          inicio: string
+          titulo: string
+          actualizado_en: string
+        }
+        Insert: {
+          consigna: string
+          consultorio_id: string
+          creado_en?: string
+          creado_por?: string | null
+          estado?: Database["public"]["Enums"]["estado_desafio"]
+          fin: string
+          id?: string
+          inicio: string
+          titulo: string
+          actualizado_en?: string
+        }
+        Update: {
+          consigna?: string
+          consultorio_id?: string
+          creado_en?: string
+          creado_por?: string | null
+          estado?: Database["public"]["Enums"]["estado_desafio"]
+          fin?: string
+          id?: string
+          inicio?: string
+          titulo?: string
+          actualizado_en?: string
+        }
+        Relationships: []
+      }
+      participaciones_desafio: {
+        Row: {
+          consultorio_id: string
+          creado_en: string
+          desafio_id: string
+          id: string
+          paciente_id: string
+        }
+        Insert: {
+          consultorio_id?: string
+          creado_en?: string
+          desafio_id: string
+          id?: string
+          paciente_id?: string
+        }
+        Update: {
+          consultorio_id?: string
+          creado_en?: string
+          desafio_id?: string
+          id?: string
+          paciente_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participaciones_desafio_desafio_id_consultorio_id_fkey"
+            columns: ["desafio_id", "consultorio_id"]
+            isOneToOne: false
+            referencedRelation: "desafios"
+            referencedColumns: ["id", "consultorio_id"]
+          },
+        ]
+      }
+      actividades_comunidad: {
+        Row: {
+          autor_visible: string
+          consultorio_id: string
+          creado_en: string
+          desafio_id: string
+          id: string
+          paciente_id: string
+          texto: string
+        }
+        Insert: {
+          autor_visible?: string
+          consultorio_id?: string
+          creado_en?: string
+          desafio_id: string
+          id?: string
+          paciente_id?: string
+          texto: string
+        }
+        Update: {
+          autor_visible?: string
+          consultorio_id?: string
+          creado_en?: string
+          desafio_id?: string
+          id?: string
+          paciente_id?: string
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actividades_comunidad_desafio_id_consultorio_id_fkey"
+            columns: ["desafio_id", "consultorio_id"]
+            isOneToOne: false
+            referencedRelation: "desafios"
+            referencedColumns: ["id", "consultorio_id"]
+          },
+        ]
+      }
       eventos_proveedor: {
         Row: {
           creado_en: string
@@ -1086,6 +1195,7 @@ export type Database = {
     Enums: {
       categoria_objetivo: "peso" | "habito" | "analitica" | "bienestar" | "otro"
       estado_consultorio: "activo" | "suspendido" | "baja"
+      estado_desafio: "borrador" | "publicado" | "cerrado"
       estado_objetivo: "pendiente" | "en_progreso" | "completado" | "cancelado"
       estado_paciente: "activo" | "inactivo"
       estado_turno: "programado" | "confirmado" | "completado" | "cancelado" | "ausente"

@@ -5,6 +5,7 @@ import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { cargarProfesional, requerirSuperadmin } from "@/autorizacion/sesion";
 import { crearAutorizacionRecurrente, obtenerConfiguracionComercial } from "@/servicios/facturacion/mercadopago";
 import { formatearPesos } from "@/lib/moneda";
+import { registrarError } from "@/lib/errores";
 import type { ResultadoAccion } from "@/tipos/acciones";
 
 export async function autorizarSuscripcion(tokenTarjeta: string): Promise<ResultadoAccion> {
@@ -38,17 +39,34 @@ export async function autorizarSuscripcion(tokenTarjeta: string): Promise<Result
   });
   if ("error" in autorizacion) return { ok: false, mensaje: autorizacion.error };
 
-  const { error } = await cliente.from("suscripciones").upsert(
-    {
-      consultorio_id: contexto.consultorio.id,
-      mp_id: autorizacion.id,
-      estado_mp: "authorized",
-      precio: configuracion.precioMensual,
-      moneda: "ARS",
-    },
-    { onConflict: "consultorio_id" },
-  );
-  if (error) return { ok: false, mensaje: "La autorización se creó, pero no pudimos guardarla. Contactá a soporte." };
+  // El titular puede insertar el precio, pero no actualizarlo. Un upsert lo intenta
+  // igual en el conflicto y Postgres rechaza la sentencia completa.
+  const { data: existente, error: errorLectura } = await cliente
+    .from("suscripciones")
+    .select("id")
+    .eq("consultorio_id", contexto.consultorio.id)
+    .maybeSingle();
+  if (errorLectura) {
+    registrarError("suscripcion_guardar", errorLectura);
+    return { ok: false, mensaje: "La autorización se creó, pero no pudimos guardarla. Contactá a soporte." };
+  }
+
+  const { error } = existente
+    ? await cliente
+        .from("suscripciones")
+        .update({ mp_id: autorizacion.id, estado_mp: "authorized" })
+        .eq("id", existente.id)
+    : await cliente.from("suscripciones").insert({
+        consultorio_id: contexto.consultorio.id,
+        mp_id: autorizacion.id,
+        estado_mp: "authorized",
+        precio: configuracion.precioMensual,
+        moneda: "ARS",
+      });
+  if (error) {
+    registrarError("suscripcion_guardar", error);
+    return { ok: false, mensaje: "La autorización se creó, pero no pudimos guardarla. Contactá a soporte." };
+  }
 
   refresh();
   return {

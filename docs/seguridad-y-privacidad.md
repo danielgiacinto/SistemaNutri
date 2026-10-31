@@ -51,6 +51,7 @@
   queda auditada. El portal del paciente consulta vistas/políticas que excluyen notas privadas.
 - El superadministrador no tendrá políticas sobre tablas clínicas.
 - Nada clínico en el feed social: las publicaciones solo contienen lo que el paciente escribe.
+  En Comunidad, `actividades_comunidad` guarda ese texto y el nombre de pila; no hay mediciones ni notas.
 - Archivos (si se usan) en buckets privados de Supabase Storage con URLs firmadas de corta duración.
 - Pagos: estado confirmado solo por webhooks verificados e idempotentes.
 

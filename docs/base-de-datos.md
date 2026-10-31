@@ -15,7 +15,7 @@ hacen cambios manuales desde el panel de Supabase.
 - Los errores de negocio se lanzan con una clave (`raise exception 'consultorio_existente'`)
   que `src/servicios` traduce a mensajes en español.
 
-## Modelo actual (fases 1 a 4)
+## Modelo actual
 
 | Tabla | Propósito | Escritura desde la API |
 | --- | --- | --- |
@@ -37,6 +37,9 @@ hacen cambios manuales desde el panel de Supabase.
 | `planes_comidas` | Comidas del borrador. | Miembros. |
 | `planes_publicaciones` | Copia inmutable al publicar. | Solo SELECT. La crea `publicar_plan`. |
 | `planes_publicaciones_comidas` | Comidas de esa copia. | Solo SELECT. |
+| `desafios` | Actividad grupal del consultorio. Nace en borrador. | Miembros. Borrar solo el borrador. |
+| `participaciones_desafio` | El paciente se suma a un desafío publicado. | El paciente inserta solo el desafío; el trigger fija su ficha. |
+| `actividades_comunidad` | Texto que escribió el paciente. Sin datos clínicos. | El paciente inserta desafío y texto. El nombre visible lo fija el trigger. |
 
 El superadministrador **no** tiene políticas sobre las tablas clínicas.
 

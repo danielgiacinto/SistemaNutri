@@ -56,7 +56,6 @@ export const NAVEGACION = {
       href: "/panel/comunidad",
       icono: HeartHandshake,
       descripcion: "Desafíos y actividades grupales para tus pacientes.",
-      fasePendiente: 6,
     },
     {
       titulo: "Facturación",
@@ -117,7 +116,6 @@ export const NAVEGACION = {
       href: "/portal/comunidad",
       icono: Trophy,
       descripcion: "Desafíos y actividades con otros pacientes.",
-      fasePendiente: 6,
     },
   ],
 } satisfies Record<string, ElementoNavegacion[]>;

@@ -102,10 +102,10 @@ primer pintado.
 
 ## Decisiones pendientes
 
-- **Proveedor de pagos (fase 5).** Propuesta inicial: Mercado Pago Suscripciones
-  (débito recurrente en ARS, medios de pago locales). Stripe requiere en general una
-  entidad fuera de Argentina para cobrar. La decisión final se documentará antes de
-  integrar, verificando condiciones vigentes, y siempre con webhooks autenticados e idempotentes.
+- **Cobro de punta a punta (fase 5).** El proveedor es Mercado Pago Suscripciones.
+  En local la tarjeta de prueba ya puede quedar `authorized`. El webhook, el cobro
+  registrado y la cobertura se prueban al final, con la app desplegada en Vercel
+  y una URL pública. Ver `docs/facturacion.md`.
 - **Envío de correos transaccionales** (recordatorios de turnos): la columna
   `turnos.recordatorio_enviado_en` ya existe. Los correos de Auth ya salen por un SMTP
   de prueba (Gmail). Falta SMTP de producción con dominio propio y el job de recordatorios.
@@ -122,8 +122,8 @@ primer pintado.
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones, gráficos | Implementada |
 | 3 | Portal del paciente e invitaciones | Implementada |
 | 4 | Planes alimentarios con versiones y publicación | Implementada |
-| 5 | Suscripciones, pagos y panel de administración completo | Base implementada. Cobros reales pendientes de credenciales. Ver `docs/facturacion.md`. |
-| 6 | Comunidad y desafíos | Pendiente |
+| 5 | Suscripciones, pagos y panel de administración completo | Autorización de prueba hecha en local. El cobro completo se prueba al final, con la app en Vercel. Ver `docs/facturacion.md`. |
+| 6 | Comunidad y desafíos | Implementada. Ver `docs/base-de-datos.md`. |
 
 El detalle de lo que se puede probar hoy, el entorno de Supabase y lo operativo
 pendiente está en el README (sección Estado) y en `docs/despliegue.md`.

@@ -87,7 +87,10 @@ function mensajeAutorizacion(descripcion: string | undefined): string {
     return "Mercado Pago no aceptó la dirección de retorno. Recargá Facturación e intentá de nuevo.";
   }
   if (/payer and collector/i.test(descripcion)) {
-    return "Con credenciales de prueba, Mercado Pago exige un pagador de prueba. Definí MERCADOPAGO_CORREO_PAGADOR_PRUEBA en .env.local y reiniciá el servidor.";
+    return "Con credenciales de prueba, el pagador tiene que ser otra cuenta de prueba, distinta de la que emitió las credenciales.";
+  }
+  if (/user bad request/i.test(descripcion)) {
+    return "Mercado Pago no reconoce al pagador. El correo de prueba tiene que ser el email de otra cuenta (test_user_…@testuser.com), no el usuario que empieza con TESTUSER.";
   }
   return descripcion;
 }
@@ -143,7 +146,10 @@ export async function crearAutorizacionRecurrente(entrada: {
 
   const cuerpo = (await respuesta.json()) as { id?: string; message?: string; cause?: { description?: string }[] };
   if (!respuesta.ok || !cuerpo.id) {
-    registrarError("mercadopago_preapproval", { message: cuerpo.message ?? respuesta.statusText });
+    registrarError("mercadopago_preapproval", {
+      message: cuerpo.message ?? respuesta.statusText,
+      cause: cuerpo.cause?.[0]?.description,
+    });
     return { error: mensajeAutorizacion(cuerpo.cause?.[0]?.description || cuerpo.message) };
   }
   return { id: cuerpo.id };

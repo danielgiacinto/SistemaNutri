@@ -332,7 +332,7 @@ export function FormularioTarjeta({
           El plan es {precioVisible} por mes. El primer cobro de ese monto se programa al terminar la prueba. Mercado
           Pago puede debitar un importe mínimo para validar la tarjeta y devolverlo: ese importe no suma un mes.
           {pagadorDePrueba
-            ? " Con estas credenciales de prueba, la suscripción queda a nombre de un comprador de prueba de Mercado Pago, no del correo de tu consultorio."
+            ? " Con estas credenciales de prueba, la suscripción queda a nombre del comprador de prueba que figura en el correo. Ese correo tiene que coincidir con el del token de la tarjeta, así que el campo queda fijo."
             : ""}
         </CardDescription>
       </CardHeader>
@@ -446,6 +446,7 @@ export function FormularioTarjeta({
               type="email"
               autoComplete="email"
               defaultValue={correo}
+              readOnly={pagadorDePrueba}
               aria-invalid={errores.correo ? true : undefined}
               aria-describedby={errores.correo ? "mp-correo-error" : undefined}
               onChange={() => setErrores((actual) => sinCampo(actual, "correo"))}

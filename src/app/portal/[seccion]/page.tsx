@@ -4,7 +4,9 @@ import { buscarSeccionPendiente, seccionesPendientes } from "@/configuracion/nav
 import { SeccionEnConstruccion } from "@/componentes/comunes/seccion-en-construccion";
 
 export function generateStaticParams() {
-  return seccionesPendientes("paciente").map(({ segmento }) => ({ seccion: segmento }));
+  const pendientes = seccionesPendientes("paciente").map(({ segmento }) => ({ seccion: segmento }));
+  // Cache Components exige al menos un resultado, aunque no queden secciones pendientes.
+  return pendientes.length > 0 ? pendientes : [{ seccion: "_reservada" }];
 }
 
 export async function generateMetadata({ params }: PageProps<"/portal/[seccion]">): Promise<Metadata> {

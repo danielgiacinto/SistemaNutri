@@ -105,7 +105,7 @@ async function Contenido() {
         <FormularioTarjeta
           clavePublica={credenciales.clavePublica}
           precio={configuracion.precioMensual}
-          correo={contexto.correo ?? ""}
+          correo={(process.env.MERCADOPAGO_CORREO_PAGADOR_PRUEBA?.trim() || contexto.correo) ?? ""}
           pagadorDePrueba={Boolean(process.env.MERCADOPAGO_CORREO_PAGADOR_PRUEBA?.trim())}
         />
       ) : (

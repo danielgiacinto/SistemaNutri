@@ -7,7 +7,9 @@ import { SeccionEnConstruccion } from "@/componentes/comunes/seccion-en-construc
 // Las rutas definidas explícitamente (por ejemplo /panel/configuracion) tienen prioridad
 // sobre este segmento dinámico; al implementar un módulo se agrega su propia carpeta.
 export function generateStaticParams() {
-  return seccionesPendientes("profesional").map(({ segmento }) => ({ seccion: segmento }));
+  const pendientes = seccionesPendientes("profesional").map(({ segmento }) => ({ seccion: segmento }));
+  // Cache Components exige al menos un resultado, aunque no queden secciones pendientes.
+  return pendientes.length > 0 ? pendientes : [{ seccion: "_reservada" }];
 }
 
 export async function generateMetadata({ params }: PageProps<"/panel/[seccion]">): Promise<Metadata> {
@@ -17,8 +19,8 @@ export async function generateMetadata({ params }: PageProps<"/panel/[seccion]">
 
 export default async function PaginaSeccionPendiente({ params }: PageProps<"/panel/[seccion]">) {
   const { seccion } = await params;
-  await requerirProfesional();
   const elemento = buscarSeccionPendiente("profesional", seccion);
   if (!elemento) notFound();
+  await requerirProfesional();
   return <SeccionEnConstruccion seccion={elemento} />;
 }

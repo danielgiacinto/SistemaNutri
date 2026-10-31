@@ -81,18 +81,19 @@ aplicarle las migraciones con `supabase db push`.
 
 ## Entorno de desarrollo actual
 
-Última actualización: 26 de octubre de 2026.
+Última actualización: 31 de octubre de 2026.
 
 | Pieza | Valor |
 | --- | --- |
 | Proyecto | `sistemanutri`, región São Paulo (`sa-east-1`), ref `zisacjleazvlrklwilap` |
-| Migraciones aplicadas | `fundamentos_identidad`, `gestion_clinica` y `portal_paciente_invitaciones` |
+| Esquema | El consultorio hospedado ya incluye suscripciones de Mercado Pago |
 | App local | `npm run dev` → [http://localhost:3000](http://localhost:3000) con `.env.local` |
 | Auth | Plantillas Nutrisfera publicadas; SMTP de prueba con Gmail (ver `docs/autenticacion.md`) |
 | Site URL | `http://localhost:3000` |
 | Redirect URLs / Google OAuth | Habilitado en hospedado: proveedor Google, Redirect URLs de local y callback de Supabase en Google Cloud (`docs/autenticacion.md`) |
-| `SUPABASE_SECRET_KEY` | Vacía en `.env.local`: `npm run superadmin:crear` no corre hasta cargarla |
-| Vercel / secretos de GitHub Actions | Pendientes |
+| Mercado Pago | Credenciales de prueba cargadas. La autorización local ya quedó `authorized`. |
+| `SUPABASE_SECRET_KEY` y secreto del webhook | Vacíos. Sin ellos no se registra un cobro. |
+| Vercel / secretos de GitHub Actions | Pendientes. El cobro de punta a punta se prueba después de este despliegue (`docs/facturacion.md`). |
 
 Este entorno es de desarrollo. Antes de datos reales de pacientes: dominio propio,
 SMTP transaccional, OAuth, CI y la revisión legal de `docs/seguridad-y-privacidad.md`.

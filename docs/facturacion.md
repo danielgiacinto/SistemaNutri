@@ -28,11 +28,22 @@ Cambiar la duración global no modifica pruebas ya concedidas. Ajustar una prueb
 exige ser superadministrador, una fecha y un motivo, y queda en `registros_auditoria`.
 Un mismo correo no obtiene otra prueba, aunque se borre la cuenta.
 
-## Qué no está conectado hasta cargar credenciales
+## Qué se prueba ahora y qué queda para el final
 
-Sin `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRETO`,
-`NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` y `SUPABASE_SECRET_KEY`, no se crea una suscripción
-ni se acepta un webhook. No se simula un cobro.
+En local, con las credenciales de prueba, la tarjeta ya puede autorizar la suscripción
+(`estado_mp = authorized`). Eso no extiende la cobertura: el primer cobro del plan
+queda para cuando vence la prueba, y el aviso de Mercado Pago no llega a `localhost`.
+
+El cobro de punta a punta se prueba **al final del recorrido**, cuando el resto del
+producto esté listo y la app esté desplegada en Vercel:
+
+1. `NEXT_PUBLIC_SITIO_URL` en `https://` del dominio público.
+2. `MERCADOPAGO_WEBHOOK_SECRETO` y `SUPABASE_SECRET_KEY` cargadas en Vercel.
+3. Webhook de Mercado Pago apuntando a `https://tu-dominio/api/facturacion/mercadopago`.
+4. Recién ahí: pago aprobado (titular `APRO`), cobertura extendida y un rechazo (`OTHE`).
+
+Sin el token, la clave pública, el secreto del webhook y `SUPABASE_SECRET_KEY`,
+no se acepta un webhook. No se simula un cobro.
 
 Los correos comerciales (aviso de vencimiento, cobro rechazado) no se envían todavía.
 El aviso se muestra en Facturación. El correo de Auth sigue siendo solo el de la cuenta.
@@ -41,8 +52,11 @@ El aviso se muestra en Facturación. El correo de Auth sigue siendo solo el de l
 
 1. Crear una aplicación en [Tus integraciones](https://www.mercadopago.com.ar/developers/panel/app).
 2. Copiar el access token de **prueba** y la clave pública a `.env.local`.
-3. En Webhooks, la URL de prueba es `https://tu-dominio/api/facturacion/mercadopago`.
-   En local hace falta una URL pública (por ejemplo un túnel). Eventos: `subscription_preapproval` y `subscription_authorized_payment`.
+   Ese token es el vendedor. El pagador tiene que ser **otra** cuenta de prueba: el correo
+   `test_user_…@testuser.com`, no el usuario que empieza con `TESTUSER`. Va en
+   `MERCADOPAGO_CORREO_PAGADOR_PRUEBA`. El formulario usa ese mismo correo para armar el token.
+3. En Webhooks, la URL es `https://tu-dominio/api/facturacion/mercadopago`.
+   Se configura al desplegar en Vercel, no en localhost. Eventos: `subscription_preapproval` y `subscription_authorized_payment`.
 4. Copiar la clave secreta del webhook a `MERCADOPAGO_WEBHOOK_SECRETO`.
 5. Definir el precio mensual en Administración → Suscripciones. Hasta entonces no se puede autorizar.
 

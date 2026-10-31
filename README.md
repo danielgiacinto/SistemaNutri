@@ -6,10 +6,13 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
-Última actualización: 28 de octubre de 2026. El producto está en **fase 4**:
-se puede registrar un consultorio, trabajar la clínica, invitar al paciente y publicar planes alimentarios.
-La fase 6 todavía no está implementada (el menú muestra Comunidad como “en construcción”).
-La fase 5 tiene la prueba, el control de acceso y la integración de Mercado Pago preparada; los cobros reales esperan las credenciales.
+Última actualización: 31 de octubre de 2026. El producto está en **fase 4**
+para el uso del consultorio: se puede registrar, trabajar la clínica, invitar al paciente
+y publicar planes alimentarios. La fase 6 ya tiene desafíos y actividades en Comunidad.
+
+La fase 5 ya autoriza la tarjeta en Mercado Pago y controla la prueba y el acceso.
+El cobro de punta a punta se prueba **al final**, cuando el resto esté listo y la app
+esté desplegada en Vercel con URL pública. En local el webhook no llega.
 
 | Fase | Contenido | Estado |
 | --- | --- | --- |
@@ -17,8 +20,8 @@ La fase 5 tiene la prueba, el control de acceso y la integración de Mercado Pag
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
 | 4 | Planes alimentarios con versiones | ✅ Listo para probar |
-| 5 | Suscripciones, pagos y administración | Base lista. Los cobros reales esperan las credenciales de Mercado Pago. |
-| 6 | Comunidad y desafíos | Pendiente |
+| 5 | Suscripciones, pagos y administración | Autorización de prueba hecha en local. El cobro completo se prueba al final, con la app en Vercel. |
+| 6 | Comunidad y desafíos | ✅ Listo para probar |
 
 ### Qué se puede probar ahora (profesional)
 
@@ -28,21 +31,39 @@ La fase 5 tiene la prueba, el control de acceso y la integración de Mercado Pag
 4. En `/panel`: el día del consultorio (indicadores, próximo paciente y evoluciones recientes), más pacientes, turnos, evoluciones, objetivos, mediciones y configuración.
 5. En la ficha del paciente → **Visibilidad** → **Invitar al portal**. Llega un correo: al abrirlo elige una contraseña, acepta y entra a `/portal`.
 6. En la ficha → **Planes**: el borrador no se comparte. **Publicar para el paciente** deja esa versión en `/portal/plan`.
+7. En **Comunidad**: creá un desafío, publicalo, y con la cuenta del paciente sumate y escribí una actividad. El borrador no se ve en el portal.
+
+No hace falta recorrer Facturación ahora. La autorización local ya respondió `authorized`
+con las credenciales de prueba. Cobertura, cobro registrado y rechazo se prueban
+cuando exista la URL pública (ver más abajo).
 
 No hay cuenta de prueba precargada: cada quien se registra. **Continuar con Google**
 está habilitado en el proyecto hospedado (alta e ingreso, ver `docs/autenticacion.md`).
+
+### Qué se prueba al final
+
+Cuando la clínica, el portal y los planes estén cerrados y el proyecto esté en Vercel:
+
+1. Dejar `NEXT_PUBLIC_SITIO_URL` en `https://` del dominio de producción.
+2. Cargar `MERCADOPAGO_WEBHOOK_SECRETO` y `SUPABASE_SECRET_KEY`.
+3. Apuntar el webhook de Mercado Pago a `https://tu-dominio/api/facturacion/mercadopago`.
+4. Recién ahí: pago aprobado, cobertura extendida y un rechazo (titular `OTHE`).
+
+Hasta ese momento, autorizar la tarjeta en local no acredita un mes. El detalle está
+en [`docs/facturacion.md`](docs/facturacion.md).
 
 ### Entorno
 
 | Pieza | Estado |
 | --- | --- |
-| Proyecto Supabase `sistemanutri` (São Paulo) | Creado; las dos migraciones ya están aplicadas |
+| Proyecto Supabase `sistemanutri` (São Paulo) | Creado; el esquema del consultorio está en el proyecto hospedado |
 | `.env.local` | Apunta al proyecto hospedado (no a Supabase local) |
 | Correos de Auth | Plantillas Nutrisfera publicadas + SMTP de prueba con Gmail |
 | Site URL | `http://localhost:3000` |
 | Redirect URLs / Google OAuth | Habilitado en el proyecto hospedado (local + callback de Supabase) |
-| `SUPABASE_SECRET_KEY` | Vacía: el script de superadmin todavía no se puede usar |
-| Vercel y secretos de CI | Pendientes |
+| Mercado Pago | Credenciales de prueba cargadas. La autorización local ya quedó `authorized`. |
+| `SUPABASE_SECRET_KEY` y secreto del webhook | Vacíos. Hacen falta para registrar un cobro. |
+| Vercel y secretos de CI | Pendientes. El cobro completo se prueba después de este despliegue. |
 
 Detalle de Auth y SMTP: [`docs/autenticacion.md`](docs/autenticacion.md).
 Detalle de despliegue y variables: [`docs/despliegue.md`](docs/despliegue.md).

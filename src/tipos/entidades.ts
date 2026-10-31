@@ -30,3 +30,7 @@ export type ComidaPublicada = Fila<"planes_publicaciones_comidas">;
 export type MomentoComida = Enumerado<"momento_comida">;
 export type HorarioAtencion = Fila<"horarios_atencion">;
 export type BloqueoAgenda = Fila<"bloqueos_agenda">;
+export type EstadoDesafio = Enumerado<"estado_desafio">;
+export type Desafio = Fila<"desafios">;
+export type ParticipacionDesafio = Fila<"participaciones_desafio">;
+export type ActividadComunidad = Fila<"actividades_comunidad">;
