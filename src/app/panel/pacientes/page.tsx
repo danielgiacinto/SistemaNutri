@@ -38,7 +38,7 @@ export default function PaginaPacientes({ searchParams }: PageProps<"/panel/paci
           </Button>
         }
       />
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Suspense fallback={<Skeleton className="h-24 rounded-2xl" />}>
           <FiltroPacientes />
         </Suspense>

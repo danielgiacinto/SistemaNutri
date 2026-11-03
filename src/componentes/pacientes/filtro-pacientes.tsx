@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Badge } from "@/componentes/ui/badge";
 import { Input } from "@/componentes/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/componentes/ui/select";
@@ -83,29 +83,33 @@ export function FiltroPacientes() {
 
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-[minmax(0,1fr)_10rem_10rem] sm:items-end">
-        <label className="space-y-1 text-sm font-medium">
-          Buscar
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+          />
           <Input
             value={busqueda}
+            aria-label="Buscar pacientes"
             onChange={(evento) => setBusqueda(evento.target.value)}
             onKeyDown={(evento) => {
               if (evento.key !== "Enter") return;
               evento.preventDefault();
               aplicar({ q: busqueda.trim(), estado, orden });
             }}
-            placeholder="Nombre, apellido, documento o correo"
+            placeholder="Buscar pacientes…"
             autoComplete="off"
+            className="h-9 pl-9"
           />
-        </label>
-        <div className="space-y-1 text-sm font-medium">
-          <label htmlFor="filtro-pacientes-estado">Estado</label>
+        </div>
+        <div className="min-w-0 sm:w-40">
           <Select
             value={estado}
             onValueChange={(valor) => aplicar({ q: busqueda.trim(), estado: leerOpcion(valor, ESTADOS, "activo"), orden })}
           >
-            <SelectTrigger id="filtro-pacientes-estado" className="w-full">
-              <SelectValue />
+            <SelectTrigger aria-label="Filtrar pacientes por estado" className="w-full data-[size=default]:h-9">
+              <SelectValue>Estado: {ETIQUETAS_ESTADO[estado]}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="activo">Activos</SelectItem>
@@ -114,14 +118,13 @@ export function FiltroPacientes() {
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-1 text-sm font-medium">
-          <label htmlFor="filtro-pacientes-orden">Orden</label>
+        <div className="min-w-0 sm:w-40">
           <Select
             value={orden}
             onValueChange={(valor) => aplicar({ q: busqueda.trim(), estado, orden: leerOpcion(valor, ORDENES, "apellido") })}
           >
-            <SelectTrigger id="filtro-pacientes-orden" className="w-full">
-              <SelectValue />
+            <SelectTrigger aria-label="Ordenar pacientes" className="w-full data-[size=default]:h-9">
+              <SelectValue>Orden: {ETIQUETAS_ORDEN[orden]}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="apellido">Apellido</SelectItem>

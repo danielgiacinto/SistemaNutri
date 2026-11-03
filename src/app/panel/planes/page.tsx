@@ -44,13 +44,12 @@ async function Contenido({ parametros }: { parametros: PageProps<"/panel/planes"
   const paciente = pacientes.find((item) => item.id === pacienteId);
 
   return (
-    <div className="space-y-4">
-      <form className="flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-end">
-        <div className="min-w-0 flex-1 space-y-1 text-sm font-medium">
-          <label htmlFor="filtro-planes-paciente">Paciente</label>
+    <div className="space-y-6">
+      <form className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1 sm:max-w-md">
           <Select name="paciente" defaultValue={pacienteId ?? "todos"}>
-            <SelectTrigger id="filtro-planes-paciente" className="w-full">
-              <SelectValue />
+            <SelectTrigger aria-label="Filtrar planes por paciente" className="w-full data-[size=default]:h-9">
+              <SelectValue>Paciente: {paciente ? nombreNatural(paciente) : "Todos"}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
