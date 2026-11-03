@@ -3,7 +3,7 @@
  * como tokens CSS; acá solo se declaran los identificadores y etiquetas.
  */
 export const PALETAS = [
-  { id: "salvia", etiqueta: "Salvia", muestra: "oklch(0.55 0.11 165)" },
+  { id: "salvia", etiqueta: "Verde palta", muestra: "oklch(0.49 0.12 145)" },
   { id: "oceano", etiqueta: "Océano", muestra: "oklch(0.55 0.16 250)" },
   { id: "lavanda", etiqueta: "Lavanda", muestra: "oklch(0.55 0.17 295)" },
   { id: "terracota", etiqueta: "Terracota", muestra: "oklch(0.56 0.15 40)" },

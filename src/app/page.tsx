@@ -55,7 +55,7 @@ const FUNCIONALIDADES = [
 
 export default function PaginaInicio() {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="inicio-marca-palta flex min-h-dvh flex-col">
       <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
           <Logo />

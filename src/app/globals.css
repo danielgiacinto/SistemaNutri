@@ -87,6 +87,18 @@
   --advertencia: oklch(0.75 0.15 75);
   --advertencia-foreground: oklch(0.25 0.05 75);
 
+  --palta-piel: oklch(0.58 0.16 140);
+  --palta-carne: oklch(0.93 0.1 108);
+  --palta-semilla: oklch(0.39 0.11 45);
+  --palta-semilla-luz: oklch(0.52 0.12 48);
+  --palta-hoja: oklch(0.79 0.15 135);
+  --palta-fondo: oklch(0.95 0.035 128);
+  --palta-primario: oklch(0.49 0.12 145);
+  --palta-primario-foreground: oklch(0.99 0.005 145);
+  --palta-acento: oklch(0.95 0.035 128);
+  --palta-acento-foreground: oklch(0.32 0.08 145);
+  --palta-anillo: oklch(0.56 0.13 145);
+
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.32 0.02 255);
   --sidebar-border: oklch(0.925 0.007 240);
@@ -114,6 +126,18 @@
   --advertencia: oklch(0.8 0.14 80);
   --advertencia-foreground: oklch(0.22 0.04 75);
 
+  --palta-piel: oklch(0.66 0.17 140);
+  --palta-carne: oklch(0.94 0.1 108);
+  --palta-semilla: oklch(0.39 0.11 45);
+  --palta-semilla-luz: oklch(0.54 0.12 48);
+  --palta-hoja: oklch(0.82 0.13 135);
+  --palta-fondo: oklch(0.31 0.06 140);
+  --palta-primario: oklch(0.72 0.13 143);
+  --palta-primario-foreground: oklch(0.21 0.05 145);
+  --palta-acento: oklch(0.29 0.05 145);
+  --palta-acento-foreground: oklch(0.92 0.06 125);
+  --palta-anillo: oklch(0.72 0.13 143);
+
   --sidebar: oklch(0.19 0.015 255);
   --sidebar-foreground: oklch(0.88 0.008 240);
   --sidebar-border: oklch(1 0 0 / 8%);
@@ -121,39 +145,48 @@
   --sidebar-accent-foreground: oklch(0.97 0.005 240);
 }
 
-/* 2. Paletas de marca. "Salvia" es la predeterminada (también sin atributo). */
+/* 2. Paletas de marca. Verde palta es la predeterminada (también sin atributo). */
 :root,
 :root[data-paleta="salvia"] {
-  --primary: oklch(0.55 0.11 165);
-  --primary-foreground: oklch(0.99 0.005 165);
-  --accent: oklch(0.955 0.03 165);
-  --accent-foreground: oklch(0.36 0.08 165);
-  --ring: oklch(0.6 0.11 165);
-  --sidebar-primary: oklch(0.55 0.11 165);
-  --sidebar-primary-foreground: oklch(0.99 0.005 165);
-  --sidebar-ring: oklch(0.6 0.11 165);
-  --chart-1: oklch(0.55 0.11 165);
-  --chart-2: oklch(0.65 0.12 200);
-  --chart-3: oklch(0.72 0.13 120);
-  --chart-4: oklch(0.6 0.1 250);
-  --chart-5: oklch(0.75 0.12 80);
+  --primary: var(--palta-primario);
+  --primary-foreground: var(--palta-primario-foreground);
+  --accent: var(--palta-acento);
+  --accent-foreground: var(--palta-acento-foreground);
+  --ring: var(--palta-anillo);
+  --sidebar-primary: var(--palta-primario);
+  --sidebar-primary-foreground: var(--palta-primario-foreground);
+  --sidebar-ring: var(--palta-anillo);
+  --chart-1: var(--palta-primario);
+  --chart-2: oklch(0.62 0.13 129);
+  --chart-3: oklch(0.78 0.14 105);
+  --chart-4: oklch(0.64 0.11 90);
+  --chart-5: oklch(0.63 0.12 47);
 }
 
 :root.dark,
 :root.dark[data-paleta="salvia"] {
-  --primary: oklch(0.74 0.12 165);
-  --primary-foreground: oklch(0.2 0.04 165);
-  --accent: oklch(0.29 0.045 165);
-  --accent-foreground: oklch(0.9 0.05 165);
-  --ring: oklch(0.7 0.11 165);
-  --sidebar-primary: oklch(0.74 0.12 165);
-  --sidebar-primary-foreground: oklch(0.2 0.04 165);
-  --sidebar-ring: oklch(0.7 0.11 165);
-  --chart-1: oklch(0.74 0.12 165);
-  --chart-2: oklch(0.72 0.11 200);
-  --chart-3: oklch(0.78 0.13 120);
-  --chart-4: oklch(0.7 0.1 250);
-  --chart-5: oklch(0.8 0.12 80);
+  --primary: var(--palta-primario);
+  --primary-foreground: var(--palta-primario-foreground);
+  --accent: var(--palta-acento);
+  --accent-foreground: var(--palta-acento-foreground);
+  --ring: var(--palta-anillo);
+  --sidebar-primary: var(--palta-primario);
+  --sidebar-primary-foreground: var(--palta-primario-foreground);
+  --sidebar-ring: var(--palta-anillo);
+  --chart-1: var(--palta-primario);
+  --chart-2: oklch(0.71 0.13 134);
+  --chart-3: oklch(0.84 0.12 105);
+  --chart-4: oklch(0.76 0.11 90);
+  --chart-5: oklch(0.75 0.12 48);
+}
+
+/* La página pública mantiene el verde de marca aunque el usuario tenga otra paleta guardada. */
+.inicio-marca-palta {
+  --primary: var(--palta-primario);
+  --primary-foreground: var(--palta-primario-foreground);
+  --accent: var(--palta-acento);
+  --accent-foreground: var(--palta-acento-foreground);
+  --ring: var(--palta-anillo);
 }
 
 :root[data-paleta="oceano"] {

@@ -10,6 +10,7 @@ import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { Button } from "@/componentes/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { Skeleton } from "@/componentes/ui/skeleton";
+import { TiempoRestanteTurno } from "@/componentes/panel/tiempo-restante-turno";
 import { LOCALE_PREDETERMINADO } from "@/configuracion/producto";
 import { formatearFechaHora, formatearFechaIso, hoyEnZona, minutosEntre } from "@/lib/fechas";
 import { nombreNatural } from "@/lib/antropometria";
@@ -30,6 +31,7 @@ async function ContenidoInicio() {
   const cliente = await crearClienteServidor();
   const hoy = hoyEnZona(contexto.consultorio.zonaHoraria);
   const tablero = await obtenerDatosTablero(cliente, contexto.consultorio.id, contexto.consultorio.zonaHoraria, hoy);
+  const ahoraInicial = new Date().toISOString();
   const fechaHoy = new Intl.DateTimeFormat(LOCALE_PREDETERMINADO, {
     dateStyle: "full",
     timeZone: contexto.consultorio.zonaHoraria,
@@ -97,29 +99,36 @@ async function ContenidoInicio() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,0.8fr)]">
-        <Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="lg:flex lg:h-full lg:flex-col">
           <CardHeader>
             <CardTitle>{tablero.turnoEnCurso ? "En consulta" : "Próximo paciente"}</CardTitle>
             <CardDescription>
               {tablero.turnoEnCurso ? "La consulta está en curso." : "El siguiente turno de la agenda."}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="lg:flex lg:flex-1 lg:items-center">
             {destacado?.pacientes ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
-                    {destacado.pacientes.nombre[0]}
-                    {destacado.pacientes.apellido[0]}
-                  </span>
-                  <div>
-                    <p className="font-semibold">{nombreNatural(destacado.pacientes)}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatearFechaHora(new Date(destacado.inicio), contexto.consultorio.zonaHoraria)}
-                      {destacado.pacientes.documento ? ` · DNI ${destacado.pacientes.documento}` : ""}
-                    </p>
+              <div className="w-full space-y-4 lg:space-y-5">
+                <div className="flex flex-col gap-4 rounded-xl border border-border/70 bg-muted/35 p-4 sm:flex-row sm:items-center sm:justify-between lg:px-5 lg:py-4">
+                  <div className="flex min-w-0 items-center gap-3 lg:gap-4">
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+                      {destacado.pacientes.nombre[0]}
+                      {destacado.pacientes.apellido[0]}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">{nombreNatural(destacado.pacientes)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatearFechaHora(new Date(destacado.inicio), contexto.consultorio.zonaHoraria)}
+                        {destacado.pacientes.documento ? ` · DNI ${destacado.pacientes.documento}` : ""}
+                      </p>
+                    </div>
                   </div>
+                  {!tablero.turnoEnCurso && (
+                    <div className="flex justify-start sm:justify-end">
+                      <TiempoRestanteTurno inicio={destacado.inicio} ahoraInicial={ahoraInicial} />
+                    </div>
+                  )}
                 </div>
                 {progresoConsulta != null && (
                   <div>
@@ -131,7 +140,7 @@ async function ContenidoInicio() {
                     </p>
                   </div>
                 )}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 lg:px-5">
                   <Button asChild size="sm">
                     <Link href={`/panel/agenda/${destacado.id}`}>
                       <CalendarDays aria-hidden="true" />
