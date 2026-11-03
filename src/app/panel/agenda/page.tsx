@@ -7,7 +7,7 @@ import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { esquemaFiltroAgenda } from "@/esquemas/turno";
 import { listarTurnosEnRango } from "@/servicios/turnos";
 import { listarBloqueos, listarHorarios } from "@/servicios/agenda";
-import { hoyEnZona, rangoDeVista } from "@/lib/fechas";
+import { horaEnZona, hoyEnZona, rangoDeVista } from "@/lib/fechas";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { CalendarioAgenda } from "@/componentes/agenda/calendario-agenda";
 import { Button } from "@/componentes/ui/button";
@@ -55,7 +55,10 @@ async function ContenidoAgenda({ searchParams }: { searchParams: PageProps<"/pan
     fecha: fechaParam,
   });
   const filtro = leido.success ? leido.data : esquemaFiltroAgenda.parse({ fecha: fechaParam });
-  const fecha = filtro.fecha ?? hoyEnZona(contexto.consultorio.zonaHoraria);
+  const ahora = new Date();
+  const fechaHoy = hoyEnZona(contexto.consultorio.zonaHoraria, ahora);
+  const horaHoy = horaEnZona(contexto.consultorio.zonaHoraria, ahora);
+  const fecha = filtro.fecha ?? fechaHoy;
   const rango = rangoDeVista(filtro.vista, fecha, contexto.consultorio.zonaHoraria);
   const cliente = await crearClienteServidor();
   const [turnos, horarios, bloqueos] = await Promise.all([
@@ -68,6 +71,8 @@ async function ContenidoAgenda({ searchParams }: { searchParams: PageProps<"/pan
     <CalendarioAgenda
       vista={filtro.vista}
       fecha={fecha}
+      fechaHoy={fechaHoy}
+      horaHoy={horaHoy}
       zonaHoraria={contexto.consultorio.zonaHoraria}
       turnos={turnos}
       horarios={horarios}

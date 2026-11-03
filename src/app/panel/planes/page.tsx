@@ -12,6 +12,7 @@ import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { nombreNatural } from "@/lib/antropometria";
 import { Button } from "@/componentes/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/componentes/ui/select";
 import { Skeleton } from "@/componentes/ui/skeleton";
 
 export const metadata: Metadata = { title: "Planes" };
@@ -45,21 +46,22 @@ async function Contenido({ parametros }: { parametros: PageProps<"/panel/planes"
   return (
     <div className="space-y-4">
       <form className="flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-end">
-        <label className="min-w-0 flex-1 space-y-1 text-sm font-medium">
-          Paciente
-          <select
-            name="paciente"
-            defaultValue={pacienteId ?? ""}
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-sm"
-          >
-            <option value="">Todos</option>
-            {pacientes.map((item) => (
-              <option key={item.id} value={item.id}>
-                {nombreNatural(item)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="min-w-0 flex-1 space-y-1 text-sm font-medium">
+          <label htmlFor="filtro-planes-paciente">Paciente</label>
+          <Select name="paciente" defaultValue={pacienteId ?? "todos"}>
+            <SelectTrigger id="filtro-planes-paciente" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              {pacientes.map((item) => (
+                <SelectItem key={item.id} value={item.id}>
+                  {nombreNatural(item)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex gap-2">
           <Button type="submit" variant="outline">
             <Search aria-hidden="true" />

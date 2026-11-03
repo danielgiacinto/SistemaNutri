@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { Info } from "lucide-react";
 import { requerirSuperadmin } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { obtenerConfiguracionComercial } from "@/servicios/facturacion/mercadopago";
 import { FormularioConfiguracionComercial } from "@/componentes/facturacion/formulario-configuracion";
+import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { formatearPesos } from "@/lib/moneda";
@@ -47,7 +49,9 @@ async function Contenido() {
         <CardHeader>
           <CardTitle>Configuración para las nuevas altas</CardTitle>
           <CardDescription>
-            Este precio es el que ve la página de inicio y el que se cobra después de la prueba. Cambiarlo no modifica las pruebas ya concedidas ni una suscripción ya autorizada.
+            <DescripcionConIcono icono={Info}>
+              Este precio es el que ve la página de inicio y el que se cobra después de la prueba. Cambiarlo no modifica las pruebas ya concedidas ni una suscripción ya autorizada.
+            </DescripcionConIcono>
           </CardDescription>
         </CardHeader>
         <CardContent>

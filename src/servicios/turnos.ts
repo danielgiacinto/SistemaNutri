@@ -9,6 +9,7 @@ export const MENSAJES_TURNO: Record<string, string> = {
   turno_solapado: "Ya hay un turno en ese horario para este consultorio.",
   turno_fuera_de_horario: "Ese horario está fuera de tu atención. Revisá la disponibilidad.",
   turno_en_bloqueo: "Ese horario está bloqueado en la agenda.",
+  turno_pasado: "No se pueden agendar turnos en horarios que ya pasaron.",
   paciente_inactivo: "No se pueden agendar turnos a un paciente inactivo.",
   paciente_ajeno: "El paciente no pertenece a este consultorio.",
   turno_cruza_dia: "El turno no puede cruzar la medianoche.",
@@ -94,6 +95,9 @@ export async function crearTurno(
   datos: DatosAltaTurnoValidados,
 ): Promise<ResultadoAccion<{ turnoId: string }>> {
   const rango = rangoDesdeFormulario(datos, zonaHoraria);
+  if (new Date(rango.inicio).getTime() <= Date.now()) {
+    return { ok: false, mensaje: MENSAJES_TURNO.turno_pasado };
+  }
   const { data, error } = await cliente
     .from("turnos")
     .insert({

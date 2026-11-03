@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
 import { cerrarSesion } from "@/acciones/autenticacion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/componentes/ui/avatar";
 import {
@@ -71,11 +71,17 @@ export function MenuUsuario({ usuario, enlaces, compacto = false }: PropiedadesM
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              {enlaces.map((enlace) => (
-                <DropdownMenuItem key={enlace.href} asChild>
-                  <Link href={enlace.href}>{enlace.etiqueta}</Link>
-                </DropdownMenuItem>
-              ))}
+              {enlaces.map((enlace) => {
+                const Icono = enlace.href.endsWith("/configuracion") ? Settings : null;
+                return (
+                  <DropdownMenuItem key={enlace.href} asChild>
+                    <Link href={enlace.href}>
+                      {Icono && <Icono aria-hidden="true" />}
+                      {enlace.etiqueta}
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
             </DropdownMenuGroup>
           </>
         )}

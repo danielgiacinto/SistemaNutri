@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { KeyRound } from "lucide-react";
+import { Building2, KeyRound, Palette, ShieldCheck, UserRound } from "lucide-react";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { RUTAS } from "@/autorizacion/rutas";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { obtenerDatosConsultorio } from "@/servicios/consultorios";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
+import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
 import { FormularioPerfil } from "@/componentes/configuracion/formulario-perfil";
 import { FormularioApariencia } from "@/componentes/configuracion/formulario-apariencia";
 import { FormularioConsultorio } from "@/componentes/configuracion/formulario-consultorio";
@@ -39,7 +40,9 @@ async function SeccionesConfiguracion() {
       <Card id="perfil" className="scroll-mt-20">
         <CardHeader>
           <CardTitle>Perfil profesional</CardTitle>
-          <CardDescription>Así te ven tus pacientes en su portal.</CardDescription>
+          <CardDescription>
+            <DescripcionConIcono icono={UserRound}>Así te ven tus pacientes en su portal.</DescripcionConIcono>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <FormularioPerfil
@@ -52,7 +55,9 @@ async function SeccionesConfiguracion() {
       <Card id="consultorio" className="scroll-mt-20">
         <CardHeader>
           <CardTitle>Consultorio</CardTitle>
-          <CardDescription>Datos generales y zona horaria para la agenda.</CardDescription>
+          <CardDescription>
+            <DescripcionConIcono icono={Building2}>Datos generales y zona horaria para la agenda.</DescripcionConIcono>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {consultorio ? (
@@ -76,7 +81,9 @@ async function SeccionesConfiguracion() {
       <Card id="apariencia" className="scroll-mt-20">
         <CardHeader>
           <CardTitle>Apariencia</CardTitle>
-          <CardDescription>Se guarda en tu cuenta y se aplica en todos tus dispositivos.</CardDescription>
+          <CardDescription>
+            <DescripcionConIcono icono={Palette}>Se guarda en tu cuenta y se aplica en todos tus dispositivos.</DescripcionConIcono>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <FormularioApariencia inicial={contexto.preferencias} />
@@ -87,7 +94,9 @@ async function SeccionesConfiguracion() {
         <CardHeader>
           <CardTitle>Seguridad</CardTitle>
           <CardDescription>
-            Si ingresás con Google también podés definir una contraseña para ingresar con tu correo.
+            <DescripcionConIcono icono={ShieldCheck}>
+              Si ingresás con Google también podés definir una contraseña para ingresar con tu correo.
+            </DescripcionConIcono>
           </CardDescription>
         </CardHeader>
         <CardContent>

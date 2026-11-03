@@ -85,8 +85,34 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
           )}
         />
         <div className="grid gap-5 sm:grid-cols-3">
-          <CampoTexto id="turno-fecha" etiqueta="Fecha" type="date" error={errores.fecha?.message} {...formulario.register("fecha")} />
-          <CampoTexto id="turno-hora" etiqueta="Hora de inicio" type="time" error={errores.hora?.message} {...formulario.register("hora")} />
+          <Controller
+            control={formulario.control}
+            name="fecha"
+            render={({ field: campo }) => (
+              <CampoTexto
+                id="turno-fecha"
+                etiqueta="Fecha"
+                type="date"
+                error={errores.fecha?.message}
+                {...campo}
+                value={campo.value ?? ""}
+              />
+            )}
+          />
+          <Controller
+            control={formulario.control}
+            name="hora"
+            render={({ field: campo }) => (
+              <CampoTexto
+                id="turno-hora"
+                etiqueta="Hora de inicio"
+                type="time"
+                error={errores.hora?.message}
+                {...campo}
+                value={campo.value ?? ""}
+              />
+            )}
+          />
           <Controller
             control={formulario.control}
             name="duracionMinutos"

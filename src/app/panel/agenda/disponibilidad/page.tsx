@@ -5,6 +5,7 @@ import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { listarBloqueos, listarHorarios } from "@/servicios/agenda";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
+import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
 import { FormularioHorario } from "@/componentes/agenda/formulario-horario";
 import { FormularioBloqueo } from "@/componentes/agenda/formulario-bloqueo";
 import { VentanaFormulario } from "@/componentes/comunes/ventana-formulario";
@@ -45,7 +46,9 @@ async function Contenido() {
         <Card>
           <CardHeader>
             <CardTitle>Horarios de atención</CardTitle>
-            <CardDescription>Hora local del consultorio ({contexto.consultorio.zonaHoraria}).</CardDescription>
+            <CardDescription>
+              <DescripcionConIcono icono={Clock}>Hora local del consultorio ({contexto.consultorio.zonaHoraria}).</DescripcionConIcono>
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {horarios.length === 0 ? (
@@ -71,7 +74,9 @@ async function Contenido() {
         <Card>
           <CardHeader>
             <CardTitle>Bloqueos</CardTitle>
-            <CardDescription>Vacaciones, reuniones u otros intervalos no reservables.</CardDescription>
+            <CardDescription>
+              <DescripcionConIcono icono={Ban}>Vacaciones, reuniones u otros intervalos no reservables.</DescripcionConIcono>
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {bloqueos.length === 0 ? (

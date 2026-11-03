@@ -105,6 +105,22 @@ describe("turnos", () => {
     ).rejects.toThrow(/turno_solapado/);
   });
 
+  it("permite cambiar el estado de un turno sin leer campos de planes alimentarios", async () => {
+    const turno = await comoUsuario(bd, usuarioA, async (tx) => {
+      const resultado = await tx.query<{ id: string }>(
+        "select id from public.turnos where consultorio_id = $1 and paciente_id = $2 limit 1",
+        [consultorioA, pacienteA],
+      );
+      return resultado.rows[0].id;
+    });
+
+    for (const estado of ["confirmado", "completado", "ausente"] as const) {
+      await comoUsuario(bd, usuarioA, (tx) =>
+        tx.query("update public.turnos set estado = $1 where id = $2", [estado, turno]),
+      );
+    }
+  });
+
   it("rechaza un turno fuera del horario de atención cuando hay franjas", async () => {
     await comoUsuario(bd, usuarioA, (tx) =>
       tx.query(

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { Badge } from "@/componentes/ui/badge";
 import { Input } from "@/componentes/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/componentes/ui/select";
 import {
   hrefListadoPacientes,
   type EstadoListadoPacientes,
@@ -23,9 +24,6 @@ const ETIQUETAS_ORDEN: Record<OrdenListadoPacientes, string> = {
   reciente: "Más recientes",
 };
 const ESPERA_BUSQUEDA_MS = 300;
-
-const CLASE_SELECT =
-  "h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function leerOpcion<T extends string>(valor: string | null, opciones: readonly T[], defecto: T): T {
   return opciones.includes(valor as T) ? (valor as T) : defecto;
@@ -100,29 +98,37 @@ export function FiltroPacientes() {
             autoComplete="off"
           />
         </label>
-        <label className="space-y-1 text-sm font-medium">
-          Estado
-          <select
+        <div className="space-y-1 text-sm font-medium">
+          <label htmlFor="filtro-pacientes-estado">Estado</label>
+          <Select
             value={estado}
-            onChange={(evento) => aplicar({ q: busqueda.trim(), estado: leerOpcion(evento.target.value, ESTADOS, "activo"), orden })}
-            className={CLASE_SELECT}
+            onValueChange={(valor) => aplicar({ q: busqueda.trim(), estado: leerOpcion(valor, ESTADOS, "activo"), orden })}
           >
-            <option value="activo">Activos</option>
-            <option value="inactivo">Inactivos</option>
-            <option value="todos">Todos</option>
-          </select>
-        </label>
-        <label className="space-y-1 text-sm font-medium">
-          Orden
-          <select
+            <SelectTrigger id="filtro-pacientes-estado" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="activo">Activos</SelectItem>
+              <SelectItem value="inactivo">Inactivos</SelectItem>
+              <SelectItem value="todos">Todos</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1 text-sm font-medium">
+          <label htmlFor="filtro-pacientes-orden">Orden</label>
+          <Select
             value={orden}
-            onChange={(evento) => aplicar({ q: busqueda.trim(), estado, orden: leerOpcion(evento.target.value, ORDENES, "apellido") })}
-            className={CLASE_SELECT}
+            onValueChange={(valor) => aplicar({ q: busqueda.trim(), estado, orden: leerOpcion(valor, ORDENES, "apellido") })}
           >
-            <option value="apellido">Apellido</option>
-            <option value="reciente">Más recientes</option>
-          </select>
-        </label>
+            <SelectTrigger id="filtro-pacientes-orden" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="apellido">Apellido</SelectItem>
+              <SelectItem value="reciente">Más recientes</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {insignias.length > 0 && (

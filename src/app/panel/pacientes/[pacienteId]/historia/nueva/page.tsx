@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { LockKeyhole } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { listarTurnosDelPaciente } from "@/servicios/turnos";
 import { FormularioEvolucion } from "@/componentes/clinica/formulario-evolucion";
 import { Volver } from "@/componentes/comunes/volver";
+import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 
 export const metadata: Metadata = { title: "Nueva evolución" };
@@ -23,7 +25,11 @@ export default async function PaginaNuevaEvolucion({
       <Card>
       <CardHeader>
         <CardTitle>Nueva evolución</CardTitle>
-        <CardDescription>La nota nace privada y en borrador. Compartirla requiere una acción explícita.</CardDescription>
+        <CardDescription>
+          <DescripcionConIcono icono={LockKeyhole}>
+            La nota nace privada y en borrador. Compartirla requiere una acción explícita.
+          </DescripcionConIcono>
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <FormularioEvolucion

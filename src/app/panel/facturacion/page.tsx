@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { Ban, CalendarDays, CircleCheck, Clock3, CreditCard, ReceiptText, ShieldAlert } from "lucide-react";
 import { cargarProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { credencialesMercadoPago, obtenerConfiguracionComercial } from "@/servicios/facturacion/mercadopago";
 import { FranjaAviso } from "@/componentes/comunes/franja-aviso";
+import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
 import { Badge } from "@/componentes/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { Skeleton } from "@/componentes/ui/skeleton";
@@ -35,6 +37,14 @@ const TEXTOS: Record<string, { titulo: string; texto: string }> = {
   },
 };
 
+const ICONOS_ESTADO = {
+  prueba: CalendarDays,
+  activo: CircleCheck,
+  gracia: Clock3,
+  vencido: Ban,
+  suspendido_admin: ShieldAlert,
+} as const;
+
 export default function PaginaFacturacion() {
   return (
     <Suspense fallback={<Skeleton className="h-80" />}>
@@ -55,6 +65,7 @@ async function Contenido() {
   ]);
   const codigo = estado.data ?? "vencido";
   const aviso = TEXTOS[codigo] ?? TEXTOS.vencido;
+  const IconoEstado = ICONOS_ESTADO[codigo as keyof typeof ICONOS_ESTADO] ?? Ban;
   const zona = contexto.consultorio.zonaHoraria;
   const fecha = new Intl.DateTimeFormat(LOCALE_PREDETERMINADO, { dateStyle: "long", timeZone: zona });
   const credenciales = credencialesMercadoPago();
@@ -77,7 +88,9 @@ async function Contenido() {
       <Card>
         <CardHeader>
           <CardTitle>{aviso.titulo}</CardTitle>
-          <CardDescription>{aviso.texto}</CardDescription>
+          <CardDescription>
+            <DescripcionConIcono icono={IconoEstado}>{aviso.texto}</DescripcionConIcono>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-4 sm:grid-cols-2">
@@ -113,18 +126,24 @@ async function Contenido() {
         <CardHeader>
           <CardTitle>Pago con Mercado Pago</CardTitle>
           <CardDescription>
-            {contexto.consultorio.rol !== "titular"
-              ? "Solo el titular puede elegir el plan."
-              : credenciales && configuracion.precioMensual
-                ? "Al elegir el plan se abre Mercado Pago. La tarjeta no se carga en esta pantalla."
-                : "Falta el precio o las credenciales de Mercado Pago. No se simula ningún cobro."}
+            <DescripcionConIcono icono={CreditCard}>
+              {contexto.consultorio.rol !== "titular"
+                ? "Solo el titular puede elegir el plan."
+                : credenciales && configuracion.precioMensual
+                  ? "Al elegir el plan se abre Mercado Pago. La tarjeta no se carga en esta pantalla."
+                  : "Falta el precio o las credenciales de Mercado Pago. No se simula ningún cobro."}
+            </DescripcionConIcono>
           </CardDescription>
         </CardHeader>
       </Card>
       <Card>
         <CardHeader>
           <CardTitle>Cobros</CardTitle>
-          <CardDescription>Pagos confirmados por Mercado Pago. Un monto menor al precio no suma un mes.</CardDescription>
+          <CardDescription>
+            <DescripcionConIcono icono={ReceiptText}>
+              Pagos confirmados por Mercado Pago. Un monto menor al precio no suma un mes.
+            </DescripcionConIcono>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {(pagosLista.data ?? []).length === 0 ? (

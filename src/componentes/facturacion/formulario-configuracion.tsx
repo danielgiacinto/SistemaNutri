@@ -8,6 +8,7 @@ import { guardarConfiguracionComercial } from "@/acciones/facturacion";
 import { Button } from "@/componentes/ui/button";
 import { Input } from "@/componentes/ui/input";
 import { Label } from "@/componentes/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/componentes/ui/select";
 import { formatearPesos, textoDuracionPrueba } from "@/lib/moneda";
 import type { ConfiguracionComercial } from "@/servicios/facturacion/mercadopago";
 
@@ -15,6 +16,8 @@ export function FormularioConfiguracionComercial({ inicial }: { inicial: Configu
   const router = useRouter();
   const [pendiente, iniciar] = useTransition();
   const [confirmacion, setConfirmacion] = useState<string | null>(null);
+  const [pruebaUnidad, setPruebaUnidad] = useState<string>(inicial.pruebaUnidad);
+  const [pruebasHabilitadas, setPruebasHabilitadas] = useState<string>(inicial.pruebasHabilitadas ? "si" : "no");
   const precio = formatearPesos(inicial.precioMensual);
   const prueba = textoDuracionPrueba(inicial.pruebaCantidad, inicial.pruebaUnidad);
 
@@ -53,15 +56,16 @@ export function FormularioConfiguracionComercial({ inicial }: { inicial: Configu
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="prueba-unidad">Unidad</Label>
-          <select
-            id="prueba-unidad"
-            name="pruebaUnidad"
-            defaultValue={inicial.pruebaUnidad}
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
-          >
-            <option value="meses">Meses calendario</option>
-            <option value="dias">Días</option>
-          </select>
+          <Select value={pruebaUnidad} onValueChange={setPruebaUnidad}>
+            <SelectTrigger id="prueba-unidad" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="meses">Meses calendario</SelectItem>
+              <SelectItem value="dias">Días</SelectItem>
+            </SelectContent>
+          </Select>
+          <input type="hidden" name="pruebaUnidad" value={pruebaUnidad} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="precio-mensual">Precio mensual ARS</Label>
@@ -82,15 +86,16 @@ export function FormularioConfiguracionComercial({ inicial }: { inicial: Configu
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="pruebas-habilitadas">Pruebas nuevas</Label>
-          <select
-            id="pruebas-habilitadas"
-            name="pruebasHabilitadas"
-            defaultValue={inicial.pruebasHabilitadas ? "si" : "no"}
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
-          >
-            <option value="si">Habilitadas</option>
-            <option value="no">Deshabilitadas</option>
-          </select>
+          <Select value={pruebasHabilitadas} onValueChange={setPruebasHabilitadas}>
+            <SelectTrigger id="pruebas-habilitadas" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="si">Habilitadas</SelectItem>
+              <SelectItem value="no">Deshabilitadas</SelectItem>
+            </SelectContent>
+          </Select>
+          <input type="hidden" name="pruebasHabilitadas" value={pruebasHabilitadas} />
         </div>
         <div className="flex items-end">
           <Button type="submit" disabled={pendiente}>

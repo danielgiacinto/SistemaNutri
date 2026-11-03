@@ -268,6 +268,13 @@
   }
 }
 
+/* Las opciones nativas no siempre heredan el tema del control en Chrome. */
+select option,
+select optgroup {
+  color: var(--popover-foreground);
+  background-color: var(--popover);
+}
+
 /*
  * Mercado Pago pisa estos contenedores con un alto de 150px y sin borde
  * (selector por id). El !important los deja del tamaño de un campo normal.

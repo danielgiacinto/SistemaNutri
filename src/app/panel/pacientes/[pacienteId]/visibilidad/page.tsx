@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Mail, ShieldCheck } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { FormularioInvitacion } from "@/componentes/pacientes/formulario-invitacion";
 import { listarEvoluciones } from "@/servicios/evoluciones";
@@ -6,6 +7,7 @@ import { obtenerInvitacionPendiente } from "@/servicios/invitaciones";
 import { listarObjetivos } from "@/servicios/objetivos";
 import { listarMediciones } from "@/servicios/mediciones";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
+import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
 import { formatearFechaHora } from "@/lib/fechas";
 
 export const metadata: Metadata = { title: "Visibilidad para el paciente" };
@@ -32,9 +34,11 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
       <CardHeader>
         <CardTitle>Invitación al portal</CardTitle>
         <CardDescription>
-          {invitacion
-            ? `Hay una invitación vigente para ${invitacion.correo} hasta el ${formatearFechaHora(new Date(invitacion.expira_en), contexto.consultorio.zonaHoraria)}.`
-            : "Le enviamos un correo al de la ficha. Al abrirlo elige una contraseña y acepta. En el portal solo ve turnos y lo que marques como visible."}
+          <DescripcionConIcono icono={Mail}>
+            {invitacion
+              ? `Hay una invitación vigente para ${invitacion.correo} hasta el ${formatearFechaHora(new Date(invitacion.expira_en), contexto.consultorio.zonaHoraria)}.`
+              : "Le enviamos un correo al de la ficha. Al abrirlo elige una contraseña y acepta. En el portal solo ve turnos y lo que marques como visible."}
+          </DescripcionConIcono>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -45,7 +49,9 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
       <CardHeader>
         <CardTitle>Qué verá el paciente</CardTitle>
         <CardDescription>
-          Nada se comparte por defecto. Las notas en borrador nunca se publican.
+          <DescripcionConIcono icono={ShieldCheck}>
+            Nada se comparte por defecto. Las notas en borrador nunca se publican.
+          </DescripcionConIcono>
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-3">
