@@ -8,7 +8,6 @@ import { listarObjetivos } from "@/servicios/objetivos";
 import { listarMediciones } from "@/servicios/mediciones";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
-import { formatearFechaHora } from "@/lib/fechas";
 
 export const metadata: Metadata = { title: "Visibilidad para el paciente" };
 
@@ -34,15 +33,24 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
       <CardHeader>
         <CardTitle>Invitación al portal</CardTitle>
         <CardDescription>
-          <DescripcionConIcono icono={Mail}>
-            {invitacion
-              ? `Hay una invitación vigente para ${invitacion.correo} hasta el ${formatearFechaHora(new Date(invitacion.expira_en), contexto.consultorio.zonaHoraria)}.`
-              : "Le enviamos un correo al de la ficha. Al abrirlo elige una contraseña y acepta. En el portal solo ve turnos y lo que marques como visible."}
+          <DescripcionConIcono icono={paciente.usuario_id ? ShieldCheck : Mail}>
+            {paciente.usuario_id
+              ? "Esta persona ya aceptó la invitación y puede entrar al portal."
+              : invitacion
+                ? "La invitación está pendiente. Esta persona todavía no puede entrar al portal."
+                : paciente.correo
+                  ? "Esta persona todavía no tiene acceso al portal."
+                  : "Esta persona todavía no tiene acceso al portal. Agregá un correo en la ficha para poder invitarla."}
           </DescripcionConIcono>
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <FormularioInvitacion pacienteId={paciente.id} correo={paciente.correo} vinculado={Boolean(paciente.usuario_id)} />
+        <FormularioInvitacion
+          pacienteId={paciente.id}
+          correo={paciente.correo}
+          vinculado={Boolean(paciente.usuario_id)}
+          invitacionPendiente={Boolean(invitacion)}
+        />
       </CardContent>
     </Card>
     <Card>

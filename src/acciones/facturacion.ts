@@ -5,7 +5,8 @@ import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { cargarProfesional, requerirSuperadmin } from "@/autorizacion/sesion";
 import { crearAutorizacionRecurrente, obtenerConfiguracionComercial } from "@/servicios/facturacion/mercadopago";
 import { formatearPesos } from "@/lib/moneda";
-import { registrarError } from "@/lib/errores";
+import { mensajeDeNegocio, registrarError } from "@/lib/errores";
+import { esquemaUuid } from "@/esquemas/comunes";
 import type { ResultadoAccion } from "@/tipos/acciones";
 
 export async function autorizarSuscripcion(tokenTarjeta: string): Promise<ResultadoAccion> {
@@ -117,16 +118,35 @@ export async function guardarConfiguracionComercial(formulario: FormData): Promi
   };
 }
 
-export async function extenderPrueba(formulario: FormData): Promise<void> {
+export async function extenderPrueba(formulario: FormData): Promise<ResultadoAccion> {
   await requerirSuperadmin();
   const consultorioId = String(formulario.get("consultorioId") ?? "");
   const vence = String(formulario.get("vence") ?? "");
-  const motivo = String(formulario.get("motivo") ?? "");
+  const motivo = String(formulario.get("motivo") ?? "").trim();
+  if (!esquemaUuid.safeParse(consultorioId).success) return { ok: false, mensaje: "No encontramos ese consultorio." };
+  if (!vence || !Number.isFinite(new Date(vence).getTime())) {
+    return { ok: false, mensaje: "Elegí una fecha y hora de vencimiento válidas." };
+  }
+  if (motivo.length < 5 || motivo.length > 500) {
+    return { ok: false, mensaje: "El motivo debe tener entre 5 y 500 caracteres." };
+  }
+
   const cliente = await crearClienteServidor();
-  await cliente.rpc("ajustar_prueba", {
+  const { error } = await cliente.rpc("ajustar_prueba", {
     p_consultorio_id: consultorioId,
     p_vence_en: new Date(vence).toISOString(),
     p_motivo: motivo,
   });
+  if (error) {
+    const mensaje = mensajeDeNegocio(error, {
+      sin_permiso: "No tenés permiso para ajustar esta prueba.",
+      prueba_inexistente: "No encontramos una prueba vigente para este consultorio.",
+      motivo_obligatorio: "El motivo debe tener al menos 5 caracteres.",
+      fecha_invalida: "Elegí una fecha de vencimiento válida.",
+    });
+    if (!mensaje) registrarError("ajustar_prueba", error);
+    return { ok: false, mensaje: mensaje ?? "No se pudo ajustar la prueba gratuita. Intentá nuevamente." };
+  }
   refresh();
+  return { ok: true, mensaje: "La prueba gratuita quedó ajustada." };
 }

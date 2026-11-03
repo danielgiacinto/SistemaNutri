@@ -11,25 +11,21 @@ export function FormularioInvitacion({
   pacienteId,
   correo,
   vinculado,
+  invitacionPendiente,
 }: {
   pacienteId: string;
   correo: string | null;
   vinculado: boolean;
+  invitacionPendiente: boolean;
 }) {
   const [pendiente, iniciarTransicion] = useTransition();
   const [enlace, setEnlace] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
 
-  if (vinculado) {
-    return <p className="text-sm text-muted-foreground">Esta persona ya aceptó la invitación y puede entrar al portal.</p>;
-  }
+  if (vinculado) return null;
 
   if (!correo) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Cargá un correo en la ficha para poder invitarla. La invitación solo se acepta con ese correo.
-      </p>
-    );
+    return null;
   }
 
   const invitar = () =>
@@ -54,14 +50,9 @@ export function FormularioInvitacion({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        La invitación es para <strong className="text-foreground">{correo}</strong>. Dura 7 días y reemplaza a la anterior
-        si todavía no se aceptó. Le llega un correo: al abrirlo elige una contraseña y después acepta. Si el correo no
-        sale, copiá el enlace.
-      </p>
       <BotonEnvio type="button" pendiente={pendiente} textoPendiente="Enviando…" onClick={invitar}>
         <Mail aria-hidden="true" />
-        Invitar al portal
+        {invitacionPendiente || enlace ? "Reenviar invitación" : "Invitar al portal"}
       </BotonEnvio>
       {enlace && (
         <div className="space-y-2">
