@@ -47,9 +47,11 @@ Falta demostrar el recorrido completo con notificaciones externas:
   antes de habilitar el `db push` automático; no se repararon versiones antiguas a ciegas.
 - [x] Configurar `SUPABASE_SECRET_KEY` y `MERCADOPAGO_WEBHOOK_SECRETO` en Vercel;
   usuario confirmó configuración y redeploy. POST sin firma devuelve 401
-  `firma_invalida` el 4/11/2026. Esto no demuestra aún que coincida la firma real.
-- [x] Usuario confirmó configuración de Webhooks en Mercado Pago; validar su entrega
-  efectiva mediante una notificación firmada con un recurso existente.
+  `firma_invalida` el 4/11/2026. La simulación firmada posterior devolvió 200.
+- [x] Entrega firmada desde el simulador de Mercado Pago (`subscription_preapproval`,
+  recurso existente): usuario observó 200 y se verificó el evento procesado sin error
+  en Supabase. Conservó `authorized`, cero pagos y cobertura nula. Esta prueba no es
+  un cobro mensual ni acredita que ya se hayan recibido todos los tópicos.
 - [ ] Comprobar que un cobro de prueba aprobado aparezca en el historial y extienda
   exactamente una vez la cobertura; la autorización por sí sola no debe hacerlo.
 - [ ] Comprobar rechazo y acceso comercial resultante, actualización de la suscripción

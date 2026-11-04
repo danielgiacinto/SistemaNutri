@@ -97,7 +97,7 @@ pruebas en `https://nutrisfera.vercel.app`; Supabase hospedado sigue siendo el e
 | Redirect URLs / Google OAuth | Habilitado en hospedado: proveedor Google, Redirect URLs de local y callback de Supabase en Google Cloud (`docs/autenticacion.md`) |
 | Mercado Pago | Token del vendedor de prueba argentino y correo de otro comprador alineados. Autorización externa completada y visible en la app, según prueba manual del usuario. Acreditación de cobros aún sin validar de punta a punta. |
 | Migración de checkout | `20261103220000_checkout_suscripciones.sql` aplicada en una transacción y registrada el 4/11/2026; trigger, función idempotente y permisos verificados por consulta remota. |
-| `SUPABASE_SECRET_KEY` y secreto del webhook | Configurados en Vercel por el usuario y redeploy confirmado el 4/11/2026. POST sin firma devuelve 401; falta validar una entrega auténtica. |
+| `SUPABASE_SECRET_KEY` y secreto del webhook | Configurados en Vercel y redeploy confirmado el 4/11/2026. POST sin firma: 401. Simulador de Mercado Pago: evento firmado de autorización con 200 y procesamiento sin error verificado en base. |
 | Vercel / secretos de GitHub Actions | Proyecto `sistema-nutri` publicado en `https://nutrisfera.vercel.app`. Secretos de CI e historial de migraciones pendientes de conciliar. |
 
 Este entorno es de desarrollo. Antes de datos reales de pacientes: dominio propio,
@@ -249,6 +249,11 @@ haber abierto sus pantallas.
   `pending` a `authorized`; se conservaron cobertura y último cobro nulos y cero
   pagos registrados. Esto valida la acción manual con la API, no una entrega
   firmada del webhook ni un cobro. No se ajustó la prueba ni se confirmó un pago.
+- Posteriormente, el usuario envió desde el simulador de Mercado Pago el evento
+  `subscription_preapproval` con una suscripción existente y recibió 200. Se verificó
+  `procesado_en` con fecha, `error` nulo y autorización conservada en Supabase. Los
+  pagos siguieron en cero y la cobertura nula: quedó probado el recorrido externo
+  firmado de autorización, sin confirmar una mensualidad ni simular un cobro.
 
 ### Pasos para un nuevo despliegue
 

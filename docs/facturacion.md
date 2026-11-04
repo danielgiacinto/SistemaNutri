@@ -180,9 +180,12 @@ cobrado la mensualidad ni acreditado cobertura. Esto último sigue pendiente de 
 - Mantener alineados el Access Token del vendedor y el correo del comprador.
   La configuración actual ya está verificada; no deducir esta correspondencia por el prefijo del token.
 - El usuario configuró el webhook y las variables privadas en Vercel y realizó redeploy
-  el 4/11/2026. POST sin firma pasó de 503 a 401 `firma_invalida`. Falta verificar una
-  notificación auténtica, sus reintentos y un cobro acreditado de punta a punta.
-  No confundir este rechazo correcto con una prueba de firma válida o de pago aprobado.
+  el 4/11/2026. POST sin firma pasó de 503 a 401 `firma_invalida`. Luego envió desde el
+  simulador de Mercado Pago una notificación firmada `subscription_preapproval` sobre
+  una suscripción existente: recibió 200. La consulta posterior a Supabase confirmó
+  evento procesado, error nulo y estado `authorized`, conservando cero pagos y cobertura
+  nula. Falta validar cobros mensuales aprobados/rechazados, sus eventos y reintentos.
+  La simulación de autorización no demuestra que se haya acreditado una mensualidad.
 
 El endpoint `/api/facturacion/mercadopago` ya valida la firma, consulta la API del
 proveedor y procesa eventos con deduplicación y reintentos. Lo pendiente es la

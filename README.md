@@ -79,7 +79,7 @@ en [`docs/facturacion.md`](docs/facturacion.md).
 | Redirect URLs / Google OAuth | Habilitado en el proyecto hospedado (local + callback de Supabase) |
 | Mercado Pago | Vendedor y comprador de prueba distintos configurados. Autorización alojada completada y visible como Autorizada en la app, según prueba manual del usuario. |
 | Migración de checkout | `20261103220000_checkout_suscripciones.sql` aplicada y registrada en Supabase hospedado el 4/11/2026; trigger, función idempotente y permisos verificados. Persisten diferencias históricas de otras versiones; ver `docs/despliegue.md`. |
-| `SUPABASE_SECRET_KEY` y secreto del webhook | Configurados en Vercel por el usuario el 4/11/2026. El endpoint rechaza solicitudes sin firma con 401; falta comprobar una notificación auténtica. |
+| `SUPABASE_SECRET_KEY` y secreto del webhook | Configurados en Vercel el 4/11/2026. Solicitud sin firma: 401. Simulación firmada de `subscription_preapproval`: 200, evento procesado sin error y autorización guardada. Falta validar un cobro mensual. |
 | Vercel y secretos de CI | Web pública de pruebas disponible en `https://nutrisfera.vercel.app`. CI de migraciones sigue pendiente de conciliar el historial. |
 
 Detalle de Auth y SMTP: [`docs/autenticacion.md`](docs/autenticacion.md).
