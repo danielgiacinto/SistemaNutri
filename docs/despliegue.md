@@ -240,6 +240,15 @@ haber abierto sus pantallas.
   auténtica y la acreditación de un cobro de prueba; no se generó ningún pago.
 - `npm run verificar` pasó con lint, tipos, 177 pruebas y build. Se repitió tras
   fallos del entorno de Windows al descargar fuentes y arrancar el proceso de CSS.
+- Correcciones publicadas desde `b81ed1a`. En la URL pública, POST `/auth/google`
+  devuelve 303, PKCE con `Secure` y retorno al dominio público. Auditoría muestra
+  responsable/motivo y fechas en Córdoba; las vistas administrativas revisadas y
+  el diálogo no presentan desborde a 390 px ni errores de consola observados.
+- Se ejecutó **Sincronizar Mercado Pago** desde la sesión de superadministrador
+  sobre la suscripción de prueba existente. La vista y la base cambiaron de
+  `pending` a `authorized`; se conservaron cobertura y último cobro nulos y cero
+  pagos registrados. Esto valida la acción manual con la API, no una entrega
+  firmada del webhook ni un cobro. No se ajustó la prueba ni se confirmó un pago.
 
 ### Pasos para un nuevo despliegue
 

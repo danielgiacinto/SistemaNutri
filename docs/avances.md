@@ -62,6 +62,8 @@ Falta demostrar el recorrido completo con notificaciones externas:
   usando el mismo servicio verificado del webhook. Protegida por sesión/rol, referencia,
   precio y moneda; evita sobrescribir versiones recientes y reactivar una cancelación.
   No acredita pagos ni sustituye la reconciliación periódica.
+  Validada en el despliegue público desde la cuenta administrativa: estado actualizado
+  a `authorized` en vista y base, conservando cero pagos y cobertura nula.
 - [ ] Completar la gestión comercial individual prevista: detalle de suscripción/cobros,
   suspensión/reactivación administrativa con motivo y métricas de vencimientos. Las
   pantallas actuales cubren listado, ajuste de prueba y configuración global.
