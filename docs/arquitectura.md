@@ -142,7 +142,7 @@ presenta como una lista por día y el mes muestra indicadores compactos, sin anc
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones, gráficos | Implementada |
 | 3 | Portal del paciente e invitaciones | Implementada |
 | 4 | Planes alimentarios con versiones y publicación | Implementada |
-| 5 | Suscripciones, pagos y panel de administración completo | Autorización y webhook firmado comprobados. Conciliación, cancelación y administración implementadas; falta completar pruebas externas de cobros y correo comercial. Ver `docs/facturacion.md` y `docs/avances.md`. |
+| 5 | Suscripciones, pagos y panel de administración completo | Circuito principal validado en pruebas: cancelación, autorización, cobro aprobado, webhooks, cobertura y acceso. Conciliación y administración implementadas. Quedan pruebas externas adicionales y correo comercial. Ver `docs/facturacion.md` y `docs/avances.md`. |
 | 6 | Comunidad y desafíos | Implementada. Ver `docs/base-de-datos.md`. |
 
 El detalle de lo que se puede probar hoy, el entorno de Supabase y lo operativo

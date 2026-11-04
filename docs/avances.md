@@ -2,15 +2,17 @@
 
 Actualizado el **4 de noviembre de 2026**. App en localhost y en
 `https://nutrisfera.vercel.app`, con Supabase hospedado de desarrollo.
-Las fases 1 a 4 y 6 están implementadas para probar; la fase 5 tiene el
-flujo de autorización validado y conserva pendiente la acreditación real de cobros.
+Las fases 1 a 4 y 6 están implementadas para probar. El circuito principal de la
+fase 5 quedó validado con cuentas ficticias: cancelación, nuevo cobro aprobado,
+webhooks de pago/factura, cobertura, recuperación de acceso y conciliación repetida.
 
 ## Avances confirmados
 
 - **Suscripciones:** el checkout alojado reemplaza al formulario de tarjeta interno.
   Se crea o retoma una suscripción pendiente. El usuario completó la autorización
   con el comprador de prueba y la vio tanto en Mercado Pago como en Nutrisfera.
-  Esta evidencia corresponde a autorización, no a un cobro mensual acreditado.
+  El 4/11/2026 también se validó un cobro mensual de prueba de ARS 15.999: un solo
+  registro y cobertura hasta el 4/12/2026, conservada al conciliar nuevamente.
 - **Marca:** palta vectorial con contornos, colores y semilla refinados; inclinación
   de 10° a la derecha compartida por logo y favicon. Trazos, tokens e inclinación
   centralizados; regeneración mediante `node scripts/generar-icono.mjs`.
@@ -51,10 +53,15 @@ Falta demostrar el recorrido completo con notificaciones externas:
   recurso existente): usuario observó 200 y se verificó el evento procesado sin error
   en Supabase. Conservó `authorized`, cero pagos y cobertura nula. Esta prueba no es
   un cobro mensual ni acredita que ya se hayan recibido todos los tópicos.
-- [ ] Comprobar que un cobro de prueba aprobado aparezca en el historial y extienda
-  exactamente una vez la cobertura; la autorización por sí sola no debe hacerlo.
-- [ ] Comprobar rechazo y acceso comercial resultante, actualización de la suscripción
-  al cancelarse y reintentos/eventos repetidos sin duplicar pagos ni cobertura.
+- [x] Cobro de prueba aprobado por ARS 15.999, mostrado en Facturación y registrado
+  una vez en Supabase. Llegaron `payment` y `subscription_authorized_payment`, ambos
+  procesados sin errores. Cobertura del 4/11 al 4/12/2026 según ciclo de factura.
+- [x] Reconciliación repetida sobre ese pago: una suscripción revisada, cero fallos,
+  un solo pago y la misma fecha de cobertura. El usuario confirmó acceso a Inicio
+  y Pacientes desde su navegador tras la acreditación.
+- [ ] Validar también rechazo, renovación y recuperación mediante notificaciones
+  externas del proveedor. Sus transiciones, idempotencia y permisos ya tienen
+  cobertura en las pruebas automáticas; no se presentan como pruebas externas realizadas.
 - [x] Cancelación de renovación visible para el titular, con confirmación y motivo.
   Solicitud auditada desde la identidad; confirmación por API y recuperación por cron
   si falla el proveedor. Conserva la prueba/cobertura pagada. El usuario completó la

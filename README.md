@@ -17,7 +17,9 @@ La autorización con el comprador de prueba ya se completó: aparece en **Tus su
 de Mercado Pago y como **Autorizada** en Nutrisfera, según la prueba manual del usuario.
 El webhook firmado de autorización ya se comprobó en Vercel. Están implementadas la
 conciliación diaria, la cancelación de renovación, el detalle comercial y el bloqueo
-clínico desde la base. Falta completar las pruebas externas de cobros mensuales y cancelación.
+clínico desde la base. El 4/11/2026 se validaron cancelación, nuevo cobro de prueba
+aprobado por ARS 15.999, cobertura hasta el 4/12/2026 y recuperación del acceso.
+Rechazos/renovaciones están cubiertos por pruebas automáticas; falta su validación externa.
 
 | Fase | Contenido | Estado |
 | --- | --- | --- |
@@ -25,7 +27,7 @@ clínico desde la base. Falta completar las pruebas externas de cobros mensuales
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
 | 4 | Planes alimentarios con versiones | ✅ Listo para probar |
-| 5 | Suscripciones, pagos y administración | Autorización y webhook firmado comprobados. Conciliación, cancelación, administración y permisos comerciales implementados; validación externa de mensualidades en curso. |
+| 5 | Suscripciones, pagos y administración | Circuito principal validado con cuentas ficticias: cancelación, autorización, cobro aprobado, cobertura, acceso e idempotencia. Conciliación/administración implementadas; quedan pruebas externas adicionales y correo comercial. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 
 ### Qué se puede probar ahora (profesional)

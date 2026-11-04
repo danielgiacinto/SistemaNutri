@@ -4,7 +4,8 @@ Estado revisado el **4 de noviembre de 2026**: aplicación en `localhost:3000` y
 `https://nutrisfera.vercel.app`, con Supabase hospedado de desarrollo. El usuario completó
 la autorización en el checkout externo con el comprador de prueba y confirmó que
 aparece en **Tus suscripciones** de Mercado Pago y como **Autorizada** en Nutrisfera.
-Todavía no se validó un cobro mensual acreditado de punta a punta. El dominio de la
+El 4/11/2026 se validó un cobro mensual de prueba de punta a punta: ARS 15.999,
+un solo registro y cobertura hasta el 4/12/2026, con recuperación del acceso. El dominio de la
 pasarela no determina si el cobro usa cuentas reales o cuentas de prueba.
 
 ## Decisión
@@ -195,6 +196,19 @@ sin cobertura ni pagos fabricados. Por pedido del usuario se reutiliza su consul
 se ajustó la prueba al 3/11/2026 mediante la acción administrativa, con motivo auditado,
 para repetir el checkout sin diferir el primer cobro. No se borraron datos ni el historial.
 
+Después el usuario autorizó una nueva suscripción con el comprador ficticio y tarjeta
+de prueba `APRO`. Mercado Pago aprobó ARS 15.999. Se recibieron los tópicos `payment`
+y `subscription_authorized_payment`, procesados sin errores: hay un solo pago, con
+período del 4/11/2026 16:10 al 4/12/2026 16:10 (Argentina). La nueva autorización y
+el próximo cobro permanecen separados del registro de esa mensualidad.
+
+El historial profesional mostró el cobro aprobado y el usuario confirmó acceso a
+Inicio y Pacientes. Una nueva conciliación pública respondió 200, revisó esa
+suscripción sin fallos y mantuvo un único pago y la misma cobertura. Esto valida el
+circuito principal con cuentas ficticias. Rechazo, renovación y recuperación tienen
+pruebas automatizadas, pero todavía no se observaron sus eventos externos de prueba.
+No se afirma haber probado cobros con cuentas reales ni habilitado cobros en producción.
+
 ### Diagnóstico del bloqueo observado
 
 El desajuste de cuentas descrito a continuación corresponde a la configuración
@@ -225,7 +239,8 @@ no se habilita en producción, ante fallos de red, ni sobre autorizaciones o cob
 La autorización anterior del formulario interno fue cancelada. El checkout nuevo
 ya se completó con el comprador correcto, según la prueba manual del usuario.
 **Autorizada** confirma el permiso de cobro recurrente; no demuestra que se haya
-cobrado la mensualidad ni acreditado cobertura. Esto último sigue pendiente de validar.
+cobrado la mensualidad ni acreditado cobertura. La mensualidad posterior sí quedó
+validada, como se registra en «Verificación técnica del 4/11/2026».
 
 ### Qué sigue pendiente
 
@@ -243,8 +258,9 @@ cobrado la mensualidad ni acreditado cobertura. Esto último sigue pendiente de 
   La simulación de autorización no demuestra que se haya acreditado una mensualidad.
 
 El endpoint `/api/facturacion/mercadopago` ya valida la firma, consulta la API del
-proveedor y procesa eventos con deduplicación y reintentos. Lo pendiente es la
-configuración externa y su validación real, no desarrollar el webhook desde cero.
+proveedor y procesa eventos con deduplicación y reintentos. Se verificaron entregas
+firmadas de autorización, pago y factura, además de acreditación y conciliación.
+Quedan validaciones externas de rechazo/renovación y el correo comercial.
 Los criterios de cierre están en [`avances.md`](avances.md).
 
 Fuentes oficiales para este flujo: [prueba de Suscripciones `pending`](https://www.mercadopago.com.ar/developers/es/news/2023/11/16/Questions-on-how-to-test-your-integration--#Suscripciones),

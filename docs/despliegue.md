@@ -96,7 +96,7 @@ pruebas en `https://nutrisfera.vercel.app`; Supabase hospedado sigue siendo el e
 | Auth | Plantillas Nutrisfera publicadas; SMTP de prueba con Gmail (ver `docs/autenticacion.md`) |
 | Site URL | `http://localhost:3000` |
 | Redirect URLs / Google OAuth | Habilitado en hospedado: proveedor Google, Redirect URLs de local y callback de Supabase en Google Cloud (`docs/autenticacion.md`) |
-| Mercado Pago | Token del vendedor de prueba argentino y correo de otro comprador alineados. Autorización externa completada y visible en la app, según prueba manual del usuario. Acreditación de cobros aún sin validar de punta a punta. |
+| Mercado Pago | Vendedor y comprador ficticios alineados. Cancelación, nuevo cobro aprobado por ARS 15.999, cobertura hasta el 4/12/2026 y recuperación de acceso comprobados de punta a punta. |
 | Migración de checkout | `20261103220000_checkout_suscripciones.sql` aplicada en una transacción y registrada el 4/11/2026; trigger, función idempotente y permisos verificados por consulta remota. |
 | `SUPABASE_SECRET_KEY` y secreto del webhook | Configurados en Vercel y redeploy confirmado el 4/11/2026. POST sin firma: 401. Simulador de Mercado Pago: evento firmado de autorización con 200 y procesamiento sin error verificado en base. |
 | Vercel / secretos de GitHub Actions | Proyecto `sistema-nutri` publicado en `https://nutrisfera.vercel.app`. Secretos de CI e historial de migraciones pendientes de conciliar. |
@@ -105,6 +105,10 @@ Este entorno es de desarrollo. Antes de datos reales de pacientes: dominio propi
 SMTP transaccional, OAuth, CI y la revisión legal de `docs/seguridad-y-privacidad.md`.
 
 ## Preparación comprobada el 4 de noviembre de 2026
+
+Este registro inicial y las revisiones de roles siguientes conservan los hallazgos
+anteriores a las correcciones. Para el estado actual consultar «Correcciones
+posteriores a la revisión de roles» y «Pasos para un nuevo despliegue» más abajo.
 
 - Token de Mercado Pago consultado mediante `/users/me`: vendedor ficticio argentino
   (`test_user`, `MLA`), diferente del correo comprador configurado. No se crearon cobros.
@@ -270,6 +274,12 @@ se verificaron cursor, fecha de éxito y ausencia de error en Supabase. Las nuev
 pantallas administrativas cargaron sin errores de consola observados y Suscripciones
 se revisó a 390 px sin desbordamiento horizontal. No se da por observado todavía
 el disparo diario automático ni se toma esta verificación como prueba de un cobro.
+
+Posteriormente, el usuario completó cancelación y nuevo checkout con cuentas ficticias.
+Se verificaron cobro aprobado de ARS 15.999, eventos de pago y factura sin errores,
+un solo registro, cobertura hasta el 4/12/2026 y recuperación del acceso al panel.
+Otra conciliación confirmó que no se duplicó el pago ni se extendió nuevamente la
+cobertura. La prueba corresponde al entorno ficticio, no a cobros de producción.
 
 Las migraciones `20261104200000_operacion_comercial.sql` y
 `20261104210000_acceso_comercial_en_base.sql` se aplicaron juntas en una transacción
