@@ -1,7 +1,8 @@
 # Avances y criterios de cierre del MVP
 
-Actualizado el **3 de noviembre de 2026**. App en localhost y Supabase hospedado de
-desarrollo. Las fases 1 a 4 y 6 están implementadas para probar; la fase 5 tiene el
+Actualizado el **4 de noviembre de 2026**. App en localhost y en
+`https://nutrisfera.vercel.app`, con Supabase hospedado de desarrollo.
+Las fases 1 a 4 y 6 están implementadas para probar; la fase 5 tiene el
 flujo de autorización validado y conserva pendiente la acreditación real de cobros.
 
 ## Avances confirmados
@@ -30,16 +31,38 @@ El webhook ya existe en `src/app/api/facturacion/mercadopago/route.ts`, con firm
 consulta autenticada al proveedor, deduplicación y reintentos cubiertos por pruebas.
 Falta demostrar el recorrido completo con notificaciones externas:
 
-- [ ] Disponer de una URL pública HTTPS de pruebas y configurar el retorno a la app.
-- [ ] Verificar las migraciones del Supabase hospedado, especialmente
-  `20261103220000_checkout_suscripciones.sql`.
+- [x] Disponer de una URL pública HTTPS de pruebas: `https://nutrisfera.vercel.app`.
+  Inicio de OAuth y retorno a `/auth/confirmar` comprobados; falta completar el ingreso.
+- [ ] Agregar `Secure` a las cookies SSR para HTTPS; la cookie PKCE pública observada aún no lo incluye.
+- [ ] Usar IDs únicos en los formularios de autenticación: la navegación conserva
+  pantallas ocultas y duplica las asociaciones de las etiquetas.
+- [ ] Corregir mediante migración incremental la política de lectura del consultorio
+  por el paciente: la regla remota compara `p.consultorio_id = p.id` y el portal cae
+  en el nombre y la zona horaria de respaldo. Agregar pruebas de propio/ajeno.
+- [x] Aplicar y verificar `20261103220000_checkout_suscripciones.sql` en Supabase hospedado
+  (4/11/2026): trigger de checkout, función idempotente, permisos de servicio e historial comprobados.
+- [ ] Conciliar las diferencias de versiones históricas entre el repositorio y Supabase
+  antes de habilitar el `db push` automático; no se repararon versiones antiguas a ciegas.
 - [ ] Configurar `SUPABASE_SECRET_KEY` y `MERCADOPAGO_WEBHOOK_SECRETO` solo en servidor.
-  Ambas variables siguen vacías en el entorno local revisado; no documentar sus valores.
+  La clave de Supabase ya está cargada y validada en local (4/11/2026); falta llevarla
+  a Vercel y configurar el secreto del webhook. No documentar sus valores.
 - [ ] Configurar los eventos de Mercado Pago en la URL del webhook.
 - [ ] Comprobar que un cobro de prueba aprobado aparezca en el historial y extienda
   exactamente una vez la cobertura; la autorización por sí sola no debe hacerlo.
 - [ ] Comprobar rechazo y acceso comercial resultante, actualización de la suscripción
   al cancelarse y reintentos/eventos repetidos sin duplicar pagos ni cobertura.
+- [ ] Mostrar la gestión/cancelación de renovación también cuando la suscripción está
+  autorizada; no aparece una acción visible en la revisión del portal profesional.
+- [ ] Completar la consulta administrativa del actor y motivo de cada cambio; Auditoría
+  hoy muestra solo acción, entidad y fecha. Fijar zona horaria explícita en las fechas
+  administrativas, que actualmente dependen del servidor.
+- [ ] Completar la gestión comercial individual prevista: detalle de suscripción/cobros,
+  suspensión/reactivación administrativa con motivo y métricas de vencimientos. Las
+  pantallas actuales cubren listado, ajuste de prueba y configuración global.
+- [ ] Implementar la reconciliación periódica independiente de los webhooks. La lectura
+  manual de estado en Facturación no sustituye una tarea programada de recuperación.
+- [ ] Completar los avisos comerciales previstos por correo; hoy solo existen avisos
+  en la interfaz y correos de autenticación.
 
 Registrar el resultado de esas pruebas y sus limitaciones antes de marcar fase 5
 como cerrada. Una compilación o un webhook simulado no sustituyen esta validación.

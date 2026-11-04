@@ -84,8 +84,8 @@ aplicarle las migraciones con `supabase db push`.
 
 ## Entorno de desarrollo actual
 
-Última actualización: 3 de noviembre de 2026. La app sigue exclusivamente en local;
-el proyecto Supabase hospedado es el entorno de desarrollo, no un despliegue de producción.
+Última actualización: 4 de noviembre de 2026. La app tiene un despliegue público de
+pruebas en `https://nutrisfera.vercel.app`; Supabase hospedado sigue siendo el entorno de desarrollo.
 
 | Pieza | Valor |
 | --- | --- |
@@ -96,12 +96,179 @@ el proyecto Supabase hospedado es el entorno de desarrollo, no un despliegue de 
 | Site URL | `http://localhost:3000` |
 | Redirect URLs / Google OAuth | Habilitado en hospedado: proveedor Google, Redirect URLs de local y callback de Supabase en Google Cloud (`docs/autenticacion.md`) |
 | Mercado Pago | Token del vendedor de prueba argentino y correo de otro comprador alineados. Autorización externa completada y visible en la app, según prueba manual del usuario. Acreditación de cobros aún sin validar de punta a punta. |
-| Migración de checkout | `20261103220000_checkout_suscripciones.sql` probada en PGlite; aplicación en Supabase hospedado pendiente de verificar. |
-| `SUPABASE_SECRET_KEY` y secreto del webhook | Vacíos. Sin ellos no se registra un cobro. |
-| Vercel / secretos de GitHub Actions | Pendientes. Una URL pública HTTPS de pruebas permite validar el webhook sin lanzar comercialmente la app (`docs/facturacion.md`). |
+| Migración de checkout | `20261103220000_checkout_suscripciones.sql` aplicada en una transacción y registrada el 4/11/2026; trigger, función idempotente y permisos verificados por consulta remota. |
+| `SUPABASE_SECRET_KEY` y secreto del webhook | Clave de Supabase validada en local. Pendientes su configuración en Vercel y el secreto del webhook. |
+| Vercel / secretos de GitHub Actions | Proyecto `sistema-nutri` publicado en `https://nutrisfera.vercel.app`. Webhook y secretos de CI aún pendientes de completar. |
 
 Este entorno es de desarrollo. Antes de datos reales de pacientes: dominio propio,
 SMTP transaccional, OAuth, CI y la revisión legal de `docs/seguridad-y-privacidad.md`.
+
+## Preparación comprobada el 4 de noviembre de 2026
+
+- Token de Mercado Pago consultado mediante `/users/me`: vendedor ficticio argentino
+  (`test_user`, `MLA`), diferente del correo comprador configurado. No se crearon cobros.
+- `SUPABASE_SECRET_KEY` cargada y validada mediante una consulta de servidor sin
+  recuperar registros de facturación. `MERCADOPAGO_WEBHOOK_SECRETO` sigue pendiente.
+- Lint, TypeScript y 160 pruebas pasan. El build normal de Turbopack también pasa
+  fuera del sandbox de ejecución; dentro falla al iniciar el proceso auxiliar de CSS.
+- El proyecto `sistema-nutri` y la URL pública `https://nutrisfera.vercel.app` quedaron
+  identificados después de la creación manual por el usuario.
+  La integración está conectada, pero el espacio `danielgiacintos-projects` devolvió
+  403 por falta de autorización de acceso. Se generó el enlace de consentimiento;
+  la configuración interna y los logs siguen sin poder inspeccionarse con esa conexión.
+
+### Revisión HTTP del despliegue público
+
+Comprobaciones del 4/11/2026, sin sesión ni creación de cuentas o pagos:
+
+- Home, ingreso, registro y recuperación responden 200, sin errores de servidor detectados.
+- Dos hojas CSS y tres archivos JavaScript revisados responden 200; el icono SVG también.
+- `/panel`, `/portal`, `/admin` y `/panel/facturacion` responden 303 al ingreso sin sesión.
+- HSTS, `X-Frame-Options: DENY` y `X-Content-Type-Options: nosniff` están presentes.
+- `POST /auth/google` responde 303 hacia el Supabase esperado, con retorno a
+  `https://nutrisfera.vercel.app/auth/confirmar`; Supabase redirige a Google con 302.
+  No se completó el consentimiento ni se inició sesión. La cookie PKCE observada
+  carece de `Secure`; queda pendiente ajustar las cookies para HTTPS en los clientes SSR.
+- Un POST al webhook sin firma responde 503 `integracion_incompleta`. La ruta es pública,
+  pero falta al menos una de `MERCADOPAGO_ACCESS_TOKEN`, `SUPABASE_SECRET_KEY` y
+  `MERCADOPAGO_WEBHOOK_SECRETO` en el despliegue. Con las tres cargadas, la misma
+  prueba sin firma debe rechazarse con 401, sin crear eventos ni acreditar pagos.
+
+No están verificados aún el consentimiento final de Google, el envío/retorno de correos,
+las escrituras de los flujos autenticados ni una notificación válida de Mercado Pago.
+Una respuesta 200 de la pantalla no valida por sí sola esos recorridos.
+
+### Revisión en navegador con sesión profesional
+
+El 4/11/2026 el usuario inició la sesión profesional en la pestaña compartida. Se
+recorrieron Inicio, Agenda, Pacientes, ficha, Planes, Facturación, Configuración,
+Comunidad e Historias clínicas, sin modificar registros ni iniciar pagos.
+
+- No se observaron errores ni advertencias de consola en esas vistas.
+- La agenda muestra los días completos, la marca Hoy y los turnos existentes.
+  Un espacio libre del día siguiente abrió el formulario con fecha y hora precargadas;
+  el formulario se abandonó sin guardar.
+- El filtro de pacientes inactivos mostró el estado vacío; quitarlo restauró el listado.
+  Las opciones del selector fueron visibles en modo oscuro.
+- El filtro de Planes por un paciente sin planes mostró el estado vacío correspondiente.
+- Facturación mostró el mismo precio público, autorización recurrente vigente y ausencia
+  de pagos registrados. Actualizar estado respondió sin errores; no acredita cobertura.
+- Facturación, Configuración, Comunidad e Historias se revisaron a 390 px sin desborde
+  horizontal. Se restauró el viewport original al terminar.
+- Intentar `/admin` y `/portal` con el profesional redirigió a `/panel`. Esto comprueba
+  la separación de esas rutas con esa cuenta, no sustituye pruebas de RLS multi-tenant.
+
+Hallazgos pendientes:
+
+- Al navegar entre formularios públicos, Next conserva pantallas ocultas con los mismos
+  IDs `correo` y `contrasena`. Se observó un campo visible asociado a tres etiquetas de
+  correo. Se necesitan identificadores únicos para evitar nombres accesibles repetidos
+  y asociaciones de etiquetas con campos de otra pantalla.
+- Con una suscripción autorizada no aparece una acción visible para gestionar/cancelar
+  la renovación. El código muestra la indicación de cancelación solamente cuando no
+  está autorizada; revisar ese comportamiento al completar fase 5.
+- Siguen pendientes la cookie PKCE con `Secure`, la configuración y prueba del webhook,
+  la revisión con sesión de admin y la validación de escrituras y correos.
+
+### Revisión en navegador con sesión de paciente
+
+El 4/11/2026 el usuario inició la sesión de un paciente ya vinculado. Se revisaron
+Inicio, Turnos, Mi plan, Progreso y Comunidad sin modificar registros ni publicar contenido.
+
+- Las pantallas cargaron sin errores o advertencias de consola observados.
+- Turnos mostró el historial de la cuenta; Mi plan mostró los planes que estaban
+  publicados en la revisión profesional y sus versiones. Progreso mostró el objetivo
+  compartido y un estado vacío de mediciones. No se probaron cambios de visibilidad.
+- La navegación inferior funcionó a 390 px; las vistas móviles revisadas no mostraron
+  desborde horizontal. Se restauró el tamaño original del navegador al terminar.
+- Acceder directamente a `/panel` y `/admin` redirigió a `/portal` con esa cuenta.
+  Esta prueba de rutas no sustituye una prueba integral de aislamiento de filas por API.
+- En Inicio apareció `Tu consultorio` en lugar del nombre real. Se confirmó mediante
+  una consulta de metadatos que la política remota `consultorios: la persona ve el de su ficha`
+  tiene la condición `p.consultorio_id = p.id`: el `id` sin calificar de la migración
+  original se resolvió contra la tabla interna de pacientes. La regla debería comparar
+  con el identificador del consultorio externo. Al no devolver el consultorio,
+  `obtenerFichaPortal()` usa también la zona horaria predeterminada.
+
+Queda pendiente una migración incremental que corrija esa referencia, con pruebas
+de acceso al propio consultorio y rechazo de otro consultorio. No se cambió la política
+durante esta revisión ni se editará la migración histórica ya aplicada.
+
+### Revisión en navegador con sesión de superadministrador
+
+El 4/11/2026 el usuario inició la sesión administrativa. Se revisaron Resumen,
+Profesionales, Suscripciones y Auditoría sin guardar configuración ni ajustar cuentas.
+
+- Las cuatro secciones cargaron sin errores o advertencias de consola observados.
+- La búsqueda de profesionales filtró un consultorio y al limpiarla volvió el listado.
+  Se abrió el diálogo de ajuste de prueba con consultorio, fecha y motivo; se cerró
+  sin completar ni guardar el formulario.
+- Suscripciones mostró precio mensual ARS 15.999, un mes calendario de prueba,
+  siete días de gracia, dos consultorios en prueba y cero cobertura/cobros aprobados
+  en los datos de esta revisión. Los importes coinciden con home y Facturación.
+- Profesionales mostró `pending` para la suscripción que el portal profesional había
+  leído como autorizada en Mercado Pago. La vista administrativa consulta la base;
+  la falta de sincronización del webhook mantiene ese estado local desactualizado.
+- Auditoría mostró eventos existentes, sin contenido clínico. La interfaz no presenta
+  actor ni motivo/detalle; además Auditoría y Profesionales formatean fechas sin una
+  zona horaria explícita, por lo que dependen de la del servidor.
+- Suscripciones y Auditoría se revisaron a 390 px sin desborde horizontal observado.
+  Se restauró el tamaño original del navegador.
+- Acceder con el administrador a `/panel/pacientes` o `/portal` redirigió a `/admin`.
+  No se verificaron políticas de base mediante peticiones de escritura ni cuentas de
+  otros consultorios durante esta revisión del navegador.
+
+La pasada de lectura de los tres roles queda terminada. Los ajustes de prueba,
+cambios de precio, publicaciones, invitaciones y cobros siguen pendientes de una
+prueba de escritura autorizada sobre datos desechables; no se dan por validados por
+haber abierto sus pantallas.
+
+### Primer despliegue público para pruebas
+
+1. Conectar Vercel e importar `danielgiacinto/SistemaNutri` desde GitHub. Usar Next.js,
+   Node.js 22 y los comandos de instalación/build del proyecto.
+2. En el entorno de Vercel que vaya a servir la URL estable, cargar de forma privada
+   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+   `MERCADOPAGO_ACCESS_TOKEN` y `MERCADOPAGO_CORREO_PAGADOR_PRUEBA` desde el entorno local.
+   Conservar vendedor y comprador ficticios: el entorno llamado Production de Vercel
+   puede alojar esta prueba; su nombre no autoriza a cambiar a cobros reales.
+3. Al conocer el dominio estable, establecer `NEXT_PUBLIC_SITIO_URL=https://<dominio>`
+   y volver a desplegar: las variables `NEXT_PUBLIC_*` se incorporan durante el build.
+   La clave pública de Mercado Pago y los secretos locales de Google no hacen falta
+   en esta app; OAuth se configura en el Supabase hospedado.
+4. En Supabase Auth, agregar `https://<dominio>/auth/confirmar**` a las redirecciones
+   permitidas y usar el dominio público como Site URL. Conservar las redirecciones
+   de localhost para seguir desarrollando. Revisar el origen público en Google Cloud;
+   el callback de Supabase sigue siendo el mismo.
+5. Cargar `SUPABASE_SECRET_KEY` en Vercel. Configurar el webhook de la aplicación del
+   vendedor ficticio en `https://<dominio>/api/facturacion/mercadopago`, con los eventos
+   indicados en `facturacion.md`; cargar su secreto en `MERCADOPAGO_WEBHOOK_SECRETO`
+   y volver a desplegar. No pegar claves privadas en el chat ni en Git.
+6. Comprobar home, registro/Google, recuperación e invitación desde el dominio público.
+   El endpoint de notificaciones debe ser accesible desde Mercado Pago, sin una barrera
+   de autenticación de Vercel delante; la firma del webhook sigue siendo obligatoria.
+7. Validar aprobación, rechazo, reintentos y cobertura con las cuentas de prueba.
+   Una autorización existente con fin de prueba futuro no demuestra un cobro inmediato.
+   Las suscripciones creadas en localhost pueden conservar su retorno anterior: comprobar
+   su configuración antes de usarlas como evidencia del recorrido en el nuevo dominio.
+
+### Historial de migraciones remoto
+
+La consulta del 4/11/2026 encontró versiones remotas antiguas diferentes de las locales.
+La migración `20261103130000` coincide. La de checkout `20261103220000` faltaba tanto
+en historial como en el esquema (trigger y nueva función); se aplicó el archivo local
+completo dentro de `BEGIN/COMMIT` y se registró únicamente esa versión mediante
+`supabase migration repair --linked --status applied 20261103220000` después del éxito.
+
+Las consultas posteriores confirmaron el registro, el trigger de validación del checkout,
+la función de acreditación idempotente y los permisos de `service_role` sobre suscripciones
+y eventos. No se modificaron pacientes ni se fabricaron cobros.
+
+El resto del historial requiere comparar cada definición remota con su migración local
+antes de repararlo. No ejecutar reparaciones masivas ni `db push --include-all`: podrían
+reaplicar objetos ya existentes. El despliegue de la app no ejecuta migraciones;
+el flujo `.github/workflows/migraciones.yml` sigue pendiente de esa conciliación y de
+sus secretos antes de poder considerarse operativo.
 
 > El repositorio está dentro de OneDrive. La sincronización de `node_modules` y `.next`
 > puede volver lenta la instalación o bloquear archivos; si ocurre, excluí esas carpetas

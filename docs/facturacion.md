@@ -55,7 +55,7 @@ producto esté listo y la app tenga un despliegue público HTTPS de pruebas (por
 1. `NEXT_PUBLIC_SITIO_URL` en `https://` del dominio público.
 2. `MERCADOPAGO_WEBHOOK_SECRETO` y `SUPABASE_SECRET_KEY` cargadas en Vercel.
 3. Webhook de Mercado Pago apuntando a `https://tu-dominio/api/facturacion/mercadopago`.
-4. Verificar la aplicación de la migración de checkout en Supabase hospedado.
+4. La migración de checkout quedó aplicada y verificada en Supabase hospedado el 4/11/2026.
 5. Recién ahí: pago aprobado (titular `APRO`), historial actualizado, cobertura extendida,
    rechazo (`OTHE`) y repetición de notificaciones sin extender dos veces la cobertura.
 
@@ -164,12 +164,14 @@ cobrado la mensualidad ni acreditado cobertura. Esto último sigue pendiente de 
 
 ### Qué sigue pendiente
 
-- Verificar que `20261103220000_checkout_suscripciones.sql` esté aplicada en Supabase hospedado.
-  Está verificada en PGlite; esta revisión no consultó el historial remoto de migraciones.
+- `20261103220000_checkout_suscripciones.sql` quedó aplicada en una transacción y registrada
+  el 4/11/2026. Se verificaron el trigger, la función de acreditación idempotente y los permisos.
+  Persisten diferencias de versiones antiguas en el historial; ver `despliegue.md` antes de `db push`.
 - Mantener alineados el Access Token del vendedor y el correo del comprador.
   La configuración actual ya está verificada; no deducir esta correspondencia por el prefijo del token.
 - Para acreditar y probar un cobro de punta a punta: URL pública HTTPS, secreto del
-  webhook y clave de servicio de Supabase. Estos últimos siguen vacíos en `.env.local`.
+  webhook y clave de servicio de Supabase. La clave de Supabase quedó validada en local
+  el 4/11/2026; faltan su configuración en Vercel y el secreto del webhook.
   La app puede seguir en desarrollo; una URL pública de pruebas no implica lanzarla a producción.
 
 El endpoint `/api/facturacion/mercadopago` ya valida la firma, consulta la API del

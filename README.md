@@ -6,10 +6,11 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
-Última actualización: 3 de noviembre de 2026. Las fases **1 a 4 y 6** están
+Última actualización: 4 de noviembre de 2026. Las fases **1 a 4 y 6** están
 implementadas para probar en desarrollo: registro, clínica, portal, planes alimentarios
-y desafíos de Comunidad. La aplicación corre en **localhost** y usa Supabase hospedado
-de desarrollo. Todavía no hay un despliegue de producción.
+y desafíos de Comunidad. La aplicación corre en **localhost** y en el despliegue
+público de pruebas **https://nutrisfera.vercel.app**, con Supabase hospedado de desarrollo.
+El despliegue todavía no habilita cobros reales ni acredita el cierre de la fase 5.
 
 La fase 5 abre el checkout de Mercado Pago desde **Plan y facturación** y controla la prueba y el acceso.
 La autorización con el comprador de prueba ya se completó: aparece en **Tus suscripciones**
@@ -60,7 +61,7 @@ Para cerrar la fase 5 se necesita un despliegue de pruebas con URL pública HTTP
 1. Dejar `NEXT_PUBLIC_SITIO_URL` en `https://` del dominio de producción.
 2. Cargar `MERCADOPAGO_WEBHOOK_SECRETO` y `SUPABASE_SECRET_KEY`.
 3. Apuntar el webhook de Mercado Pago a `https://tu-dominio/api/facturacion/mercadopago`.
-4. Verificar que la migración `20261103220000_checkout_suscripciones.sql` esté aplicada en Supabase hospedado.
+4. La migración `20261103220000_checkout_suscripciones.sql` quedó aplicada y verificada en Supabase hospedado el 4 de noviembre de 2026.
 5. Recién ahí: pago aprobado, historial actualizado, cobertura extendida, rechazo y reintentos sin acreditar dos veces.
    El cobro se abre en Mercado Pago al elegir el plan. La pantalla de Facturación ya no pide los datos de la tarjeta.
 
@@ -77,9 +78,9 @@ en [`docs/facturacion.md`](docs/facturacion.md).
 | Site URL | `http://localhost:3000` |
 | Redirect URLs / Google OAuth | Habilitado en el proyecto hospedado (local + callback de Supabase) |
 | Mercado Pago | Vendedor y comprador de prueba distintos configurados. Autorización alojada completada y visible como Autorizada en la app, según prueba manual del usuario. |
-| Migración de checkout | `20261103220000_checkout_suscripciones.sql` creada y probada en PGlite; aplicación en Supabase hospedado pendiente de verificar. |
-| `SUPABASE_SECRET_KEY` y secreto del webhook | Vacíos. Hacen falta para registrar un cobro. |
-| Vercel y secretos de CI | Pendientes. El cobro completo se prueba después de este despliegue. |
+| Migración de checkout | `20261103220000_checkout_suscripciones.sql` aplicada y registrada en Supabase hospedado el 4/11/2026; trigger, función idempotente y permisos verificados. Persisten diferencias históricas de otras versiones; ver `docs/despliegue.md`. |
+| `SUPABASE_SECRET_KEY` y secreto del webhook | Clave de Supabase cargada y validada en local el 4/11/2026. Falta cargarla en Vercel y configurar el secreto del webhook. |
+| Vercel y secretos de CI | Web pública de pruebas disponible en `https://nutrisfera.vercel.app`. Webhook responde 503 por integración incompleta; CI de migraciones sigue pendiente. |
 
 Detalle de Auth y SMTP: [`docs/autenticacion.md`](docs/autenticacion.md).
 Detalle de despliegue y variables: [`docs/despliegue.md`](docs/despliegue.md).
