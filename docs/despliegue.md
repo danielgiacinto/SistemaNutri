@@ -10,7 +10,7 @@
 | `SUPABASE_SECRET_KEY` | Servidor y scripts | Clave secreta/`service_role`. Omite RLS. La necesita el webhook para acreditar cobros; también el script de alta de superadministrador. Nunca con prefijo `NEXT_PUBLIC_`. |
 | `MERCADOPAGO_ACCESS_TOKEN` | Solo servidor | En desarrollo: Access Token de la aplicación creada con el vendedor de prueba. Para Suscripciones puede empezar con `APP_USR`; el prefijo no demuestra que sea una cuenta real. |
 | `MERCADOPAGO_CORREO_PAGADOR_PRUEBA` | Solo desarrollo/pruebas | Correo del comprador de prueba, distinto del vendedor. En la pasarela se debe ingresar con ese comprador. Quitar al pasar a cobros reales. |
-| `MERCADOPAGO_WEBHOOK_SECRETO` | Solo servidor | Firma de notificaciones de Mercado Pago. Pendiente hasta configurar la URL pública. |
+| `MERCADOPAGO_WEBHOOK_SECRETO` | Solo servidor | Clave secreta de Webhooks de la misma aplicación de Mercado Pago que emite el Access Token. Cargar en Vercel y volver a desplegar. |
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_*` | `.env.local` | Credenciales de Google para Supabase local. |
 
 Secretos de GitHub Actions para aplicar migraciones (`.github/workflows/migraciones.yml`):
@@ -97,8 +97,8 @@ pruebas en `https://nutrisfera.vercel.app`; Supabase hospedado sigue siendo el e
 | Redirect URLs / Google OAuth | Habilitado en hospedado: proveedor Google, Redirect URLs de local y callback de Supabase en Google Cloud (`docs/autenticacion.md`) |
 | Mercado Pago | Token del vendedor de prueba argentino y correo de otro comprador alineados. Autorización externa completada y visible en la app, según prueba manual del usuario. Acreditación de cobros aún sin validar de punta a punta. |
 | Migración de checkout | `20261103220000_checkout_suscripciones.sql` aplicada en una transacción y registrada el 4/11/2026; trigger, función idempotente y permisos verificados por consulta remota. |
-| `SUPABASE_SECRET_KEY` y secreto del webhook | Clave de Supabase validada en local. Pendientes su configuración en Vercel y el secreto del webhook. |
-| Vercel / secretos de GitHub Actions | Proyecto `sistema-nutri` publicado en `https://nutrisfera.vercel.app`. Webhook y secretos de CI aún pendientes de completar. |
+| `SUPABASE_SECRET_KEY` y secreto del webhook | Configurados en Vercel por el usuario y redeploy confirmado el 4/11/2026. POST sin firma devuelve 401; falta validar una entrega auténtica. |
+| Vercel / secretos de GitHub Actions | Proyecto `sistema-nutri` publicado en `https://nutrisfera.vercel.app`. Secretos de CI e historial de migraciones pendientes de conciliar. |
 
 Este entorno es de desarrollo. Antes de datos reales de pacientes: dominio propio,
 SMTP transaccional, OAuth, CI y la revisión legal de `docs/seguridad-y-privacidad.md`.
@@ -223,7 +223,25 @@ cambios de precio, publicaciones, invitaciones y cobros siguen pendientes de una
 prueba de escritura autorizada sobre datos desechables; no se dan por validados por
 haber abierto sus pantallas.
 
-### Primer despliegue público para pruebas
+### Correcciones posteriores a la revisión de roles (4/11/2026)
+
+- `20261104180000_corregir_lectura_consultorio_paciente.sql` aplicada en transacción
+  y registrada en Supabase hospedado. Se verificó `p.consultorio_id = consultorios.id`
+  en la política y la versión en `supabase_migrations.schema_migrations`. No se
+  modificaron registros de pacientes ni las migraciones históricas.
+- Clientes SSR con `Secure` en producción/HTTPS y formularios de autenticación con
+  IDs únicos por instancia. Pruebas con PKCE real generado por Supabase SSR y con
+  varios formularios simultáneos.
+- Auditoría muestra responsable y motivo administrativo; fechas con zona explícita.
+  Sincronización manual de autorización disponible para titular y superadministrador,
+  con lectura RLS previa y verificación del recurso por API. No acredita un mes.
+- Usuario configuró Webhooks, variables en Vercel y realizó redeploy. El endpoint
+  público pasó de 503 a 401 `firma_invalida` ante un POST sin firma. Falta una entrega
+  auténtica y la acreditación de un cobro de prueba; no se generó ningún pago.
+- `npm run verificar` pasó con lint, tipos, 177 pruebas y build. Se repitió tras
+  fallos del entorno de Windows al descargar fuentes y arrancar el proceso de CSS.
+
+### Pasos para un nuevo despliegue
 
 1. Conectar Vercel e importar `danielgiacinto/SistemaNutri` desde GitHub. Usar Next.js,
    Node.js 22 y los comandos de instalación/build del proyecto.

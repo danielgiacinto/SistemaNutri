@@ -21,8 +21,9 @@ flujo de autorización validado y conserva pendiente la acreditación real de co
   Historias y Planes con filas completas pulsables y acciones en estados vacíos;
   Comunidad con estados y metadatos más claros; Configuración con accesos por sección.
   Tarjetas, filtros, iconos y espaciados mantienen una línea visual común.
-- **Validación técnica:** último `npm run verificar` satisfactorio: lint, tipos,
-  160 pruebas en 18 archivos y compilación. Revisión visual de las seis vistas en
+- **Validación técnica:** `npm run verificar` completo, con lint, tipos, 177 pruebas
+  en 21 archivos y compilación el 4/11/2026. Turbopack requirió repetir por un fallo transitorio
+  de su proceso auxiliar en Windows. Revisión visual previa de las seis vistas en
   escritorio y móvil; Inicio también revisado a 320 px sin desborde horizontal.
 
 ## Cierre de fase 5
@@ -33,29 +34,34 @@ Falta demostrar el recorrido completo con notificaciones externas:
 
 - [x] Disponer de una URL pública HTTPS de pruebas: `https://nutrisfera.vercel.app`.
   Inicio de OAuth y retorno a `/auth/confirmar` comprobados; falta completar el ingreso.
-- [ ] Agregar `Secure` a las cookies SSR para HTTPS; la cookie PKCE pública observada aún no lo incluye.
-- [ ] Usar IDs únicos en los formularios de autenticación: la navegación conserva
-  pantallas ocultas y duplica las asociaciones de las etiquetas.
-- [ ] Corregir mediante migración incremental la política de lectura del consultorio
-  por el paciente: la regla remota compara `p.consultorio_id = p.id` y el portal cae
-  en el nombre y la zona horaria de respaldo. Agregar pruebas de propio/ajeno.
+- [x] Agregar `Secure` a los tres clientes SSR en producción/HTTPS, manteniendo HTTP
+  en desarrollo local. Prueba con cookie PKCE real generada por Supabase SSR.
+- [x] Usar IDs únicos por instancia en los cuatro formularios de autenticación;
+  prueba con varias pantallas e instancias montadas juntas.
+- [x] Corregir la lectura del consultorio del paciente mediante `20261104180000`,
+  aplicada y registrada en Supabase hospedado el 4/11/2026. Pruebas de propio/ajeno,
+  cuenta sin ficha y paciente inactivo.
 - [x] Aplicar y verificar `20261103220000_checkout_suscripciones.sql` en Supabase hospedado
   (4/11/2026): trigger de checkout, función idempotente, permisos de servicio e historial comprobados.
 - [ ] Conciliar las diferencias de versiones históricas entre el repositorio y Supabase
   antes de habilitar el `db push` automático; no se repararon versiones antiguas a ciegas.
-- [ ] Configurar `SUPABASE_SECRET_KEY` y `MERCADOPAGO_WEBHOOK_SECRETO` solo en servidor.
-  La clave de Supabase ya está cargada y validada en local (4/11/2026); falta llevarla
-  a Vercel y configurar el secreto del webhook. No documentar sus valores.
-- [ ] Configurar los eventos de Mercado Pago en la URL del webhook.
+- [x] Configurar `SUPABASE_SECRET_KEY` y `MERCADOPAGO_WEBHOOK_SECRETO` en Vercel;
+  usuario confirmó configuración y redeploy. POST sin firma devuelve 401
+  `firma_invalida` el 4/11/2026. Esto no demuestra aún que coincida la firma real.
+- [x] Usuario confirmó configuración de Webhooks en Mercado Pago; validar su entrega
+  efectiva mediante una notificación firmada con un recurso existente.
 - [ ] Comprobar que un cobro de prueba aprobado aparezca en el historial y extienda
   exactamente una vez la cobertura; la autorización por sí sola no debe hacerlo.
 - [ ] Comprobar rechazo y acceso comercial resultante, actualización de la suscripción
   al cancelarse y reintentos/eventos repetidos sin duplicar pagos ni cobertura.
 - [ ] Mostrar la gestión/cancelación de renovación también cuando la suscripción está
   autorizada; no aparece una acción visible en la revisión del portal profesional.
-- [ ] Completar la consulta administrativa del actor y motivo de cada cambio; Auditoría
-  hoy muestra solo acción, entidad y fecha. Fijar zona horaria explícita en las fechas
-  administrativas, que actualmente dependen del servidor.
+- [x] Auditoría presenta actor, consultorio y motivo administrativo, sin volcar el JSON
+  completo. Fechas en Córdoba; vencimientos en Profesionales usan la zona del consultorio.
+- [x] Sincronización explícita de autorización en Facturación y en el diálogo administrativo,
+  usando el mismo servicio verificado del webhook. Protegida por sesión/rol, referencia,
+  precio y moneda; evita sobrescribir versiones recientes y reactivar una cancelación.
+  No acredita pagos ni sustituye la reconciliación periódica.
 - [ ] Completar la gestión comercial individual prevista: detalle de suscripción/cobros,
   suspensión/reactivación administrativa con motivo y métricas de vencimientos. Las
   pantallas actuales cubren listado, ajuste de prueba y configuración global.

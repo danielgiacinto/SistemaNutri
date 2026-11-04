@@ -3,8 +3,9 @@
 import { useState, useTransition, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Dialog as DialogoPrimitivo } from "radix-ui";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, RefreshCw } from "lucide-react";
 import { extenderPrueba } from "@/acciones/facturacion";
+import { actualizarSuscripcionProfesional } from "@/acciones/sincronizar-suscripcion";
 import { Button } from "@/componentes/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/componentes/ui/dialog";
 import { Input } from "@/componentes/ui/input";
@@ -105,6 +106,18 @@ export function AjustarPruebaProfesional({
           <p className="font-medium">{consultorio}</p>
           <p className="text-muted-foreground">{correo} · vence actualmente el {vence}</p>
         </div>
+        <Button type="button" variant="outline" disabled={pendiente} aria-busy={pendiente} onClick={() => iniciarTransicion(async () => {
+          try {
+            const resultado = await actualizarSuscripcionProfesional(consultorioId);
+            if (resultado.ok) toast.success(resultado.mensaje);
+            else toast.error(resultado.mensaje);
+          } catch {
+            toast.error("No pudimos sincronizar la suscripción. Intentá nuevamente.");
+          }
+        })}>
+          <RefreshCw className={pendiente ? "animate-spin" : undefined} aria-hidden="true" />
+          Sincronizar Mercado Pago
+        </Button>
         <form onSubmit={enviar} className="space-y-4">
           <input type="hidden" name="consultorioId" value={consultorioId} />
           <div className="space-y-1.5">

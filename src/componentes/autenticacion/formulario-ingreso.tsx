@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useId, useTransition } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { LogIn } from "lucide-react";
@@ -15,6 +15,7 @@ import { BotonEnvio } from "@/componentes/formularios/boton-envio";
 import { FieldGroup } from "@/componentes/ui/field";
 
 export function FormularioIngreso({ siguiente }: { siguiente: string | null }) {
+  const idFormulario = useId();
   const [pendiente, iniciarTransicion] = useTransition();
   const formulario = useForm({
     resolver: zodResolver(esquemaIngreso),
@@ -36,7 +37,7 @@ export function FormularioIngreso({ siguiente }: { siguiente: string | null }) {
     <form onSubmit={alEnviar} noValidate>
       <FieldGroup>
         <CampoTexto
-          id="correo"
+          id={`${idFormulario}-correo`}
           etiqueta="Correo electrónico"
           type="email"
           autoComplete="email"
@@ -47,7 +48,7 @@ export function FormularioIngreso({ siguiente }: { siguiente: string | null }) {
         />
         <div className="space-y-2">
           <CampoContrasena
-            id="contrasena"
+            id={`${idFormulario}-contrasena`}
             etiqueta="Contraseña"
             autoComplete="current-password"
             error={errores.contrasena?.message}

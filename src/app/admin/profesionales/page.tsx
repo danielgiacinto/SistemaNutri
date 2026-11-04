@@ -6,6 +6,8 @@ import { AjustarPruebaProfesional } from "@/componentes/admin/ajustar-prueba-pro
 import { FiltroProfesionales } from "@/componentes/admin/filtro-profesionales";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { cn } from "@/lib/utilidades";
+import { formatearFecha } from "@/lib/fechas";
+import { ZONA_HORARIA_PREDETERMINADA } from "@/configuracion/producto";
 
 const COLUMNAS_PROFESIONAL = "sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.4fr)_minmax(0,8rem)_minmax(0,8rem)]";
 
@@ -29,7 +31,7 @@ async function Contenido({ parametros }: { parametros: Promise<{ q?: string | st
   const cliente = await crearClienteServidor();
   const [pruebas, consultorios, suscripciones] = await Promise.all([
     cliente.from("pruebas_profesionales").select("consultorio_id, correo, inicio, vence_en").order("inicio", { ascending: false }),
-    cliente.from("consultorios").select("id, nombre, estado"),
+    cliente.from("consultorios").select("id, nombre, estado, zona_horaria"),
     cliente.from("suscripciones").select("consultorio_id, estado_mp, cobertura_hasta, mp_id, precio"),
   ]);
   const porConsultorio = new Map((consultorios.data ?? []).map((item) => [item.id, item]));
@@ -54,7 +56,7 @@ async function Contenido({ parametros }: { parametros: Promise<{ q?: string | st
           {filas.map((prueba) => {
             const consultorio = porConsultorio.get(prueba.consultorio_id ?? "");
             const suscripcion = porSuscripcion.get(prueba.consultorio_id ?? "");
-            const vence = new Date(prueba.vence_en).toLocaleDateString("es-AR");
+            const vence = formatearFecha(new Date(prueba.vence_en), consultorio?.zona_horaria ?? ZONA_HORARIA_PREDETERMINADA);
             return (
               <li key={prueba.correo} className="border-b last:border-0">
                 <AjustarPruebaProfesional

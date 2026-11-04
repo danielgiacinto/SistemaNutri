@@ -79,8 +79,8 @@ en [`docs/facturacion.md`](docs/facturacion.md).
 | Redirect URLs / Google OAuth | Habilitado en el proyecto hospedado (local + callback de Supabase) |
 | Mercado Pago | Vendedor y comprador de prueba distintos configurados. Autorización alojada completada y visible como Autorizada en la app, según prueba manual del usuario. |
 | Migración de checkout | `20261103220000_checkout_suscripciones.sql` aplicada y registrada en Supabase hospedado el 4/11/2026; trigger, función idempotente y permisos verificados. Persisten diferencias históricas de otras versiones; ver `docs/despliegue.md`. |
-| `SUPABASE_SECRET_KEY` y secreto del webhook | Clave de Supabase cargada y validada en local el 4/11/2026. Falta cargarla en Vercel y configurar el secreto del webhook. |
-| Vercel y secretos de CI | Web pública de pruebas disponible en `https://nutrisfera.vercel.app`. Webhook responde 503 por integración incompleta; CI de migraciones sigue pendiente. |
+| `SUPABASE_SECRET_KEY` y secreto del webhook | Configurados en Vercel por el usuario el 4/11/2026. El endpoint rechaza solicitudes sin firma con 401; falta comprobar una notificación auténtica. |
+| Vercel y secretos de CI | Web pública de pruebas disponible en `https://nutrisfera.vercel.app`. CI de migraciones sigue pendiente de conciliar el historial. |
 
 Detalle de Auth y SMTP: [`docs/autenticacion.md`](docs/autenticacion.md).
 Detalle de despliegue y variables: [`docs/despliegue.md`](docs/despliegue.md).
@@ -91,7 +91,9 @@ Decisiones de arquitectura: [`docs/arquitectura.md`](docs/arquitectura.md).
 - Marca: palta vectorial compartida entre logo y favicon, con contornos refinados e inclinación de 10° a la derecha.
 - Agenda: duración visual de turnos, indicador de hora actual y vistas adaptadas a celular sin ancho mínimo forzado.
 - Inicio, Pacientes, Historias clínicas, Planes, Comunidad y Configuración: tarjetas, filtros, listados y jerarquías visuales consistentes; accesos rápidos a las secciones de Configuración.
-- Última verificación técnica: `npm run verificar` completado con lint, TypeScript, **160 pruebas** y compilación. Revisión visual en escritorio y celular.
+- Correcciones de la revisión de roles: política de lectura del consultorio del paciente, cookies seguras en HTTPS y etiquetas únicas por instancia de formulario. La migración `20261104180000` está aplicada en Supabase hospedado.
+- Facturación: sincronización explícita de autorización para el titular y superadministrador, sin acreditar pagos; auditoría con responsable y motivo, fechas administrativas con zona explícita.
+- Última verificación técnica (4/11/2026): `npm run verificar` completo, con lint, TypeScript, **177 pruebas en 21 archivos** y compilación. Turbopack tuvo un fallo transitorio de su proceso auxiliar en Windows antes de la ejecución satisfactoria.
 
 El núcleo funcional del MVP está implementado para desarrollo. Cerrar fase 5 exige
 demostrar la acreditación automática de cobros, además de la autorización ya conseguida.

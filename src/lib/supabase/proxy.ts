@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { obtenerEntornoPublico } from "@/configuracion/entorno";
 import { RUTAS, esRutaProtegida, esRutaSoloInvitados } from "@/autorizacion/rutas";
 import type { Database } from "@/tipos/base-datos";
+import { opcionesCookiesSesion } from "./opciones-cookies";
 
 /**
  * Renueva la sesión de Supabase en cada petición y aplica la primera barrera
@@ -14,6 +15,7 @@ export async function actualizarSesion(peticion: NextRequest): Promise<NextRespo
   let respuesta = NextResponse.next({ request: peticion });
 
   const supabase = createServerClient<Database>(supabaseUrl, supabaseClavePublica, {
+    cookieOptions: opcionesCookiesSesion(),
     cookies: {
       getAll() {
         return peticion.cookies.getAll();

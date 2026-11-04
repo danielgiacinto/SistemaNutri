@@ -30,12 +30,19 @@ async function sincronizarSuscripcion(cliente: ClienteSupabase, mpId: string) {
       remota.auto_recurring?.currency_id !== local.moneda) {
     throw new Error("La suscripción no coincide con el consultorio y su precio.");
   }
-  const { error: errorGuardado } = await cliente.from("suscripciones").update({
+  const actualizado = remota.last_modified ? new Date(remota.last_modified) : null;
+  if (actualizado && !Number.isFinite(actualizado.getTime())) throw new Error("Fecha de suscripción inválida.");
+  let guardado = cliente.from("suscripciones").update({
     estado_mp: remota.status,
     proximo_cobro_en: remota.next_payment_date ?? null,
-    mp_actualizado_en: remota.last_modified ?? null,
+    ...(actualizado ? { mp_actualizado_en: actualizado.toISOString() } : {}),
     cancelada_en: remota.status === "cancelled" ? remota.last_modified ?? new Date().toISOString() : null,
   }).eq("id", local.id).eq("mp_id", mpId);
+  // Dos verificaciones pueden terminar fuera de orden. Una autorización antigua
+  // no debe sobrescribir una cancelación ni una versión más reciente del proveedor.
+  if (actualizado) guardado = guardado.or(`mp_actualizado_en.is.null,mp_actualizado_en.lte.${actualizado.toISOString()}`);
+  if (remota.status !== "cancelled") guardado = guardado.neq("estado_mp", "cancelled");
+  const { error: errorGuardado } = await guardado;
   if (errorGuardado) throw errorGuardado;
 }
 

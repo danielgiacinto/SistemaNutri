@@ -203,7 +203,7 @@ async function ContenidoFacturacion() {
       <Card id="historial-pagos" className="scroll-mt-24">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1"><h2 className="flex items-center gap-2 font-semibold"><ReceiptText className="size-4 text-primary" aria-hidden="true" /> Historial de pagos</h2><p className="text-sm text-muted-foreground">Tus últimos 30 cobros y su estado en Mercado Pago.</p></div>
-          <BotonActualizarPagos />
+          <BotonActualizarPagos puedeSincronizar={contexto.consultorio.rol === "titular" && Boolean(suscripcion.data?.mp_id)} />
         </CardHeader>
         <CardContent>
           {(pagos.data ?? []).length === 0 ? (

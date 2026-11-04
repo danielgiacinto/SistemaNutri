@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { obtenerEntornoPublico } from "@/configuracion/entorno";
 import type { Database } from "@/tipos/base-datos";
+import { opcionesCookiesSesion } from "./opciones-cookies";
 
 /**
  * Cliente de Supabase para Server Components, Server Actions y Route Handlers.
@@ -14,6 +15,7 @@ export async function crearClienteServidor() {
   const { supabaseUrl, supabaseClavePublica } = obtenerEntornoPublico();
 
   return createServerClient<Database>(supabaseUrl, supabaseClavePublica, {
+    cookieOptions: opcionesCookiesSesion(),
     cookies: {
       getAll() {
         return almacenCookies.getAll();

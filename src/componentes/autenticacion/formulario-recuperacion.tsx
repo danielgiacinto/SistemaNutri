@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MailCheck, Send } from "lucide-react";
@@ -13,6 +13,7 @@ import { BotonEnvio } from "@/componentes/formularios/boton-envio";
 import { FieldGroup } from "@/componentes/ui/field";
 
 export function FormularioRecuperacion() {
+  const idFormulario = useId();
   const [pendiente, iniciarTransicion] = useTransition();
   const [mensajeEnviado, setMensajeEnviado] = useState<string | null>(null);
   const formulario = useForm({
@@ -48,7 +49,7 @@ export function FormularioRecuperacion() {
     <form onSubmit={alEnviar} noValidate>
       <FieldGroup>
         <CampoTexto
-          id="correo"
+          id={`${idFormulario}-correo`}
           etiqueta="Correo electrónico"
           type="email"
           autoComplete="email"

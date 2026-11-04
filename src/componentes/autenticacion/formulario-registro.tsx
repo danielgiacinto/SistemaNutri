@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +16,7 @@ import { FieldGroup } from "@/componentes/ui/field";
 import { Button } from "@/componentes/ui/button";
 
 export function FormularioRegistro({ siguiente }: { siguiente: string | null }) {
+  const idFormulario = useId();
   const [pendiente, iniciarTransicion] = useTransition();
   const [correoEnviado, setCorreoEnviado] = useState<string | null>(null);
   const formulario = useForm({
@@ -86,14 +87,14 @@ export function FormularioRegistro({ siguiente }: { siguiente: string | null }) 
       <FieldGroup>
         <div className="grid gap-5 sm:grid-cols-2">
           <CampoTexto
-            id="nombre"
+            id={`${idFormulario}-nombre`}
             etiqueta="Nombre"
             autoComplete="given-name"
             error={errores.nombre?.message}
             {...formulario.register("nombre")}
           />
           <CampoTexto
-            id="apellido"
+            id={`${idFormulario}-apellido`}
             etiqueta="Apellido"
             autoComplete="family-name"
             error={errores.apellido?.message}
@@ -101,7 +102,7 @@ export function FormularioRegistro({ siguiente }: { siguiente: string | null }) 
           />
         </div>
         <CampoTexto
-          id="correo"
+          id={`${idFormulario}-correo`}
           etiqueta="Correo electrónico"
           type="email"
           autoComplete="email"
@@ -111,7 +112,7 @@ export function FormularioRegistro({ siguiente }: { siguiente: string | null }) 
           {...formulario.register("correo")}
         />
         <CampoContrasena
-          id="contrasena"
+          id={`${idFormulario}-contrasena`}
           etiqueta="Contraseña"
           autoComplete="new-password"
           descripcion="Al menos 8 caracteres, con letras y números."
@@ -119,7 +120,7 @@ export function FormularioRegistro({ siguiente }: { siguiente: string | null }) 
           {...formulario.register("contrasena")}
         />
         <CampoContrasena
-          id="confirmacion"
+          id={`${idFormulario}-confirmacion`}
           etiqueta="Repetí la contraseña"
           autoComplete="new-password"
           error={errores.confirmacion?.message}

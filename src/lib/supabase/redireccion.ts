@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { obtenerEntornoPublico } from "@/configuracion/entorno";
 import type { Database } from "@/tipos/base-datos";
+import { opcionesCookiesSesion } from "./opciones-cookies";
 
 /**
  * Cliente ligado a una redirección HTTP. Las cookies (verificador PKCE o
@@ -16,6 +17,7 @@ export function crearClienteRedireccion(peticion: NextRequest) {
   const encabezadosPendientes: Record<string, string> = {};
 
   const cliente = createServerClient<Database>(supabaseUrl, supabaseClavePublica, {
+    cookieOptions: opcionesCookiesSesion(),
     cookies: {
       getAll() {
         return peticion.cookies.getAll();

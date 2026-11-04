@@ -69,6 +69,36 @@ describe("invitación al portal", () => {
     ).rejects.toThrow(/cuenta_de_paciente/);
   });
 
+  it("permite leer el nombre y la zona del propio consultorio, sin incluir otro", async () => {
+    const otroProfesional = await crearUsuario(bd, "otro.consultorio@demo.test");
+    await comoUsuario(bd, otroProfesional, (tx) =>
+      tx.query("select public.crear_consultorio_inicial('Consultorio ajeno')"),
+    );
+    await comoUsuario(bd, profesional, (tx) =>
+      tx.query("update public.consultorios set zona_horaria = 'Europe/Madrid' where id = $1", [consultorio]),
+    );
+    const visibles = await comoUsuario(bd, persona, (tx) =>
+      tx.query<{ id: string; nombre: string; zona_horaria: string }>("select id, nombre, zona_horaria from public.consultorios"),
+    );
+    expect(visibles.rows).toEqual([{ id: consultorio, nombre: "Consultorio Portal", zona_horaria: "Europe/Madrid" }]);
+  });
+
+  it("una cuenta sin ficha vinculada no lee consultorios", async () => {
+    const sinVinculo = await crearUsuario(bd, "sin.vinculo@demo.test");
+    const visibles = await comoUsuario(bd, sinVinculo, (tx) => tx.query("select id from public.consultorios"));
+    expect(visibles.rows).toEqual([]);
+  });
+
+  it("un paciente inactivo deja de leer los datos del consultorio", async () => {
+    await comoUsuario(bd, profesional, (tx) => tx.query("update public.pacientes set estado = 'inactivo' where id = $1", [paciente]));
+    try {
+      const visibles = await comoUsuario(bd, persona, (tx) => tx.query("select id from public.consultorios"));
+      expect(visibles.rows).toEqual([]);
+    } finally {
+      await comoUsuario(bd, profesional, (tx) => tx.query("update public.pacientes set estado = 'activo' where id = $1", [paciente]));
+    }
+  });
+
   it("no deja ver notas privadas y sí las publicadas", async () => {
     await comoUsuario(bd, profesional, async (tx) => {
       await tx.query(

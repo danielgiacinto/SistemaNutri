@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useId, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +21,7 @@ export function FormularioRestablecimiento({
   continuar?: "destino" | "refrescar";
   registro?: boolean;
 }) {
+  const idFormulario = useId();
   const enrutador = useRouter();
   const [pendiente, iniciarTransicion] = useTransition();
   const formulario = useForm({
@@ -50,7 +51,7 @@ export function FormularioRestablecimiento({
     <form onSubmit={alEnviar} noValidate>
       <FieldGroup>
         <CampoContrasena
-          id="contrasena"
+          id={`${idFormulario}-contrasena`}
           etiqueta={registro ? "Contraseña" : "Nueva contraseña"}
           autoComplete="new-password"
           descripcion="Al menos 8 caracteres, con letras y números."
@@ -58,7 +59,7 @@ export function FormularioRestablecimiento({
           {...formulario.register("contrasena")}
         />
         <CampoContrasena
-          id="confirmacion"
+          id={`${idFormulario}-confirmacion`}
           etiqueta={registro ? "Repetí la contraseña" : "Repetí la nueva contraseña"}
           autoComplete="new-password"
           error={errores.confirmacion?.message}

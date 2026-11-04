@@ -9,6 +9,7 @@ const remota = { id: "pre-1", status: "authorized", external_reference: "consult
 const pago = { id: 123, status: "approved", transaction_amount: 15999, currency_id: "ARS", date_approved: "2026-11-03T12:00:00Z" };
 const cadena = {
   select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), update: vi.fn().mockReturnThis(),
+  or: vi.fn().mockReturnThis(), neq: vi.fn().mockReturnThis(),
   maybeSingle: vi.fn(), then: (resolver: (valor: unknown) => unknown) => Promise.resolve({ error: null }).then(resolver),
 };
 const rpc = vi.fn();
@@ -47,5 +48,23 @@ describe("notificaciones verificadas", () => {
     vi.mocked(consultarRecursoMercadoPago).mockResolvedValueOnce({ ...pago, preapproval_id: "pre-1" }).mockResolvedValueOnce(remota);
     rpc.mockResolvedValue({ error: new Error("base no disponible") });
     await expect(procesarNotificacionMercadoPago(cliente, "payment", "123")).rejects.toThrow("base no disponible");
+  });
+  it("condiciona la escritura para no sustituir una versión más reciente ni revivir una cancelación", async () => {
+    vi.mocked(consultarRecursoMercadoPago).mockResolvedValue({ ...remota, last_modified: "2026-11-04T12:00:00Z" });
+    await procesarNotificacionMercadoPago(cliente, "subscription_preapproval", "pre-1");
+    expect(cadena.or).toHaveBeenCalledWith("mp_actualizado_en.is.null,mp_actualizado_en.lte.2026-11-04T12:00:00.000Z");
+    expect(cadena.neq).toHaveBeenCalledWith("estado_mp", "cancelled");
+  });
+  it("permite guardar una cancelación verificada sin cambiar pagos ni cobertura", async () => {
+    vi.mocked(consultarRecursoMercadoPago).mockResolvedValue({ ...remota, status: "cancelled", last_modified: "2026-11-04T12:00:00Z" });
+    await procesarNotificacionMercadoPago(cliente, "subscription_preapproval", "pre-1");
+    expect(cadena.update).toHaveBeenCalledWith(expect.objectContaining({ estado_mp: "cancelled", cancelada_en: "2026-11-04T12:00:00Z" }));
+    expect(cadena.neq).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
+  it("rechaza fechas de versión inválidas antes de escribir", async () => {
+    vi.mocked(consultarRecursoMercadoPago).mockResolvedValue({ ...remota, last_modified: "fecha-invalida" });
+    await expect(procesarNotificacionMercadoPago(cliente, "subscription_preapproval", "pre-1")).rejects.toThrow("Fecha");
+    expect(cadena.update).not.toHaveBeenCalled();
   });
 });

@@ -1,7 +1,7 @@
 # Facturación y Mercado Pago
 
-Estado revisado el **3 de noviembre de 2026**: aplicación en `localhost:3000`,
-Supabase hospedado de desarrollo y ningún despliegue de producción. El usuario completó
+Estado revisado el **4 de noviembre de 2026**: aplicación en `localhost:3000` y
+`https://nutrisfera.vercel.app`, con Supabase hospedado de desarrollo. El usuario completó
 la autorización en el checkout externo con el comprador de prueba y confirmó que
 aparece en **Tus suscripciones** de Mercado Pago y como **Autorizada** en Nutrisfera.
 Todavía no se validó un cobro mensual acreditado de punta a punta. El dominio de la
@@ -43,6 +43,12 @@ sin completar el pago, el botón retoma ese enlace en lugar de crear otra suscri
 Una autorización existente impide crear una segunda suscripción. La pantalla consulta
 también su estado actual en Mercado Pago para reflejar cancelaciones recientes,
 aunque el webhook aún no haya actualizado la base. Esa lectura no acredita cobertura.
+El titular puede pulsar **Sincronizar suscripción** para persistir la autorización verificada.
+El superadministrador dispone de **Sincronizar Mercado Pago** dentro del diálogo del
+consultorio. Ambas acciones obtienen el recurso desde la base con RLS y verifican
+referencia, precio y moneda usando el servicio del webhook. Un error conserva el estado
+anterior. Las versiones antiguas no sustituyen a una más nueva ni reactivan una cancelación.
+Estas acciones no consultan ni acreditan cobros y no sustituyen la reconciliación periódica.
 
 El primer cobro empieza al terminar la prueba o la cobertura ya pagada. Si ambas
 vencieron, no se envía una fecha futura de inicio y se puede completar el pago.
@@ -76,8 +82,12 @@ El aviso se muestra en Facturación. El correo de Auth sigue siendo solo el de l
    No usar el token de la cuenta personal real. El correo `test_user_…@testuser.com`
    del **comprador** va en `MERCADOPAGO_CORREO_PAGADOR_PRUEBA`; ese campo no lleva el
    nombre de usuario `TESTUSER…`.
-3. En Webhooks, la URL es `https://tu-dominio/api/facturacion/mercadopago`.
-   Se configura al desplegar en Vercel, no en localhost. Eventos: `subscription_preapproval`, `subscription_authorized_payment` y `payment`.
+3. En Webhooks, la URL actual es `https://nutrisfera.vercel.app/api/facturacion/mercadopago`.
+   Para esta aplicación del vendedor ficticio con credenciales de producción del propio
+   usuario de prueba, usar **Modo productivo**, conservando las cuentas ficticias.
+   Seleccionar **Pagos** y **Planes y suscripciones**: tópicos `subscription_preapproval`,
+   `subscription_authorized_payment` y `payment`. El servidor además envía `notification_url`
+   al crear la suscripción; la documentación de Suscripciones prioriza esa configuración.
 4. Copiar la clave secreta del webhook a `MERCADOPAGO_WEBHOOK_SECRETO`.
 5. Definir el precio mensual en Administración → Suscripciones. Hasta entonces no se puede autorizar.
 6. Aplicar la migración `20261103220000_checkout_suscripciones.sql` antes de habilitar el flujo nuevo.
@@ -127,7 +137,7 @@ y [webhooks](https://www.mercadopago.com.ar/developers/es/docs/your-integrations
    No se necesitan tarjetas ni documentos personales.
 6. Avanzar hasta la revisión. La confirmación final de la autorización la realiza
    la persona que prueba. El primer cobro mensual respeta la fecha de fin de la prueba.
-7. Volver a Nutrisfera y pulsar **Actualizar estado**. La consulta autenticada puede
+7. Volver a Nutrisfera y pulsar **Sincronizar suscripción**. La consulta autenticada puede
    mostrar `authorized` aunque el webhook todavía no llegue a local. Esto no acredita un mes.
 
 ### Diagnóstico del bloqueo observado
@@ -169,10 +179,10 @@ cobrado la mensualidad ni acreditado cobertura. Esto último sigue pendiente de 
   Persisten diferencias de versiones antiguas en el historial; ver `despliegue.md` antes de `db push`.
 - Mantener alineados el Access Token del vendedor y el correo del comprador.
   La configuración actual ya está verificada; no deducir esta correspondencia por el prefijo del token.
-- Para acreditar y probar un cobro de punta a punta: URL pública HTTPS, secreto del
-  webhook y clave de servicio de Supabase. La clave de Supabase quedó validada en local
-  el 4/11/2026; faltan su configuración en Vercel y el secreto del webhook.
-  La app puede seguir en desarrollo; una URL pública de pruebas no implica lanzarla a producción.
+- El usuario configuró el webhook y las variables privadas en Vercel y realizó redeploy
+  el 4/11/2026. POST sin firma pasó de 503 a 401 `firma_invalida`. Falta verificar una
+  notificación auténtica, sus reintentos y un cobro acreditado de punta a punta.
+  No confundir este rechazo correcto con una prueba de firma válida o de pago aprobado.
 
 El endpoint `/api/facturacion/mercadopago` ya valida la firma, consulta la API del
 proveedor y procesa eventos con deduplicación y reintentos. Lo pendiente es la
