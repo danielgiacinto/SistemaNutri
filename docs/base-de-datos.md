@@ -52,7 +52,8 @@ El superadministrador **no** tiene políticas sobre las tablas clínicas.
 La migración `20261103220000_checkout_suscripciones.sql` refuerza los permisos
 de facturación: impide que un cliente acredite cobertura, valida el precio de un
 checkout y permite acreditar una sola vez un pago que pasa de pendiente a aprobado.
-Está probada en PGlite y **pendiente de aplicar al Supabase hospedado** al 3 de noviembre de 2026.
+Está probada en PGlite. Al 3 de noviembre de 2026, su aplicación en Supabase hospedado
+está **pendiente de verificar**: esta revisión no consultó el historial remoto de migraciones.
 
 ### Funciones expuestas (RPC)
 

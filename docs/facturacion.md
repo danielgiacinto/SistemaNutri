@@ -1,8 +1,10 @@
 # Facturación y Mercado Pago
 
 Estado revisado el **3 de noviembre de 2026**: aplicación en `localhost:3000`,
-Supabase hospedado de desarrollo y ningún despliegue de producción. El checkout
-externo ya abre; la autorización nueva todavía no se confirmó. El dominio de la
+Supabase hospedado de desarrollo y ningún despliegue de producción. El usuario completó
+la autorización en el checkout externo con el comprador de prueba y confirmó que
+aparece en **Tus suscripciones** de Mercado Pago y como **Autorizada** en Nutrisfera.
+Todavía no se validó un cobro mensual acreditado de punta a punta. El dominio de la
 pasarela no determina si el cobro usa cuentas reales o cuentas de prueba.
 
 ## Decisión
@@ -48,12 +50,14 @@ Mercado Pago no acepta `localhost` como retorno: en desarrollo se usa su página
 como respaldo. Para volver a Nutrisfera y recibir notificaciones hace falta el dominio público.
 
 El cobro de punta a punta se prueba **al final del recorrido**, cuando el resto del
-producto esté listo y la app esté desplegada en Vercel:
+producto esté listo y la app tenga un despliegue público HTTPS de pruebas (por ejemplo, Vercel):
 
 1. `NEXT_PUBLIC_SITIO_URL` en `https://` del dominio público.
 2. `MERCADOPAGO_WEBHOOK_SECRETO` y `SUPABASE_SECRET_KEY` cargadas en Vercel.
 3. Webhook de Mercado Pago apuntando a `https://tu-dominio/api/facturacion/mercadopago`.
-4. Recién ahí: pago aprobado (titular `APRO`), cobertura extendida y un rechazo (`OTHE`).
+4. Verificar la aplicación de la migración de checkout en Supabase hospedado.
+5. Recién ahí: pago aprobado (titular `APRO`), historial actualizado, cobertura extendida,
+   rechazo (`OTHE`) y repetición de notificaciones sin extender dos veces la cobertura.
 
 Sin el token, el secreto del webhook y `SUPABASE_SECRET_KEY`, no se acepta un webhook.
 La clave pública y el SDK de tarjeta ya no son necesarios. No se simula un cobro.
@@ -129,7 +133,7 @@ y [webhooks](https://www.mercadopago.com.ar/developers/es/docs/your-integrations
 ### Diagnóstico del bloqueo observado
 
 El desajuste de cuentas descrito a continuación corresponde a la configuración
-anterior. Ya se verificó el nuevo vendedor de prueba y el correo del comprador,
+anterior y quedó resuelto en la prueba manual posterior. Ya se verificó el nuevo vendedor de prueba y el correo del comprador,
 que pertenecen a cuentas distintas. Al cambiar de token, el checkout pendiente
 anterior dejó de ser consultable por el nuevo vendedor.
 
@@ -138,34 +142,40 @@ En desarrollo se puede reemplazar ese pendiente sin cobertura si la API devuelve
 y se verifica que el nuevo token pertenece a `test_user`. Este reemplazo
 no se habilita en producción, ante fallos de red, ni sobre autorizaciones o cobertura existentes.
 
-- El token actual se comprobó con `/users/me`: pertenece a una cuenta con la etiqueta
+- En el diagnóstico se comprobó el token con `/users/me`: pertenecía a una cuenta con la etiqueta
   `test_user`, del país `MLA` (Argentina).
-- La suscripción pendiente tiene otro comprador de prueba argentino asociado.
-- La cuenta dueña del token está identificada como **Comprador** en el panel del
+- La suscripción pendiente tenía otro comprador de prueba argentino asociado.
+- La cuenta dueña del token estaba identificada como **Comprador** en el panel del
   usuario. Al usar su token en el servidor, la integración la puso a recibir los
   cobros. El correo pagador de `.env.local` apuntaba a una tercera cuenta distinta
-  de las dos mostradas en ese panel. La configuración todavía requiere alinear ambos datos.
+  de las dos mostradas en ese panel. Esa configuración se corrigió posteriormente.
 - En la pasarela estaba iniciada la **misma cuenta dueña del token**. Por eso
   no alcanzaba con que el encabezado dijera “Test”: el comprador que paga debe ser otra cuenta.
 - El botón **Confirmar** permaneció deshabilitado tanto con el saldo seleccionado
   como al elegir una tarjeta de prueba dentro de esa sesión vendedora. No se confirmó
-  la autorización. Hay que repetir la revisión con la sesión compradora.
+  la autorización en ese intento. La autorización posterior con el comprador correcto sí se completó.
 - Un mensaje sobre mezclar cuentas reales y de prueba requiere revisar ambas cuentas
   y el medio de pago; cambiar el dominio no corrige esa mezcla.
 
 La autorización anterior del formulario interno fue cancelada. El checkout nuevo
-sigue `pending`. No hay cobros nuevos acreditados en Nutrisfera.
+ya se completó con el comprador correcto, según la prueba manual del usuario.
+**Autorizada** confirma el permiso de cobro recurrente; no demuestra que se haya
+cobrado la mensualidad ni acreditado cobertura. Esto último sigue pendiente de validar.
 
 ### Qué sigue pendiente
 
-- Aplicar `20261103220000_checkout_suscripciones.sql` en Supabase hospedado. Está
-  verificada en PGlite, pero no se aplicó al proyecto remoto desde este trabajo.
-- Completar la autorización con la cuenta compradora correcta.
+- Verificar que `20261103220000_checkout_suscripciones.sql` esté aplicada en Supabase hospedado.
+  Está verificada en PGlite; esta revisión no consultó el historial remoto de migraciones.
 - Mantener alineados el Access Token del vendedor y el correo del comprador.
   La configuración actual ya está verificada; no deducir esta correspondencia por el prefijo del token.
 - Para acreditar y probar un cobro de punta a punta: URL pública HTTPS, secreto del
   webhook y clave de servicio de Supabase. Estos últimos siguen vacíos en `.env.local`.
   La app puede seguir en desarrollo; una URL pública de pruebas no implica lanzarla a producción.
+
+El endpoint `/api/facturacion/mercadopago` ya valida la firma, consulta la API del
+proveedor y procesa eventos con deduplicación y reintentos. Lo pendiente es la
+configuración externa y su validación real, no desarrollar el webhook desde cero.
+Los criterios de cierre están en [`avances.md`](avances.md).
 
 Fuentes oficiales para este flujo: [prueba de Suscripciones `pending`](https://www.mercadopago.com.ar/developers/es/news/2023/11/16/Questions-on-how-to-test-your-integration--#Suscripciones),
 [compra de prueba de Suscripciones](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-test/payment-approval)

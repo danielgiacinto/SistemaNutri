@@ -115,9 +115,9 @@ presenta como una lista por día y el mes muestra indicadores compactos, sin anc
 - **Cobro de punta a punta (fase 5).** El proveedor es Mercado Pago Suscripciones.
   La vista Plan y facturación y el checkout alojado ya están implementados. El servidor
   crea o retoma un `pending` y la tarjeta se ingresa en Mercado Pago. La autorización
-  nueva sigue pendiente de confirmar con el comprador de prueba; no debe confundirse
-  con el vendedor ni con la sesión profesional de Nutrisfera. El webhook, el cobro
-  registrado y la cobertura requieren una URL pública y secretos del servidor.
+  de prueba ya se completó con el comprador y se refleja como Autorizada en la app,
+  según la prueba manual del usuario. El webhook ya está implementado; validar el cobro
+  registrado y la cobertura requiere una URL pública y secretos del servidor.
   La app todavía corre en local. Ver `docs/facturacion.md`.
 - **Envío de correos transaccionales** (recordatorios de turnos): la columna
   `turnos.recordatorio_enviado_en` ya existe. Los correos de Auth ya salen por un SMTP
@@ -142,7 +142,7 @@ presenta como una lista por día y el mes muestra indicadores compactos, sin anc
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones, gráficos | Implementada |
 | 3 | Portal del paciente e invitaciones | Implementada |
 | 4 | Planes alimentarios con versiones y publicación | Implementada |
-| 5 | Suscripciones, pagos y panel de administración completo | Vista y checkout externo implementados; nueva autorización en validación. Acreditación de cobros pendiente de URL pública, secretos y migración de checkout. Ver `docs/facturacion.md`. |
+| 5 | Suscripciones, pagos y panel de administración completo | Checkout y autorización de prueba confirmados. Webhook implementado; validación de cobros pendiente de URL pública, secretos y verificación de migración remota. Ver `docs/facturacion.md`. |
 | 6 | Comunidad y desafíos | Implementada. Ver `docs/base-de-datos.md`. |
 
 El detalle de lo que se puede probar hoy, el entorno de Supabase y lo operativo

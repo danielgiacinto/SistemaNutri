@@ -95,10 +95,10 @@ el proyecto Supabase hospedado es el entorno de desarrollo, no un despliegue de 
 | Auth | Plantillas Nutrisfera publicadas; SMTP de prueba con Gmail (ver `docs/autenticacion.md`) |
 | Site URL | `http://localhost:3000` |
 | Redirect URLs / Google OAuth | Habilitado en hospedado: proveedor Google, Redirect URLs de local y callback de Supabase en Google Cloud (`docs/autenticacion.md`) |
-| Mercado Pago | Token del vendedor de prueba argentino y correo de otro comprador ya alineados. El checkout externo sigue pendiente de autorización por el comprador. |
-| Migración de checkout | `20261103220000_checkout_suscripciones.sql` probada en PGlite; todavía pendiente en Supabase hospedado. |
+| Mercado Pago | Token del vendedor de prueba argentino y correo de otro comprador alineados. Autorización externa completada y visible en la app, según prueba manual del usuario. Acreditación de cobros aún sin validar de punta a punta. |
+| Migración de checkout | `20261103220000_checkout_suscripciones.sql` probada en PGlite; aplicación en Supabase hospedado pendiente de verificar. |
 | `SUPABASE_SECRET_KEY` y secreto del webhook | Vacíos. Sin ellos no se registra un cobro. |
-| Vercel / secretos de GitHub Actions | Pendientes. El cobro de punta a punta se prueba después de este despliegue (`docs/facturacion.md`). |
+| Vercel / secretos de GitHub Actions | Pendientes. Una URL pública HTTPS de pruebas permite validar el webhook sin lanzar comercialmente la app (`docs/facturacion.md`). |
 
 Este entorno es de desarrollo. Antes de datos reales de pacientes: dominio propio,
 SMTP transaccional, OAuth, CI y la revisión legal de `docs/seguridad-y-privacidad.md`.

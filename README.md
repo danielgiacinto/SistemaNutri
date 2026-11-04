@@ -12,8 +12,10 @@ y desafíos de Comunidad. La aplicación corre en **localhost** y usa Supabase h
 de desarrollo. Todavía no hay un despliegue de producción.
 
 La fase 5 abre el checkout de Mercado Pago desde **Plan y facturación** y controla la prueba y el acceso.
-El cobro de punta a punta se prueba **al final**, cuando el resto esté listo y la app
-esté desplegada en Vercel con URL pública. En local el webhook no llega.
+La autorización con el comprador de prueba ya se completó: aparece en **Tus suscripciones**
+de Mercado Pago y como **Autorizada** en Nutrisfera, según la prueba manual del usuario.
+El webhook está implementado y cubierto por pruebas automáticas; falta configurarlo y
+validar el cobro de punta a punta con una URL pública HTTPS. En localhost no recibe notificaciones externas.
 
 | Fase | Contenido | Estado |
 | --- | --- | --- |
@@ -21,7 +23,7 @@ esté desplegada en Vercel con URL pública. En local el webhook no llega.
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
 | 4 | Planes alimentarios con versiones | ✅ Listo para probar |
-| 5 | Suscripciones, pagos y administración | Vista y checkout externo implementados. Autorización en la pasarela pendiente de confirmar con el comprador de prueba. Webhook y cobertura de punta a punta pendientes de URL pública y secretos. |
+| 5 | Suscripciones, pagos y administración | Checkout externo y autorización de prueba confirmados. Webhook implementado; configuración y validación de cobros/cobertura de punta a punta pendientes. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 
 ### Qué se puede probar ahora (profesional)
@@ -35,7 +37,7 @@ esté desplegada en Vercel con URL pública. En local el webhook no llega.
 7. En **Comunidad**: creá un desafío, publicalo, y con la cuenta del paciente sumate y escribí una actividad. El borrador no se ve en el portal.
 
 En **Plan y facturación**, el botón **Elegir este plan** abre Mercado Pago para
-completar la autorización con los datos de prueba. La tarjeta ya no se ingresa
+completar la autorización con los datos de prueba; este recorrido ya se completó correctamente. La tarjeta ya no se ingresa
 dentro de Nutrisfera. Si volvés sin terminar, **Continuar con el pago** retoma el
 mismo checkout. Cobertura, cobro registrado y rechazo se prueban cuando exista
 la URL pública (ver más abajo).
@@ -52,12 +54,14 @@ está habilitado en el proyecto hospedado (alta e ingreso, ver `docs/autenticaci
 
 ### Qué se prueba al final
 
-Cuando la clínica, el portal y los planes estén cerrados y el proyecto esté en Vercel:
+Para cerrar la fase 5 se necesita un despliegue de pruebas con URL pública HTTPS
+(por ejemplo, en Vercel); no hace falta lanzar comercialmente la app:
 
 1. Dejar `NEXT_PUBLIC_SITIO_URL` en `https://` del dominio de producción.
 2. Cargar `MERCADOPAGO_WEBHOOK_SECRETO` y `SUPABASE_SECRET_KEY`.
 3. Apuntar el webhook de Mercado Pago a `https://tu-dominio/api/facturacion/mercadopago`.
-4. Recién ahí: pago aprobado, cobertura extendida y un rechazo (titular `OTHE`).
+4. Verificar que la migración `20261103220000_checkout_suscripciones.sql` esté aplicada en Supabase hospedado.
+5. Recién ahí: pago aprobado, historial actualizado, cobertura extendida, rechazo y reintentos sin acreditar dos veces.
    El cobro se abre en Mercado Pago al elegir el plan. La pantalla de Facturación ya no pide los datos de la tarjeta.
 
 Hasta ese momento, autorizar la tarjeta en local no acredita un mes. El detalle está
@@ -72,14 +76,27 @@ en [`docs/facturacion.md`](docs/facturacion.md).
 | Correos de Auth | Plantillas Nutrisfera publicadas + SMTP de prueba con Gmail |
 | Site URL | `http://localhost:3000` |
 | Redirect URLs / Google OAuth | Habilitado en el proyecto hospedado (local + callback de Supabase) |
-| Mercado Pago | Vendedor y comprador de prueba distintos ya configurados y verificados. Checkout externo disponible; nueva autorización pendiente de completar por el comprador. |
-| Migración de checkout | `20261103220000_checkout_suscripciones.sql` creada y probada en PGlite; pendiente de aplicar en Supabase hospedado. |
+| Mercado Pago | Vendedor y comprador de prueba distintos configurados. Autorización alojada completada y visible como Autorizada en la app, según prueba manual del usuario. |
+| Migración de checkout | `20261103220000_checkout_suscripciones.sql` creada y probada en PGlite; aplicación en Supabase hospedado pendiente de verificar. |
 | `SUPABASE_SECRET_KEY` y secreto del webhook | Vacíos. Hacen falta para registrar un cobro. |
 | Vercel y secretos de CI | Pendientes. El cobro completo se prueba después de este despliegue. |
 
 Detalle de Auth y SMTP: [`docs/autenticacion.md`](docs/autenticacion.md).
 Detalle de despliegue y variables: [`docs/despliegue.md`](docs/despliegue.md).
 Decisiones de arquitectura: [`docs/arquitectura.md`](docs/arquitectura.md).
+
+### Avances recientes y alcance del MVP
+
+- Marca: palta vectorial compartida entre logo y favicon, con contornos refinados e inclinación de 10° a la derecha.
+- Agenda: duración visual de turnos, indicador de hora actual y vistas adaptadas a celular sin ancho mínimo forzado.
+- Inicio, Pacientes, Historias clínicas, Planes, Comunidad y Configuración: tarjetas, filtros, listados y jerarquías visuales consistentes; accesos rápidos a las secciones de Configuración.
+- Última verificación técnica: `npm run verificar` completado con lint, TypeScript, **160 pruebas** y compilación. Revisión visual en escritorio y celular.
+
+El núcleo funcional del MVP está implementado para desarrollo. Cerrar fase 5 exige
+demostrar la acreditación automática de cobros, además de la autorización ya conseguida.
+La preparación para producción incluye despliegue, migraciones verificadas, secretos/CI,
+correo transaccional, respaldo/restauración y revisión de los pendientes de seguridad y privacidad.
+Ver [avance y criterios de cierre](docs/avances.md).
 
 ## Stack
 
@@ -120,4 +137,6 @@ Guía completa (Supabase, Google OAuth, Vercel, primer superadministrador) en
 - [Base de datos, RLS y migraciones](docs/base-de-datos.md)
 - [Autenticación y Google OAuth](docs/autenticacion.md)
 - [Despliegue y variables de entorno](docs/despliegue.md)
+- [Facturación y Mercado Pago](docs/facturacion.md)
+- [Avances y criterios de cierre del MVP](docs/avances.md)
 - [Seguridad y privacidad](docs/seguridad-y-privacidad.md)
