@@ -23,16 +23,12 @@ export default function PaginaSuscripciones() {
 async function Contenido() {
   await requerirSuperadmin();
   const cliente = await crearClienteServidor();
-  const [configuracion, pruebas, suscripciones, pagos] = await Promise.all([
+  const [configuracion, resumen] = await Promise.all([
     obtenerConfiguracionComercial(cliente),
-    cliente.from("pruebas_profesionales").select("vence_en"),
-    cliente.from("suscripciones").select("estado_mp, cobertura_hasta"),
-    cliente.from("pagos_suscripcion").select("estado, monto"),
+    cliente.rpc("resumen_comercial").single(),
   ]);
-  const ahora = new Date();
-  const enPrueba = (pruebas.data ?? []).filter((prueba) => new Date(prueba.vence_en).getTime() > ahora.getTime()).length;
-  const activas = (suscripciones.data ?? []).filter((item) => item.cobertura_hasta && new Date(item.cobertura_hasta).getTime() > ahora.getTime()).length;
-  const cobrado = (pagos.data ?? []).filter((pago) => pago.estado === "aprobado").reduce((total, pago) => total + Number(pago.monto), 0);
+  if (resumen.error || !resumen.data) throw new Error("No pudimos cargar el resumen comercial.");
+  const metricas = resumen.data;
 
   return (
     <div className="space-y-6">
@@ -40,10 +36,15 @@ async function Contenido() {
         <h1 className="text-2xl font-bold tracking-tight">Suscripciones</h1>
         <p className="text-muted-foreground">Los importes son cobros aprobados. No incluyen autorizaciones ni pagos pendientes.</p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Dato titulo="En prueba" valor={String(enPrueba)} />
-        <Dato titulo="Con cobertura paga" valor={String(activas)} />
-        <Dato titulo="Cobrado aprobado" valor={formatearPesos(cobrado) ?? "0"} />
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Dato titulo="Profesionales registrados" valor={String(metricas.profesionales)} />
+        <Dato titulo="En prueba" valor={String(metricas.en_prueba)} />
+        <Dato titulo="Con cobertura paga" valor={String(metricas.cobertura_paga)} />
+        <Dato titulo="Pruebas por vencer en 7 días" valor={String(metricas.por_vencer)} />
+        <Dato titulo="Pruebas vencidas sin cobertura" valor={String(metricas.pruebas_vencidas)} />
+        <Dato titulo="Suscripciones canceladas" valor={String(metricas.canceladas)} />
+        <Dato titulo="Último cobro pendiente o rechazado" valor={String(metricas.cobros_por_resolver)} />
+        <Dato titulo="Cobros de suscripción aprobados este mes (ARS)" valor={formatearPesos(metricas.ingreso_mes) ?? "0"} />
       </div>
       <Card>
         <CardHeader>

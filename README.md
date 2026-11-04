@@ -15,8 +15,9 @@ El despliegue todavía no habilita cobros reales ni acredita el cierre de la fas
 La fase 5 abre el checkout de Mercado Pago desde **Plan y facturación** y controla la prueba y el acceso.
 La autorización con el comprador de prueba ya se completó: aparece en **Tus suscripciones**
 de Mercado Pago y como **Autorizada** en Nutrisfera, según la prueba manual del usuario.
-El webhook está implementado y cubierto por pruebas automáticas; falta configurarlo y
-validar el cobro de punta a punta con una URL pública HTTPS. En localhost no recibe notificaciones externas.
+El webhook firmado de autorización ya se comprobó en Vercel. Están implementadas la
+conciliación diaria, la cancelación de renovación, el detalle comercial y el bloqueo
+clínico desde la base. Falta completar las pruebas externas de cobros mensuales y cancelación.
 
 | Fase | Contenido | Estado |
 | --- | --- | --- |
@@ -24,7 +25,7 @@ validar el cobro de punta a punta con una URL pública HTTPS. En localhost no re
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
 | 4 | Planes alimentarios con versiones | ✅ Listo para probar |
-| 5 | Suscripciones, pagos y administración | Checkout externo y autorización de prueba confirmados. Webhook implementado; configuración y validación de cobros/cobertura de punta a punta pendientes. |
+| 5 | Suscripciones, pagos y administración | Autorización y webhook firmado comprobados. Conciliación, cancelación, administración y permisos comerciales implementados; validación externa de mensualidades en curso. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 
 ### Qué se puede probar ahora (profesional)
@@ -40,8 +41,8 @@ validar el cobro de punta a punta con una URL pública HTTPS. En localhost no re
 En **Plan y facturación**, el botón **Elegir este plan** abre Mercado Pago para
 completar la autorización con los datos de prueba; este recorrido ya se completó correctamente. La tarjeta ya no se ingresa
 dentro de Nutrisfera. Si volvés sin terminar, **Continuar con el pago** retoma el
-mismo checkout. Cobertura, cobro registrado y rechazo se prueban cuando exista
-la URL pública (ver más abajo).
+mismo checkout. En la URL pública se prueban cobertura, cobro registrado, rechazo y
+cancelación (ver más abajo). **Verificar cobros** recupera movimientos desde la API.
 
 Para **Suscripciones**, el checkout usa `mercadopago.com.ar` también en pruebas.
 El servidor usa el Access Token de la cuenta **vendedora de prueba**, y en la pasarela
@@ -93,7 +94,8 @@ Decisiones de arquitectura: [`docs/arquitectura.md`](docs/arquitectura.md).
 - Inicio, Pacientes, Historias clínicas, Planes, Comunidad y Configuración: tarjetas, filtros, listados y jerarquías visuales consistentes; accesos rápidos a las secciones de Configuración.
 - Correcciones de la revisión de roles: política de lectura del consultorio del paciente, cookies seguras en HTTPS y etiquetas únicas por instancia de formulario. La migración `20261104180000` está aplicada en Supabase hospedado.
 - Facturación: sincronización explícita de autorización para el titular y superadministrador, sin acreditar pagos; auditoría con responsable y motivo, fechas administrativas con zona explícita.
-- Última verificación técnica (4/11/2026): `npm run verificar` completo, con lint, TypeScript, **177 pruebas en 21 archivos** y compilación. Turbopack tuvo un fallo transitorio de su proceso auxiliar en Windows antes de la ejecución satisfactoria.
+- Operación comercial: conciliación diaria con cursor y reserva recuperable; cancelación auditada; ingresos y vencimientos agregados en la base. Las migraciones `20261104200000` y `20261104210000` están aplicadas y registradas en Supabase hospedado.
+- Última verificación técnica (4/11/2026): `npm run verificar` completo, con lint, TypeScript, **201 pruebas en 25 archivos** y compilación.
 
 El núcleo funcional del MVP está implementado para desarrollo. Cerrar fase 5 exige
 demostrar la acreditación automática de cobros, además de la autorización ya conseguida.

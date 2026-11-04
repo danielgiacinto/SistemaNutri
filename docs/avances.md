@@ -21,9 +21,8 @@ flujo de autorización validado y conserva pendiente la acreditación real de co
   Historias y Planes con filas completas pulsables y acciones en estados vacíos;
   Comunidad con estados y metadatos más claros; Configuración con accesos por sección.
   Tarjetas, filtros, iconos y espaciados mantienen una línea visual común.
-- **Validación técnica:** `npm run verificar` completo, con lint, tipos, 177 pruebas
-  en 21 archivos y compilación el 4/11/2026. Turbopack requirió repetir por un fallo transitorio
-  de su proceso auxiliar en Windows. Revisión visual previa de las seis vistas en
+- **Validación técnica:** `npm run verificar` completo, con lint, tipos, 201 pruebas
+  en 25 archivos y compilación el 4/11/2026. Revisión visual previa de las seis vistas en
   escritorio y móvil; Inicio también revisado a 320 px sin desborde horizontal.
 
 ## Cierre de fase 5
@@ -56,8 +55,9 @@ Falta demostrar el recorrido completo con notificaciones externas:
   exactamente una vez la cobertura; la autorización por sí sola no debe hacerlo.
 - [ ] Comprobar rechazo y acceso comercial resultante, actualización de la suscripción
   al cancelarse y reintentos/eventos repetidos sin duplicar pagos ni cobertura.
-- [ ] Mostrar la gestión/cancelación de renovación también cuando la suscripción está
-  autorizada; no aparece una acción visible en la revisión del portal profesional.
+- [x] Cancelación de renovación visible para el titular, con confirmación y motivo.
+  Solicitud auditada desde la identidad; confirmación por API y recuperación por cron
+  si falla el proveedor. Conserva la prueba/cobertura pagada. Falta prueba externa final.
 - [x] Auditoría presenta actor, consultorio y motivo administrativo, sin volcar el JSON
   completo. Fechas en Córdoba; vencimientos en Profesionales usan la zona del consultorio.
 - [x] Sincronización explícita de autorización en Facturación y en el diálogo administrativo,
@@ -66,11 +66,18 @@ Falta demostrar el recorrido completo con notificaciones externas:
   No acredita pagos ni sustituye la reconciliación periódica.
   Validada en el despliegue público desde la cuenta administrativa: estado actualizado
   a `authorized` en vista y base, conservando cero pagos y cobertura nula.
-- [ ] Completar la gestión comercial individual prevista: detalle de suscripción/cobros,
-  suspensión/reactivación administrativa con motivo y métricas de vencimientos. Las
-  pantallas actuales cubren listado, ajuste de prueba y configuración global.
-- [ ] Implementar la reconciliación periódica independiente de los webhooks. La lectura
-  manual de estado en Facturación no sustituye una tarea programada de recuperación.
+- [x] Detalle comercial y cobros en `/admin/profesionales/[consultorioId]`, con
+  suspensión/reactivación administrativa confirmada y auditada. Resumen de ingresos
+  mensuales, vencimientos, cancelaciones y cobros pendientes agregado en PostgreSQL.
+- [x] Conciliación periódica en `/api/facturacion/conciliar`, protegida por `CRON_SECRET`,
+  configurada diariamente en Vercel. Lote de cinco suscripciones, dos trabajadores,
+  diez facturas por página, cursor persistente y reserva de diez minutos. Se puede
+  continuar manualmente desde Facturación o Administración. Activación pública a verificar.
+- [x] Cobertura por ciclo de factura, independiente del orden de llegada. Devoluciones
+  retiran el período acreditado; las repeticiones no suman meses. Pruebas PostgreSQL.
+- [x] Bloqueo comercial centralizado en RLS y funciones clínicas, manteniendo lectura
+  administrativa de facturación y lectura del paciente de lo previamente compartido.
+  La comunidad queda en solo lectura cuando el consultorio pierde cobertura o se suspende.
 - [ ] Completar los avisos comerciales previstos por correo; hoy solo existen avisos
   en la interfaz y correos de autenticación.
 

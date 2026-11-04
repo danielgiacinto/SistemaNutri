@@ -98,6 +98,22 @@ limitado a horarios, bloqueos y borradores de evoluciones.
 
 ## Pruebas
 
+Las migraciones comerciales del 4/11/2026 agregan solicitud de cancelación, cursor,
+último intento, último éxito y error de conciliación en `suscripciones`. Solo el
+servidor puede escribir esos datos; el titular solicita cancelar mediante una función
+que obtiene su consultorio de `auth.uid()`. No se borra el historial de pagos al cancelar.
+
+`es_miembro_consultorio` y `es_titular_consultorio` exigen cobertura comercial para
+las políticas y funciones clínicas existentes. Las políticas comerciales usan
+`es_miembro_administrativo` / `es_titular_administrativo`, de modo que una cuenta
+vencida o suspendida conserva su facturación. El paciente mantiene sus permisos
+explícitos de lectura; el bloqueo no publica notas ni concede acceso a otro consultorio.
+
+`registrar_pago_verificado` conserva el período de cada pago según el ciclo de la
+factura (`debit_date`), y calcula la cobertura máxima entre períodos aprobados no
+devueltos. Una devolución revoca ese período. La autorización recurrente y su
+próximo cobro permanecen separados de la cobertura acreditada.
+
 `npm test` aplica todas las migraciones sobre PGlite (PostgreSQL embebido) junto con
 `pruebas/bd/supabase-simulado.sql`, que recrea los roles `anon`/`authenticated`/`service_role`,
 `auth.users` y `auth.uid()`. Las pruebas ejecutan consultas como cada usuario y verifican

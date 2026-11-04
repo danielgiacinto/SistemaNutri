@@ -6,7 +6,6 @@ import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { registrarError } from "@/lib/errores";
 import {
   calcularDestino,
-  esProfesionalActivo,
   type ContextoProfesional,
   type ContextoUsuario,
 } from "@/autorizacion/contexto";
@@ -77,11 +76,11 @@ export async function requerirProfesional(): Promise<ContextoProfesional> {
   return contexto;
 }
 
-/** Sesión profesional sin mirar la suscripción. La usa el layout y la facturación. */
+/** Sesión profesional para el marco y la facturación, incluso con acceso suspendido. */
 export async function cargarProfesional(): Promise<ContextoProfesional> {
   const contexto = await requerirUsuario();
-  if (!esProfesionalActivo(contexto)) redirect(calcularDestino(contexto));
-  return contexto;
+  if (contexto.tipoCuenta !== "profesional" || !contexto.consultorio || contexto.esSuperadmin) redirect(calcularDestino(contexto));
+  return { ...contexto, tipoCuenta: "profesional", consultorio: contexto.consultorio };
 }
 
 /** Permite regularizar los pagos incluso cuando venció la cobertura comercial. */

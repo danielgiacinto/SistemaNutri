@@ -11,6 +11,7 @@ import { Button } from "@/componentes/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { TiempoRestanteTurno } from "@/componentes/panel/tiempo-restante-turno";
+import { AvisoComercial } from "@/componentes/facturacion/aviso-comercial";
 import { LOCALE_PREDETERMINADO } from "@/configuracion/producto";
 import { formatearFechaHora, hoyEnZona, minutosEntre } from "@/lib/fechas";
 import { nombreNatural } from "@/lib/antropometria";
@@ -61,6 +62,7 @@ async function ContenidoInicio() {
 
   return (
     <div className="space-y-8">
+      <AvisoComercial consultorioId={contexto.consultorio.id} zona={contexto.consultorio.zonaHoraria} />
       <EncabezadoPagina
         titulo={
           <>

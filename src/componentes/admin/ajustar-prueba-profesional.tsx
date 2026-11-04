@@ -6,6 +6,7 @@ import { Dialog as DialogoPrimitivo } from "radix-ui";
 import { CalendarClock, RefreshCw } from "lucide-react";
 import { extenderPrueba } from "@/acciones/facturacion";
 import { actualizarSuscripcionProfesional } from "@/acciones/sincronizar-suscripcion";
+import Link from "next/link";
 import { Button } from "@/componentes/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/componentes/ui/dialog";
 import { Input } from "@/componentes/ui/input";
@@ -106,6 +107,7 @@ export function AjustarPruebaProfesional({
           <p className="font-medium">{consultorio}</p>
           <p className="text-muted-foreground">{correo} · vence actualmente el {vence}</p>
         </div>
+        <Button variant="outline" asChild><Link href={`/admin/profesionales/${consultorioId}`}>Ver detalle comercial y cobros</Link></Button>
         <Button type="button" variant="outline" disabled={pendiente} aria-busy={pendiente} onClick={() => iniciarTransicion(async () => {
           try {
             const resultado = await actualizarSuscripcionProfesional(consultorioId);

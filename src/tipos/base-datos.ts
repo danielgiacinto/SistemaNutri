@@ -867,6 +867,12 @@ export type Database = {
       }
       suscripciones: {
         Row: {
+          conciliacion_intento_en: string | null
+          conciliada_en: string | null
+          conciliacion_error: string | null
+          conciliacion_cursor: number
+          cancelacion_solicitada_en: string | null
+          cancelacion_motivo: string | null
           actualizado_en: string
           cancelada_en: string | null
           cobertura_hasta: string | null
@@ -881,6 +887,12 @@ export type Database = {
           ultimo_cobro_en: string | null
         }
         Insert: {
+          conciliacion_intento_en?: string | null
+          conciliada_en?: string | null
+          conciliacion_error?: string | null
+          conciliacion_cursor?: number
+          cancelacion_solicitada_en?: string | null
+          cancelacion_motivo?: string | null
           actualizado_en?: string
           cancelada_en?: string | null
           cobertura_hasta?: string | null
@@ -895,6 +907,12 @@ export type Database = {
           ultimo_cobro_en?: string | null
         }
         Update: {
+          conciliacion_intento_en?: string | null
+          conciliada_en?: string | null
+          conciliacion_error?: string | null
+          conciliacion_cursor?: number
+          cancelacion_solicitada_en?: string | null
+          cancelacion_motivo?: string | null
           actualizado_en?: string
           cancelada_en?: string | null
           cobertura_hasta?: string | null
@@ -1160,6 +1178,7 @@ export type Database = {
       }
       registrar_pago_verificado: {
         Args: {
+          p_inicio_periodo?: string | null
           p_cobrado_en: string
           p_estado: string
           p_moneda: string
@@ -1168,6 +1187,22 @@ export type Database = {
           p_mp_suscripcion: string
         }
         Returns: undefined
+      }
+      solicitar_cancelacion_suscripcion: {
+        Args: { p_motivo: string }
+        Returns: string
+      }
+      cambiar_estado_comercial_consultorio: {
+        Args: { p_consultorio_id: string; p_suspendido: boolean; p_motivo: string }
+        Returns: undefined
+      }
+      reclamar_conciliaciones: {
+        Args: { p_limite?: number }
+        Returns: { id: string; mp_id: string; conciliacion_cursor: number; conciliacion_intento_en: string }[]
+      }
+      resumen_comercial: {
+        Args: never
+        Returns: { profesionales: number; en_prueba: number; cobertura_paga: number; por_vencer: number; pruebas_vencidas: number; canceladas: number; cobros_por_resolver: number; ingreso_mes: number }[]
       }
       crear_consultorio_inicial: {
         Args: { p_nombre: string; p_zona_horaria?: string }

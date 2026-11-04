@@ -8,6 +8,7 @@ import { esquemaUuid } from "@/esquemas/comunes";
 import { registrarError } from "@/lib/errores";
 import { credencialesMercadoPago } from "@/servicios/facturacion/mercadopago";
 import { procesarNotificacionMercadoPago } from "@/servicios/facturacion/notificaciones";
+import { conciliarSuscripcion } from "@/servicios/facturacion/conciliacion";
 import type { ResultadoAccion } from "@/tipos/acciones";
 
 export async function actualizarMiSuscripcion(): Promise<ResultadoAccion> {
@@ -24,6 +25,35 @@ export async function actualizarSuscripcionProfesional(consultorioId: string): P
     return { ok: false, mensaje: "No encontramos ese consultorio." };
   }
   return actualizarSuscripcion(await crearClienteServidor(), consultorioId);
+}
+
+export async function conciliarMiSuscripcion(): Promise<ResultadoAccion> {
+  const contexto = await requerirProfesionalParaFacturacion();
+  if (contexto.consultorio.rol !== "titular") return { ok: false, mensaje: "Solo el titular puede revisar los cobros." };
+  return revisarCobros(contexto.consultorio.id);
+}
+
+export async function conciliarSuscripcionProfesional(consultorioId: string): Promise<ResultadoAccion> {
+  await requerirSuperadmin();
+  if (!esquemaUuid.safeParse(consultorioId).success) return { ok: false, mensaje: "No encontramos ese consultorio." };
+  return revisarCobros(consultorioId);
+}
+
+async function revisarCobros(consultorioId: string): Promise<ResultadoAccion> {
+  const cliente = await crearClienteServidor();
+  const { data, error } = await cliente.from("suscripciones").select("mp_id, conciliacion_cursor").eq("consultorio_id", consultorioId).maybeSingle();
+  if (error || !data?.mp_id) return { ok: false, mensaje: "No encontramos una suscripción para verificar." };
+  const servicio = crearClienteServicio();
+  if (!servicio || !credencialesMercadoPago()) return { ok: false, mensaje: "Falta configurar la conexión del servidor." };
+  try {
+    const resultado = await conciliarSuscripcion(servicio, data.mp_id, data.conciliacion_cursor);
+    refresh();
+    return { ok: true, mensaje: resultado.hayMas ? "Página de cobros revisada. Hay más movimientos: podés continuar con otra revisión." : "Cobros verificados con Mercado Pago. El historial y la cobertura están actualizados." };
+  } catch (error) {
+    registrarError("conciliacion_manual", error);
+    refresh();
+    return { ok: false, mensaje: "La verificación quedó pendiente. Conservamos los datos confirmados; intentá nuevamente." };
+  }
 }
 
 async function actualizarSuscripcion(cliente: ClienteSupabase, consultorioId: string): Promise<ResultadoAccion> {

@@ -12,17 +12,21 @@ type PagoMercadoPago = {
   preapproval_id?: string;
   metadata?: { preapproval_id?: string };
 };
-type FacturaMercadoPago = {
+export type FacturaMercadoPago = {
+  id?: string | number;
   preapproval_id: string;
+  debit_date?: string;
   payment?: { id?: string | number };
 };
 
-async function sincronizarSuscripcion(cliente: ClienteSupabase, mpId: string) {
-  const remota = await consultarRecursoMercadoPago(`/preapproval/${encodeURIComponent(mpId)}`) as SuscripcionMercadoPago | null;
+export async function sincronizarSuscripcion(cliente: ClienteSupabase, mpId: string, tiempoLimite?: number) {
+  const ruta = `/preapproval/${encodeURIComponent(mpId)}`;
+  const remota = await (tiempoLimite ? consultarRecursoMercadoPago(ruta, tiempoLimite) : consultarRecursoMercadoPago(ruta)) as SuscripcionMercadoPago | null;
+  if (remota?.status === "canceled") remota.status = "cancelled";
   if (!remota || remota.id !== mpId || !["pending", "authorized", "paused", "cancelled"].includes(remota.status)) {
     throw new Error("Respuesta de suscripción inválida.");
   }
-  const { data: local, error } = await cliente.from("suscripciones").select("id, consultorio_id, precio, moneda").eq("mp_id", mpId).maybeSingle();
+  const { data: local, error } = await cliente.from("suscripciones").select("id, consultorio_id, precio, moneda, cancelacion_solicitada_en").eq("mp_id", mpId).maybeSingle();
   if (error) throw error;
   if (!local) throw new Error("La suscripción todavía no está registrada.");
   if (remota.external_reference !== local.consultorio_id ||
@@ -44,6 +48,7 @@ async function sincronizarSuscripcion(cliente: ClienteSupabase, mpId: string) {
   if (remota.status !== "cancelled") guardado = guardado.neq("estado_mp", "cancelled");
   const { error: errorGuardado } = await guardado;
   if (errorGuardado) throw errorGuardado;
+  return { remota, local };
 }
 
 /** El cuerpo del webhook solo identifica el recurso; los importes vienen de la API autenticada. */
@@ -54,10 +59,11 @@ export async function procesarNotificacionMercadoPago(cliente: ClienteSupabase, 
   }
 
   let mpId: string | undefined;
+  let factura: FacturaMercadoPago | undefined;
   let pagoId = recursoId;
   if (tipo === "subscription_authorized_payment") {
-    const factura = await consultarRecursoMercadoPago(`/authorized_payments/${encodeURIComponent(recursoId)}`) as FacturaMercadoPago | null;
-    if (!factura) throw new Error("No se pudo verificar la factura.");
+    factura = await consultarRecursoMercadoPago(`/authorized_payments/${encodeURIComponent(recursoId)}`) as FacturaMercadoPago | undefined;
+    if (!factura || (factura.id != null && String(factura.id) !== recursoId)) throw new Error("No se pudo verificar la factura.");
     if (!factura.payment?.id) return; // Una factura programada aún puede no tener un intento de pago.
     mpId = factura.preapproval_id;
     pagoId = String(factura.payment.id);
@@ -66,22 +72,42 @@ export async function procesarNotificacionMercadoPago(cliente: ClienteSupabase, 
   const pago = await consultarRecursoMercadoPago(`/v1/payments/${encodeURIComponent(pagoId)}`) as PagoMercadoPago | null;
   if (!pago || String(pago.id) !== pagoId) throw new Error("No se pudo verificar el pago.");
   mpId ??= pago.preapproval_id ?? pago.metadata?.preapproval_id;
-  if (!mpId) {
+  if (!factura) {
     // Payments no siempre informa preapproval_id; la factura vincula ambos recursos.
     const facturas = await consultarRecursoMercadoPago(`/authorized_payments/search?payment_id=${encodeURIComponent(pagoId)}`) as { results?: FacturaMercadoPago[] } | null;
-    mpId = facturas?.results?.find((factura) => String(factura.payment?.id) === pagoId)?.preapproval_id;
+    factura = facturas?.results?.find((item) => String(item.payment?.id) === pagoId);
+    if (factura && mpId && factura.preapproval_id !== mpId) throw new Error("La factura no corresponde a la suscripción.");
+    mpId ??= factura?.preapproval_id;
   }
   if (!mpId) return; // Pago del vendedor ajeno a las suscripciones de esta aplicación.
+  if (pago.status === "approved" && !factura) throw new Error("La factura del pago todavía no está disponible.");
   await sincronizarSuscripcion(cliente, mpId);
+  await registrarPagoConsultado(cliente, mpId, pago, factura?.debit_date);
+}
+
+/** Solo recibe pagos obtenidos por la API autenticada (webhook o conciliación). */
+async function registrarPagoConsultado(cliente: ClienteSupabase, mpId: string, pago: PagoMercadoPago, fechaCiclo?: string) {
   const estados: Record<string, string> = { approved: "aprobado", rejected: "rechazado", refunded: "devuelto", charged_back: "devuelto" };
+  if (fechaCiclo && !Number.isFinite(new Date(fechaCiclo).getTime())) throw new Error("Fecha del ciclo inválida.");
   if (pago.status === "approved" && !pago.date_approved) throw new Error("El pago aprobado no tiene fecha de acreditación.");
   const { error } = await cliente.rpc("registrar_pago_verificado", {
     p_mp_suscripcion: mpId,
-    p_mp_pago: pagoId,
+    p_mp_pago: String(pago.id),
     p_estado: estados[pago.status] ?? "pendiente",
     p_monto: pago.transaction_amount,
     p_moneda: pago.currency_id,
     p_cobrado_en: pago.date_approved ?? pago.date_created ?? new Date().toISOString(),
+    ...(fechaCiclo ? { p_inicio_periodo: new Date(fechaCiclo).toISOString() } : {}),
   });
   if (error) throw error;
+}
+
+export async function registrarPagoDeFactura(cliente: ClienteSupabase, factura: FacturaMercadoPago, mpId: string) {
+  if (factura.preapproval_id !== mpId) throw new Error("Factura de otra suscripción.");
+  if (!factura.payment?.id) return;
+  const pago = await consultarRecursoMercadoPago(`/v1/payments/${encodeURIComponent(String(factura.payment.id))}`, 5_000) as PagoMercadoPago | null;
+  if (!pago || String(pago.id) !== String(factura.payment.id) ||
+    (pago.preapproval_id && pago.preapproval_id !== mpId) ||
+    (pago.metadata?.preapproval_id && pago.metadata.preapproval_id !== mpId)) throw new Error("El pago no corresponde a la factura.");
+  await registrarPagoConsultado(cliente, mpId, pago, factura.debit_date);
 }

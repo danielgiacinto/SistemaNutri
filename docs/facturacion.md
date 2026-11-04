@@ -43,12 +43,13 @@ sin completar el pago, el botón retoma ese enlace en lugar de crear otra suscri
 Una autorización existente impide crear una segunda suscripción. La pantalla consulta
 también su estado actual en Mercado Pago para reflejar cancelaciones recientes,
 aunque el webhook aún no haya actualizado la base. Esa lectura no acredita cobertura.
-El titular puede pulsar **Sincronizar suscripción** para persistir la autorización verificada.
+El titular puede pulsar **Verificar cobros** para persistir autorización y pagos verificados.
 El superadministrador dispone de **Sincronizar Mercado Pago** dentro del diálogo del
 consultorio. Ambas acciones obtienen el recurso desde la base con RLS y verifican
 referencia, precio y moneda usando el servicio del webhook. Un error conserva el estado
 anterior. Las versiones antiguas no sustituyen a una más nueva ni reactivan una cancelación.
-Estas acciones no consultan ni acreditan cobros y no sustituyen la reconciliación periódica.
+La sincronización de autorización no acredita cobros. La revisión de cobros usa la misma
+función idempotente del webhook y puede actualizar la cobertura cuando corresponde.
 
 El primer cobro empieza al terminar la prueba o la cobertura ya pagada. Si ambas
 vencieron, no se envía una fecha futura de inicio y se puede completar el pago.
@@ -137,8 +138,51 @@ y [webhooks](https://www.mercadopago.com.ar/developers/es/docs/your-integrations
    No se necesitan tarjetas ni documentos personales.
 6. Avanzar hasta la revisión. La confirmación final de la autorización la realiza
    la persona que prueba. El primer cobro mensual respeta la fecha de fin de la prueba.
-7. Volver a Nutrisfera y pulsar **Sincronizar suscripción**. La consulta autenticada puede
+7. Volver a Nutrisfera y pulsar **Verificar cobros**. La consulta autenticada puede
    mostrar `authorized` aunque el webhook todavía no llegue a local. Esto no acredita un mes.
+
+## Operación automática y cancelaciones
+
+- `/api/facturacion/conciliar`: GET autenticado exclusivamente con `CRON_SECRET`.
+  `vercel.json` lo programa a las 06:00 UTC diariamente. Solo crea verificaciones,
+  nunca inicia cobros ni reintentos financieros. La frecuencia inicial es compatible con Hobby.
+- Cada ejecución reserva cinco suscripciones con `FOR UPDATE SKIP LOCKED`; una reserva
+  abandonada vuelve a estar disponible después de diez minutos. Dos trabajadores
+  revisan diez facturas por suscripción. Los historiales largos continúan con un cursor
+  persistido en próximas ejecuciones; al terminar, el próximo recorrido empieza en cero.
+  El orden por último intento evita dejar siempre sin revisar los mismos consultorios.
+  Si crece el volumen, ajustar capacidad/frecuencia según el plan y observar la antigüedad
+  de `conciliada_en`. El webhook continúa siendo la actualización inmediata.
+- El estado de cada pago se obtiene de `/v1/payments/{id}`. El ciclo proviene de la
+  factura consultada (`debit_date`); no se acredita en función de la recepción del evento.
+  Pagos duplicados o fuera de orden no agregan meses. Los períodos devueltos dejan de
+  aportar cobertura. Un importe de validación del medio de pago no cuenta como mensualidad.
+- **Cancelar renovación** exige confirmación y motivo, registra actor y solicitud,
+  verifica la suscripción, llama al PUT oficial y vuelve a consultarla. Solo entonces
+  aparece cancelada. Una falla queda pendiente y la conciliación recupera la solicitud.
+  Se conserva la prueba y el período pagado. Una suspensión administrativa no cancela débitos.
+- Para repetir la prueba con un consultorio existente, cancelar primero su autorización
+  previa; después ajustar la prueba con una acción administrativa auditada y autorizar
+  una nueva suscripción. No borrar suscripciones en la base: eso no cancela Mercado Pago.
+- `/admin/profesionales/[consultorioId]` muestra contrato, fechas, cobros, eventos de
+  autorización y resultado de conciliación. Permite verificar cobros y suspender o
+  retirar una suspensión con motivo, sin fabricar pagos. El resumen comercial se calcula
+  por agregación en PostgreSQL, sin descargar todos los pagos a la aplicación.
+- Avisos de inicio/fin próximo de prueba, falta de autorización, cobertura confirmada,
+  gracia, vencimiento, cancelación y suspensión en Inicio/Facturación. Los informativos
+  descartados se recuerdan durante la sesión del navegador por evento y consultorio;
+  los bloqueos no se pueden ocultar. El correo comercial sigue pendiente: las credenciales
+  SMTP configuradas dentro de Supabase Auth no habilitan por sí mismas un emisor transaccional
+  del servidor. No se simulan esos envíos ni se reutilizan correos de confirmación para facturación.
+
+### Verificación técnica del 4/11/2026
+
+`npm run verificar`: lint, tipos, 201 pruebas en 25 archivos y build satisfactorios.
+Pruebas nuevas de períodos fuera de orden, duplicados, devoluciones, recuperación,
+cancelación/auditoría, suspensión administrativa, reserva de trabajos, firma del cron,
+fallos de proveedor y bloqueo RLS conservando lectura compartida del paciente.
+La búsqueda real de facturas con el vendedor ficticio respondió 200 y cero facturas
+para la suscripción actual. No se da por aprobado un cobro mensual a partir de esa consulta.
 
 ### Diagnóstico del bloqueo observado
 

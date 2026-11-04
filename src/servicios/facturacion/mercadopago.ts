@@ -102,7 +102,7 @@ export function correoDelPagador(correoProfesional: string, correoPrueba: string
 
 export type SuscripcionMercadoPago = {
   id: string;
-  status: "pending" | "authorized" | "paused" | "cancelled";
+  status: "pending" | "authorized" | "paused" | "cancelled" | "canceled";
   external_reference?: string;
   init_point?: string;
   next_payment_date?: string;
@@ -202,13 +202,13 @@ export async function esCambioDeVendedorDePrueba(error: unknown): Promise<boolea
   }
 }
 
-export async function consultarRecursoMercadoPago(ruta: string): Promise<unknown | null> {
+export async function consultarRecursoMercadoPago(ruta: string, tiempoLimite = 15_000): Promise<unknown | null> {
   const credenciales = credencialesMercadoPago();
   if (!credenciales) return null;
   const respuesta = await fetch(`https://api.mercadopago.com${ruta}`, {
     headers: { Authorization: `Bearer ${credenciales.token}` },
     cache: "no-store",
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(tiempoLimite),
   });
   if (!respuesta.ok) {
     registrarError("mercadopago_consulta", { message: `${respuesta.status} ${ruta}` });
@@ -217,4 +217,17 @@ export async function consultarRecursoMercadoPago(ruta: string): Promise<unknown
     throw new ErrorConsultaMercadoPago(respuesta.status, perteneceAOtroVendedor);
   }
   return respuesta.json();
+}
+
+/** Detiene futuros débitos. No modifica pagos ni la cobertura ya concedida. */
+export async function cancelarAutorizacionMercadoPago(mpId: string): Promise<void> {
+  const credenciales = credencialesMercadoPago();
+  if (!credenciales) throw new Error("Mercado Pago no está configurado.");
+  const respuesta = await fetch(`https://api.mercadopago.com/preapproval/${encodeURIComponent(mpId)}`, {
+    method: "PUT", cache: "no-store", signal: AbortSignal.timeout(10_000),
+    headers: { Authorization: `Bearer ${credenciales.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "cancelled" }),
+  });
+  if (!respuesta.ok) throw new Error("Mercado Pago no confirmó la cancelación.");
+  // El llamador vuelve a consultar el recurso: un HTTP 200 aislado no cambia permisos.
 }

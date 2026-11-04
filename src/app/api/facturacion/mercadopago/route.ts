@@ -45,7 +45,9 @@ export async function POST(peticion: NextRequest) {
   if (!["subscription_preapproval", "subscription_authorized_payment", "payment"].includes(tipo)) {
     return NextResponse.json({ ok: true, ignorado: true });
   }
-  const idEvento = String(cuerpo.id ?? `${tipo}:${recursoId}:${cuerpo.action ?? ""}`);
+  // El simulador reutiliza el mismo id para distintos tópicos y recursos.
+  // Sin id de evento, el request-id firmado distingue actualizaciones posteriores.
+  const idEvento = `${tipo}:${recursoId}:${cuerpo.id ?? peticion.headers.get("x-request-id") ?? cuerpo.action ?? ""}`;
 
   const { supabaseUrl } = obtenerEntornoPublico();
   const admin = createClient<Database>(supabaseUrl, claveServicio, {

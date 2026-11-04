@@ -7,6 +7,8 @@ import { registrarError } from "@/lib/errores";
 import { consultarRecursoMercadoPago, credencialesMercadoPago, obtenerConfiguracionComercial, type SuscripcionMercadoPago } from "@/servicios/facturacion/mercadopago";
 import { BotonElegirPlan } from "@/componentes/facturacion/boton-elegir-plan";
 import { BotonActualizarPagos } from "@/componentes/facturacion/boton-actualizar-pagos";
+import { CancelarRenovacion } from "@/componentes/facturacion/cancelar-renovacion";
+import { AvisoComercial } from "@/componentes/facturacion/aviso-comercial";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { Badge } from "@/componentes/ui/badge";
 import { Button } from "@/componentes/ui/button";
@@ -50,7 +52,7 @@ async function ContenidoFacturacion() {
     obtenerConfiguracionComercial(cliente),
     cliente.rpc("estado_acceso_comercial", { p_consultorio_id: contexto.consultorio.id }),
     cliente.from("pruebas_profesionales").select("inicio, vence_en").eq("consultorio_id", contexto.consultorio.id).maybeSingle(),
-    cliente.from("suscripciones").select("id, estado_mp, precio, cobertura_hasta, proximo_cobro_en, mp_id").eq("consultorio_id", contexto.consultorio.id).maybeSingle(),
+    cliente.from("suscripciones").select("id, estado_mp, precio, cobertura_hasta, proximo_cobro_en, mp_id, cancelacion_solicitada_en, conciliada_en, conciliacion_error, conciliacion_cursor").eq("consultorio_id", contexto.consultorio.id).maybeSingle(),
     cliente.from("pacientes").select("id", { count: "exact", head: true }).eq("consultorio_id", contexto.consultorio.id).eq("estado", "activo"),
   ]);
   for (const resultado of [estado, prueba, suscripcion, pacientes]) {
@@ -67,6 +69,7 @@ async function ContenidoFacturacion() {
   if (suscripcion.data?.mp_id && credencialesMercadoPago()) {
     try {
       const remota = await consultarRecursoMercadoPago(`/preapproval/${encodeURIComponent(suscripcion.data.mp_id)}`) as SuscripcionMercadoPago | null;
+      if (remota?.status === "canceled") remota.status = "cancelled";
       if (!remota || remota.id !== suscripcion.data.mp_id || remota.external_reference !== contexto.consultorio.id ||
           Number(remota.auto_recurring?.transaction_amount) !== Number(suscripcion.data.precio) || remota.auto_recurring?.currency_id !== "ARS" ||
           !["pending", "authorized", "paused", "cancelled"].includes(remota.status)) {
@@ -92,7 +95,8 @@ async function ContenidoFacturacion() {
   const fechaPrueba = prueba.data ? fecha.format(new Date(prueba.data.vence_en)) : null;
   const cobertura = suscripcion.data?.cobertura_hasta;
   const disponible = Boolean(credencialesMercadoPago() && configuracion.precioMensual);
-  const puedeElegir = contexto.consultorio.rol === "titular" && disponible && !autorizada && codigo !== "suspendido_admin";
+  const puedeElegir = contexto.consultorio.rol === "titular" && disponible && !autorizada && estadoSuscripcion !== "paused" &&
+    (!suscripcion.data?.cancelacion_solicitada_en || estadoSuscripcion === "cancelled") && codigo !== "suspendido_admin";
   const compradorDePrueba = process.env.NODE_ENV === "development" ? process.env.MERCADOPAGO_CORREO_PAGADOR_PRUEBA?.trim() : undefined;
   const tituloEstado = enPrueba ? "Estás en tu prueba gratis" : activo ? "Tu plan está activo" : codigo === "gracia" ? "Hay un cobro pendiente" : vencido ? "Es momento de activar tu plan" : "Tu cuenta está suspendida";
   const IconoEstado = enPrueba ? Gift : activo ? CircleCheck : Clock3;
@@ -106,6 +110,7 @@ async function ContenidoFacturacion() {
 
   return (
     <>
+      <AvisoComercial consultorioId={contexto.consultorio.id} zona={contexto.consultorio.zonaHoraria} />
       <Card className={vencido ? "ring-destructive/25" : "ring-primary/15"}>
         <CardContent className="space-y-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -188,8 +193,10 @@ async function ContenidoFacturacion() {
                     : !disponible ? "Estamos preparando los pagos. Contactá al soporte para activar tu plan."
                     : enPrueba ? `Elegilo hoy y conservá tu prueba: el cobro mensual comienza el ${fechaPrueba}.`
                     : "Te llevamos a Mercado Pago para elegir tu medio de pago y confirmar la suscripción."}</p>
-                  {!autorizada && disponible ? <p>Podés cancelar la renovación desde tu cuenta de Mercado Pago.</p> : null}
+                  {estadoSuscripcion === "cancelled" ? <p>Renovación cancelada. Se conserva la prueba y el período ya pagado.</p> : null}
                 </div>
+                {contexto.consultorio.rol === "titular" && disponible && suscripcion.data?.mp_id && estadoSuscripcion !== "cancelled" ? <CancelarRenovacion solicitada={Boolean(suscripcion.data.cancelacion_solicitada_en)} /> : null}
+                {suscripcion.data?.cancelacion_solicitada_en && estadoSuscripcion !== "cancelled" ? <p role="status" className="text-sm text-muted-foreground">La cancelación está solicitada y pendiente de confirmación por Mercado Pago.</p> : null}
               </div>
             </div>
           </div>
@@ -206,6 +213,8 @@ async function ContenidoFacturacion() {
           <BotonActualizarPagos puedeSincronizar={contexto.consultorio.rol === "titular" && Boolean(suscripcion.data?.mp_id)} />
         </CardHeader>
         <CardContent>
+          {suscripcion.data?.conciliada_en ? <p className="mb-4 text-xs text-muted-foreground">Última verificación: {fecha.format(new Date(suscripcion.data.conciliada_en))}.{suscripcion.data.conciliacion_cursor > 0 ? " Hay más movimientos pendientes de revisar." : ""}</p> : null}
+          {suscripcion.data?.conciliacion_error ? <p role="status" className="mb-4 text-sm text-destructive">La última verificación quedó pendiente. Los datos confirmados se conservan; podés volver a verificar los cobros.</p> : null}
           {(pagos.data ?? []).length === 0 ? (
             <div className="flex flex-col items-center rounded-xl border border-dashed px-5 py-8 text-center"><span className="mb-3 flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground"><ReceiptText className="size-5" aria-hidden="true" /></span><p className="text-sm font-medium">Todavía no tenés pagos registrados</p><p className="mt-1 max-w-md text-xs leading-relaxed text-muted-foreground">Cuando Mercado Pago confirme un cobro, vas a verlo acá. Si acabás de pagar, puede demorar unos instantes.</p></div>
           ) : (

@@ -8,6 +8,8 @@ import { formatearPesos } from "@/lib/moneda";
 import { mensajeDeNegocio, registrarError } from "@/lib/errores";
 import { esquemaUuid } from "@/esquemas/comunes";
 import type { ResultadoAccion } from "@/tipos/acciones";
+import { crearClienteServicio } from "@/lib/supabase/servicio";
+import { sincronizarSuscripcion } from "@/servicios/facturacion/notificaciones";
 
 export async function iniciarPagoSuscripcion(): Promise<ResultadoAccion<{ url: string }>> {
   const contexto = await requerirProfesionalParaFacturacion();
@@ -18,7 +20,7 @@ export async function iniciarPagoSuscripcion(): Promise<ResultadoAccion<{ url: s
   const [configuracion, prueba, existente] = await Promise.all([
     obtenerConfiguracionComercial(cliente),
     cliente.from("pruebas_profesionales").select("vence_en").eq("consultorio_id", contexto.consultorio.id).maybeSingle(),
-    cliente.from("suscripciones").select("id, mp_id, precio, estado_mp, cobertura_hasta").eq("consultorio_id", contexto.consultorio.id).maybeSingle(),
+    cliente.from("suscripciones").select("id, mp_id, precio, estado_mp, cobertura_hasta, cancelacion_solicitada_en").eq("consultorio_id", contexto.consultorio.id).maybeSingle(),
   ]);
   if (!configuracion.precioMensual) {
     return { ok: false, mensaje: "El precio mensual todavía no está configurado." };
@@ -34,6 +36,14 @@ export async function iniciarPagoSuscripcion(): Promise<ResultadoAccion<{ url: s
       }
       if (remota.status === "authorized") {
         return { ok: false, mensaje: "Tu suscripción ya está autorizada. El acceso se actualiza cuando se confirma el cobro." };
+      }
+      if (remota.status === "paused" || (existente.data.cancelacion_solicitada_en && remota.status !== "cancelled" && remota.status !== "canceled")) {
+        return { ok: false, mensaje: "Primero debe confirmarse la cancelación de la suscripción anterior para evitar cobros duplicados." };
+      }
+      if ((remota.status === "cancelled" || remota.status === "canceled") && existente.data.estado_mp !== "cancelled") {
+        const servicio = crearClienteServicio();
+        if (!servicio) return { ok: false, mensaje: "Falta sincronizar la cancelación anterior. Contactá al soporte." };
+        await sincronizarSuscripcion(servicio, existente.data.mp_id);
       }
       // Continuar el mismo checkout evita crear otra suscripción al volver sin pagar.
       if (remota.status === "pending") {

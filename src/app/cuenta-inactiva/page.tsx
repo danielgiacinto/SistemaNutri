@@ -8,6 +8,8 @@ import { RUTAS } from "@/autorizacion/rutas";
 import { MarcoSimple } from "@/componentes/disposicion/marco-simple";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { Skeleton } from "@/componentes/ui/skeleton";
+import Link from "next/link";
+import { Button } from "@/componentes/ui/button";
 
 export const metadata: Metadata = { title: "Cuenta inactiva" };
 
@@ -29,7 +31,8 @@ async function AvisoCuentaInactiva() {
   if (destino !== RUTAS.cuentaInactiva) redirect(destino);
 
   return (
-    <EstadoVacio
+    <div className="space-y-4">
+      <EstadoVacio
       icono={ShieldAlert}
       titulo="Tu consultorio no está activo"
       descripcion={
@@ -38,6 +41,8 @@ async function AvisoCuentaInactiva() {
           segura. Comunicate con el soporte de la plataforma para regularizar la cuenta.
         </>
       }
-    />
+      />
+      <Button asChild className="w-full"><Link href={RUTAS.facturacion}>Ver facturación y administrar renovación</Link></Button>
+    </div>
   );
 }

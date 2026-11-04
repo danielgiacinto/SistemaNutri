@@ -11,6 +11,7 @@
 | `MERCADOPAGO_ACCESS_TOKEN` | Solo servidor | En desarrollo: Access Token de la aplicación creada con el vendedor de prueba. Para Suscripciones puede empezar con `APP_USR`; el prefijo no demuestra que sea una cuenta real. |
 | `MERCADOPAGO_CORREO_PAGADOR_PRUEBA` | Solo desarrollo/pruebas | Correo del comprador de prueba, distinto del vendedor. En la pasarela se debe ingresar con ese comprador. Quitar al pasar a cobros reales. |
 | `MERCADOPAGO_WEBHOOK_SECRETO` | Solo servidor | Clave secreta de Webhooks de la misma aplicación de Mercado Pago que emite el Access Token. Cargar en Vercel y volver a desplegar. |
+| `CRON_SECRET` | Solo servidor, Vercel Production | Secreto aleatorio para `/api/facturacion/conciliar`. Vercel lo envía como `Authorization: Bearer …`. Nunca exponer en el cliente ni en URLs. |
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_*` | `.env.local` | Credenciales de Google para Supabase local. |
 
 Secretos de GitHub Actions para aplicar migraciones (`.github/workflows/migraciones.yml`):
@@ -256,6 +257,18 @@ haber abierto sus pantallas.
   firmado de autorización, sin confirmar una mensualidad ni simular un cobro.
 
 ### Pasos para un nuevo despliegue
+
+La configuración `vercel.json` incluye conciliación diaria a las **06:00 UTC**
+(03:00 de Argentina; en Hobby puede ejecutarse durante esa hora). El usuario cargó
+`CRON_SECRET` en Vercel el 4/11/2026. Se generó localmente sin imprimirlo y no se versiona.
+La frecuencia diaria es compatible con Hobby; una mayor frecuencia requiere revisar
+los límites del plan. El cron es respaldo del webhook, no un mecanismo de cobro.
+
+Las migraciones `20261104200000_operacion_comercial.sql` y
+`20261104210000_acceso_comercial_en_base.sql` se aplicaron juntas en una transacción
+y se registraron el 4/11/2026. Se comprobaron funciones, permisos exclusivos del
+servicio para reclamar trabajos, guard clínico y acreditación por ciclo. No se
+repararon versiones antiguas ni se cambiaron fechas de pruebas al aplicar el esquema.
 
 1. Conectar Vercel e importar `danielgiacinto/SistemaNutri` desde GitHub. Usar Next.js,
    Node.js 22 y los comandos de instalación/build del proyecto.

@@ -45,7 +45,8 @@ describe("notificaciones verificadas", () => {
     expect(cadena.update).not.toHaveBeenCalled();
   });
   it("propaga el fallo de base para que el webhook se reintente", async () => {
-    vi.mocked(consultarRecursoMercadoPago).mockResolvedValueOnce({ ...pago, preapproval_id: "pre-1" }).mockResolvedValueOnce(remota);
+    vi.mocked(consultarRecursoMercadoPago).mockResolvedValueOnce({ ...pago, preapproval_id: "pre-1" })
+      .mockResolvedValueOnce({ results: [{ preapproval_id: "pre-1", payment: { id: 123 } }] }).mockResolvedValueOnce(remota);
     rpc.mockResolvedValue({ error: new Error("base no disponible") });
     await expect(procesarNotificacionMercadoPago(cliente, "payment", "123")).rejects.toThrow("base no disponible");
   });
