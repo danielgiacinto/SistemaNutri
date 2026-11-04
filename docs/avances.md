@@ -57,7 +57,8 @@ Falta demostrar el recorrido completo con notificaciones externas:
   al cancelarse y reintentos/eventos repetidos sin duplicar pagos ni cobertura.
 - [x] Cancelación de renovación visible para el titular, con confirmación y motivo.
   Solicitud auditada desde la identidad; confirmación por API y recuperación por cron
-  si falla el proveedor. Conserva la prueba/cobertura pagada. Falta prueba externa final.
+  si falla el proveedor. Conserva la prueba/cobertura pagada. El usuario completó la
+  cancelación de prueba el 4/11/2026; se verificaron estado y fechas en la base.
 - [x] Auditoría presenta actor, consultorio y motivo administrativo, sin volcar el JSON
   completo. Fechas en Córdoba; vencimientos en Profesionales usan la zona del consultorio.
 - [x] Sincronización explícita de autorización en Facturación y en el diálogo administrativo,
@@ -72,7 +73,10 @@ Falta demostrar el recorrido completo con notificaciones externas:
 - [x] Conciliación periódica en `/api/facturacion/conciliar`, protegida por `CRON_SECRET`,
   configurada diariamente en Vercel. Lote de cinco suscripciones, dos trabajadores,
   diez facturas por página, cursor persistente y reserva de diez minutos. Se puede
-  continuar manualmente desde Facturación o Administración. Activación pública a verificar.
+  continuar manualmente desde Facturación o Administración. En el despliegue público:
+  401 sin secreto y 200 con secreto, una suscripción revisada y cero fallos; cursor,
+  fecha de éxito y error nulo confirmados en Supabase. La ejecución programada futura
+  queda configurada; no se afirma haber observado todavía el disparo diario de Vercel.
 - [x] Cobertura por ciclo de factura, independiente del orden de llegada. Devoluciones
   retiran el período acreditado; las repeticiones no suman meses. Pruebas PostgreSQL.
 - [x] Bloqueo comercial centralizado en RLS y funciones clínicas, manteniendo lectura

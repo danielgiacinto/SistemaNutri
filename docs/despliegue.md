@@ -264,6 +264,13 @@ La configuración `vercel.json` incluye conciliación diaria a las **06:00 UTC**
 La frecuencia diaria es compatible con Hobby; una mayor frecuencia requiere revisar
 los límites del plan. El cron es respaldo del webhook, no un mecanismo de cobro.
 
+Se comprobó el despliegue del commit `dc36ed7`: endpoint de conciliación público con
+401 sin secreto y 200 con el secreto correcto. Revisó una suscripción sin fallos;
+se verificaron cursor, fecha de éxito y ausencia de error en Supabase. Las nuevas
+pantallas administrativas cargaron sin errores de consola observados y Suscripciones
+se revisó a 390 px sin desbordamiento horizontal. No se da por observado todavía
+el disparo diario automático ni se toma esta verificación como prueba de un cobro.
+
 Las migraciones `20261104200000_operacion_comercial.sql` y
 `20261104210000_acceso_comercial_en_base.sql` se aplicaron juntas en una transacción
 y se registraron el 4/11/2026. Se comprobaron funciones, permisos exclusivos del

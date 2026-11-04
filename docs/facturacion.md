@@ -184,6 +184,17 @@ fallos de proveedor y bloqueo RLS conservando lectura compartida del paciente.
 La búsqueda real de facturas con el vendedor ficticio respondió 200 y cero facturas
 para la suscripción actual. No se da por aprobado un cobro mensual a partir de esa consulta.
 
+La ejecución autenticada del endpoint público de conciliación respondió 200, con una
+suscripción revisada, cero fallos y ninguna página pendiente. Sin secreto respondió 401.
+Se comprobaron en la base la fecha de conciliación y el error nulo. El disparo diario
+de Vercel está configurado, pero aún no se observó su primera ejecución programada.
+
+El usuario confirmó **Cancelar renovación** desde su cuenta de prueba el 4/11/2026.
+La consulta posterior confirmó `cancelled`, solicitud y cancelación con sus fechas,
+sin cobertura ni pagos fabricados. Por pedido del usuario se reutiliza su consultorio:
+se ajustó la prueba al 3/11/2026 mediante la acción administrativa, con motivo auditado,
+para repetir el checkout sin diferir el primer cobro. No se borraron datos ni el historial.
+
 ### Diagnóstico del bloqueo observado
 
 El desajuste de cuentas descrito a continuación corresponde a la configuración
