@@ -21,7 +21,7 @@ export default function PaginaAgenda({ searchParams }: PageProps<"/panel/agenda"
     <div className="space-y-8">
       <EncabezadoPagina
         titulo="Agenda"
-        descripcion="Turnos por día, semana y mes. La disponibilidad se valida contra horarios y bloqueos."
+        descripcion="Tu día, organizado. Consultá tus turnos y encontrá el próximo espacio disponible."
         acciones={
           <>
             <Button asChild variant="outline">

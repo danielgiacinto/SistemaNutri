@@ -87,12 +87,15 @@
   --advertencia: oklch(0.75 0.15 75);
   --advertencia-foreground: oklch(0.25 0.05 75);
 
-  --palta-piel: oklch(0.58 0.16 140);
-  --palta-carne: oklch(0.93 0.1 108);
-  --palta-semilla: oklch(0.39 0.11 45);
-  --palta-semilla-luz: oklch(0.52 0.12 48);
-  --palta-hoja: oklch(0.79 0.15 135);
-  --palta-fondo: oklch(0.95 0.035 128);
+  --palta-piel: #579b32;
+  --palta-hoja: #a6cd63;
+  --palta-carne: #e2e89a;
+  --palta-brillo: #f4f4c0;
+  --palta-semilla-halo: #c4d16c;
+  --palta-semilla-sombra: #602808;
+  --palta-semilla: #7a3710;
+  --palta-semilla-luz: #934516;
+  --palta-fondo: #edf4d9;
   --palta-primario: oklch(0.49 0.12 145);
   --palta-primario-foreground: oklch(0.99 0.005 145);
   --palta-acento: oklch(0.95 0.035 128);
@@ -126,11 +129,6 @@
   --advertencia: oklch(0.8 0.14 80);
   --advertencia-foreground: oklch(0.22 0.04 75);
 
-  --palta-piel: oklch(0.66 0.17 140);
-  --palta-carne: oklch(0.94 0.1 108);
-  --palta-semilla: oklch(0.39 0.11 45);
-  --palta-semilla-luz: oklch(0.54 0.12 48);
-  --palta-hoja: oklch(0.82 0.13 135);
   --palta-fondo: oklch(0.31 0.06 140);
   --palta-primario: oklch(0.72 0.13 143);
   --palta-primario-foreground: oklch(0.21 0.05 145);

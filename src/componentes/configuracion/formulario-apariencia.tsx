@@ -78,7 +78,7 @@ export function FormularioApariencia({ inicial }: { inicial: Preferencias }) {
             <FieldLabel key={paleta.id} htmlFor={`paleta-${paleta.id}`}>
               <Field orientation="horizontal">
                 <span
-                  className="size-5 shrink-0 rounded-full ring-1 ring-black/10"
+                  className="size-5 shrink-0 rounded-full ring-1 ring-border"
                   style={{ background: paleta.muestra }}
                   aria-hidden="true"
                 />

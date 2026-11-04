@@ -82,7 +82,7 @@ export function FiltroPacientes() {
   ].filter((item) => item !== null);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 rounded-2xl border bg-card p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative min-w-0 flex-1">
           <Search

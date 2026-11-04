@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { TiempoRestanteTurno } from "@/componentes/panel/tiempo-restante-turno";
 import { LOCALE_PREDETERMINADO } from "@/configuracion/producto";
-import { formatearFechaHora, formatearFechaIso, hoyEnZona, minutosEntre } from "@/lib/fechas";
+import { formatearFechaHora, hoyEnZona, minutosEntre } from "@/lib/fechas";
 import { nombreNatural } from "@/lib/antropometria";
 import { cn } from "@/lib/utilidades";
 
@@ -73,28 +73,28 @@ async function ContenidoInicio() {
             <Button asChild variant="outline">
               <Link href="/panel/pacientes/nuevo">
                 <UserPlus aria-hidden="true" />
-                Paciente
+                Nuevo paciente
               </Link>
             </Button>
             <Button asChild>
               <Link href="/panel/agenda/nuevo">
                 <CalendarDays aria-hidden="true" />
-                Turno
+                Nuevo turno
               </Link>
             </Button>
           </>
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
         {tarjetas.map(({ titulo, valor, detalle, icono: Icono, href }) => (
-          <Link key={titulo} href={href} className="rounded-2xl border bg-card p-4 transition-colors hover:border-primary/30">
-            <p className="flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              <Icono className="size-4" aria-hidden="true" />
+          <Link key={titulo} href={href} className="group min-w-0 rounded-2xl border bg-card p-4 transition-colors outline-none last:col-span-2 hover:border-primary/30 focus-visible:ring-2 focus-visible:ring-ring xl:last:col-span-1">
+            <p className="flex flex-col items-start gap-2 text-xs font-medium text-muted-foreground sm:flex-row sm:items-center">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground"><Icono className="size-4" aria-hidden="true" /></span>
               {titulo}
             </p>
             <p className="mt-2 text-3xl font-bold tabular-nums">{valor.toLocaleString(LOCALE_PREDETERMINADO)}</p>
-            <p className="text-sm text-muted-foreground">{detalle}</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{detalle}</p>
           </Link>
         ))}
       </div>
@@ -173,23 +173,26 @@ async function ContenidoInicio() {
           </CardContent>
         </Card>
 
-        <Card className="bg-foreground text-background ring-0">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-background">Evolución</CardTitle>
-            <CardDescription className="text-background/70">Turnos de los últimos 5 días hábiles</CardDescription>
+            <CardTitle>Actividad del consultorio</CardTitle>
+            <CardDescription>Turnos de los últimos 5 días hábiles.</CardDescription>
           </CardHeader>
-          <CardContent className="flex h-44 items-end gap-2">
+          <CardContent className="flex h-48 items-end gap-3">
             {tablero.actividadHabil.every((punto) => punto.cantidad === 0) ? (
-              <p className="self-center text-sm text-background/70">Todavía no hay actividad para graficar.</p>
+              <p className="self-center text-sm text-muted-foreground">Todavía no hay actividad para graficar.</p>
             ) : (
               tablero.actividadHabil.map((punto) => (
-                <div key={punto.fecha} className="flex flex-1 flex-col items-center gap-2">
+                <div key={punto.fecha} className="flex h-40 min-w-0 flex-1 flex-col items-center gap-2">
+                  <div className="flex w-full flex-1 flex-col items-center justify-end gap-1">
+                  <span className="text-xs font-semibold tabular-nums text-muted-foreground">{punto.cantidad}</span>
                   <div
-                    className={cn("w-full rounded-t-md bg-primary", punto.cantidad === 0 && "bg-background/20")}
+                    className={cn("w-full max-w-12 rounded-lg bg-primary/75", punto.cantidad === 0 && "bg-muted")}
                     style={{ height: `${Math.max(8, (punto.cantidad / maximoActividad) * 100)}%` }}
                     title={`${punto.cantidad} turnos`}
                   />
-                  <span className="text-[0.65rem] text-background/70">{formatearFechaIso(punto.fecha, "short").slice(0, 5)}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{Number(punto.fecha.slice(8))}/{Number(punto.fecha.slice(5, 7))}</span>
                 </div>
               ))
             )}
@@ -208,8 +211,8 @@ async function ContenidoInicio() {
             <ul className="divide-y">
               {tablero.evolucionesRecientes.map((evolucion) => (
                 <li key={evolucion.id} className="flex items-center justify-between gap-3 py-3">
-                  <div>
-                    <p className="font-medium">{evolucion.titulo || "Evolución clínica"}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium wrap-anywhere">{evolucion.titulo || "Evolución clínica"}</p>
                     <p className="text-sm text-muted-foreground">
                       {evolucion.pacientes ? nombreNatural(evolucion.pacientes) : "Paciente"} ·{" "}
                       {formatearFechaHora(new Date(evolucion.actualizado_en), contexto.consultorio.zonaHoraria)}
@@ -234,12 +237,9 @@ async function ContenidoInicio() {
 function EsqueletoInicio() {
   return (
     <div className="space-y-8" aria-busy="true" aria-label="Cargando inicio">
-      <Skeleton className="h-16 w-80" />
-      <div className="grid gap-3 sm:grid-cols-4">
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
+      <Skeleton className="h-16 w-full max-w-80" />
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
+        {Array.from({ length: 5 }, (_, indice) => <Skeleton key={indice} className="h-24 last:col-span-2 xl:last:col-span-1" />)}
       </div>
       <Skeleton className="h-64" />
     </div>

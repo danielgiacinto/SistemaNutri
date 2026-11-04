@@ -40,8 +40,19 @@ hacen cambios manuales desde el panel de Supabase.
 | `desafios` | Actividad grupal del consultorio. Nace en borrador. | Miembros. Borrar solo el borrador. |
 | `participaciones_desafio` | El paciente se suma a un desafío publicado. | El paciente inserta solo el desafío; el trigger fija su ficha. |
 | `actividades_comunidad` | Texto que escribió el paciente. Sin datos clínicos. | El paciente inserta desafío y texto. El nombre visible lo fija el trigger. |
+| `configuracion_comercial` | Precio mensual, duración de prueba y gracia. | El superadministrador edita los campos comerciales permitidos. |
+| `pruebas_profesionales` | Una prueba por correo y consultorio. | Lectura propia; alta y ajustes mediante funciones autorizadas. |
+| `suscripciones` | Autorización del proveedor y cobertura pagada. | El titular prepara el checkout pendiente; la cobertura y confirmación corresponden al servidor verificado. |
+| `pagos_suscripcion` | Historial de pagos y períodos acreditados. | Solo el servidor mediante `registrar_pago_verificado`. |
+| `eventos_proveedor` | Recepción, procesamiento y reintentos del webhook. | Solo el servidor; lectura del superadministrador. |
+| `avisos_comerciales` | Avisos de facturación del consultorio. | Los miembros pueden marcar los propios como vistos. |
 
 El superadministrador **no** tiene políticas sobre las tablas clínicas.
+
+La migración `20261103220000_checkout_suscripciones.sql` refuerza los permisos
+de facturación: impide que un cliente acredite cobertura, valida el precio de un
+checkout y permite acreditar una sola vez un pago que pasa de pendiente a aprobado.
+Está probada en PGlite y **pendiente de aplicar al Supabase hospedado** al 3 de noviembre de 2026.
 
 ### Funciones expuestas (RPC)
 
@@ -55,6 +66,9 @@ El superadministrador **no** tiene políticas sobre las tablas clínicas.
   invitación pendiente del correo de la sesión.
 - `guardar_plan` y `publicar_plan`: el borrador se edita sin tocar la copia que ve el paciente.
   Publicar crea la versión siguiente.
+- `estado_acceso_comercial`: resuelve prueba, cobertura, gracia o vencimiento del consultorio.
+- `ajustar_prueba`: exige superadministrador y registra el motivo del ajuste.
+- `registrar_pago_verificado`: solo `service_role`, desde notificaciones verificadas.
 
 ## Políticas RLS
 

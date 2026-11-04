@@ -2,78 +2,90 @@
 
 import { refresh } from "next/cache";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
-import { cargarProfesional, requerirSuperadmin } from "@/autorizacion/sesion";
-import { crearAutorizacionRecurrente, obtenerConfiguracionComercial } from "@/servicios/facturacion/mercadopago";
+import { requerirProfesionalParaFacturacion, requerirSuperadmin } from "@/autorizacion/sesion";
+import { consultarRecursoMercadoPago, crearPagoSuscripcion, esCambioDeVendedorDePrueba, obtenerConfiguracionComercial, urlPagoMercadoPago, type SuscripcionMercadoPago } from "@/servicios/facturacion/mercadopago";
 import { formatearPesos } from "@/lib/moneda";
 import { mensajeDeNegocio, registrarError } from "@/lib/errores";
 import { esquemaUuid } from "@/esquemas/comunes";
 import type { ResultadoAccion } from "@/tipos/acciones";
 
-export async function autorizarSuscripcion(tokenTarjeta: string): Promise<ResultadoAccion> {
-  const contexto = await cargarProfesional();
+export async function iniciarPagoSuscripcion(): Promise<ResultadoAccion<{ url: string }>> {
+  const contexto = await requerirProfesionalParaFacturacion();
   if (contexto.consultorio.rol !== "titular") {
     return { ok: false, mensaje: "Solo el titular del consultorio puede autorizar la suscripción." };
   }
-  if (!tokenTarjeta || tokenTarjeta.length < 8) {
-    return { ok: false, mensaje: "Mercado Pago no entregó un token de tarjeta válido." };
-  }
-
   const cliente = await crearClienteServidor();
-  const [configuracion, prueba] = await Promise.all([
+  const [configuracion, prueba, existente] = await Promise.all([
     obtenerConfiguracionComercial(cliente),
     cliente.from("pruebas_profesionales").select("vence_en").eq("consultorio_id", contexto.consultorio.id).maybeSingle(),
+    cliente.from("suscripciones").select("id, mp_id, precio, estado_mp, cobertura_hasta").eq("consultorio_id", contexto.consultorio.id).maybeSingle(),
   ]);
   if (!configuracion.precioMensual) {
     return { ok: false, mensaje: "El precio mensual todavía no está configurado." };
   }
-  if (prueba.error) return { ok: false, mensaje: "No se pudo leer la prueba gratuita." };
+  if (prueba.error || existente.error) return { ok: false, mensaje: "No se pudo consultar tu suscripción. Intentá nuevamente." };
+  if (!contexto.correo) return { ok: false, mensaje: "Tu cuenta necesita un correo para continuar con el pago." };
 
-  const inicioCobro = new Date(prueba.data?.vence_en ?? Date.now());
-  if (inicioCobro.getTime() < new Date().getTime()) inicioCobro.setTime(new Date().getTime() + 60_000);
+  if (existente.data?.mp_id) {
+    try {
+      const remota = await consultarRecursoMercadoPago(`/preapproval/${encodeURIComponent(existente.data.mp_id)}`) as SuscripcionMercadoPago | null;
+      if (!remota || remota.external_reference !== contexto.consultorio.id) {
+        return { ok: false, mensaje: "No pudimos verificar la suscripción actual. Contactá al soporte." };
+      }
+      if (remota.status === "authorized") {
+        return { ok: false, mensaje: "Tu suscripción ya está autorizada. El acceso se actualiza cuando se confirma el cobro." };
+      }
+      // Continuar el mismo checkout evita crear otra suscripción al volver sin pagar.
+      if (remota.status === "pending") {
+        const url = urlPagoMercadoPago(remota.init_point);
+        if (url && Number(remota.auto_recurring?.transaction_amount) === Number(existente.data.precio) && remota.auto_recurring?.currency_id === "ARS") {
+          return { ok: true, datos: { url } };
+        }
+        return { ok: false, mensaje: "El pago pendiente necesita una revisión. Contactá al soporte." };
+      }
+    } catch (error) {
+      // Solo se reemplaza un pendiente sin cobertura, en desarrollo y después
+      // de verificar por API que el nuevo token también pertenece a una cuenta ficticia.
+      const reemplazable = existente.data.estado_mp === "pending" && !existente.data.cobertura_hasta &&
+        await esCambioDeVendedorDePrueba(error);
+      if (!reemplazable) {
+        registrarError("suscripcion_consultar", error);
+        return { ok: false, mensaje: "No pudimos verificar el pago anterior con Mercado Pago. Intentá nuevamente o revisá las credenciales configuradas." };
+      }
+    }
+  }
 
-  const autorizacion = await crearAutorizacionRecurrente({
+  const inicioCobro = new Date(Math.max(Date.now(), new Date(prueba.data?.vence_en ?? 0).getTime(), new Date(existente.data?.cobertura_hasta ?? 0).getTime()));
+  const pago = await crearPagoSuscripcion({
     consultorioId: contexto.consultorio.id,
     correo: contexto.correo ?? "",
     precio: configuracion.precioMensual,
-    inicioCobro,
-    tokenTarjeta,
+    inicioCobro: inicioCobro.getTime() > Date.now() ? inicioCobro : undefined,
   });
-  if ("error" in autorizacion) return { ok: false, mensaje: autorizacion.error };
+  if ("error" in pago) return { ok: false, mensaje: pago.error };
 
-  // El titular puede insertar el precio, pero no actualizarlo. Un upsert lo intenta
-  // igual en el conflicto y Postgres rechaza la sentencia completa.
-  const { data: existente, error: errorLectura } = await cliente
-    .from("suscripciones")
-    .select("id")
-    .eq("consultorio_id", contexto.consultorio.id)
-    .maybeSingle();
-  if (errorLectura) {
-    registrarError("suscripcion_guardar", errorLectura);
-    return { ok: false, mensaje: "La autorización se creó, pero no pudimos guardarla. Contactá a soporte." };
+  const valores = { mp_id: pago.id, estado_mp: "pending", precio: configuracion.precioMensual, moneda: "ARS" };
+  let guardado;
+  if (existente.data) {
+    const consulta = cliente.from("suscripciones").update({
+      mp_id: pago.id,
+      estado_mp: "pending",
+      ...(Number(existente.data.precio) !== configuracion.precioMensual ? { precio: configuracion.precioMensual, moneda: "ARS" } : {}),
+    }).eq("id", existente.data.id);
+    // Si otra solicitud guardó un enlace mientras esperábamos a Mercado Pago,
+    // este checkout no se entrega: el usuario reintentará con el enlace guardado.
+    guardado = await (existente.data.mp_id ? consulta.eq("mp_id", existente.data.mp_id) : consulta.is("mp_id", null)).select("id").maybeSingle();
+  } else {
+    guardado = await cliente.from("suscripciones").insert({
+      consultorio_id: contexto.consultorio.id,
+      ...valores,
+    }).select("id").single();
   }
-
-  const { error } = existente
-    ? await cliente
-        .from("suscripciones")
-        .update({ mp_id: autorizacion.id, estado_mp: "authorized" })
-        .eq("id", existente.id)
-    : await cliente.from("suscripciones").insert({
-        consultorio_id: contexto.consultorio.id,
-        mp_id: autorizacion.id,
-        estado_mp: "authorized",
-        precio: configuracion.precioMensual,
-        moneda: "ARS",
-      });
-  if (error) {
-    registrarError("suscripcion_guardar", error);
-    return { ok: false, mensaje: "La autorización se creó, pero no pudimos guardarla. Contactá a soporte." };
+  if (guardado.error || !guardado.data) {
+    if (guardado.error) registrarError("suscripcion_guardar", guardado.error);
+    return { ok: false, mensaje: "No pudimos preparar el pago. Volvé a intentarlo antes de continuar a Mercado Pago." };
   }
-
-  refresh();
-  return {
-    ok: true,
-    mensaje: "La suscripción quedó autorizada. El primer cobro del plan se intenta cuando termina la prueba, no antes.",
-  };
+  return { ok: true, datos: { url: pago.url } };
 }
 
 export async function guardarConfiguracionComercial(formulario: FormData): Promise<ResultadoAccion> {

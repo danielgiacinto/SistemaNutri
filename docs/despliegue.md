@@ -7,7 +7,10 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | Vercel (todos los entornos) | URL del proyecto de Supabase. |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Vercel (todos los entornos) | Clave publicable (`sb_publishable_…`) o clave `anon`. Es pública: la seguridad la da RLS. |
 | `NEXT_PUBLIC_SITIO_URL` | Vercel (solo Production) | `https://tu-dominio`. En Preview dejarla vacía: se usa el host de la petición. |
-| `SUPABASE_SECRET_KEY` | Solo `.env.local` por ahora | Clave secreta/`service_role`. Omite RLS. Solo para `scripts/`. Nunca con prefijo `NEXT_PUBLIC_`. |
+| `SUPABASE_SECRET_KEY` | Servidor y scripts | Clave secreta/`service_role`. Omite RLS. La necesita el webhook para acreditar cobros; también el script de alta de superadministrador. Nunca con prefijo `NEXT_PUBLIC_`. |
+| `MERCADOPAGO_ACCESS_TOKEN` | Solo servidor | En desarrollo: Access Token de la aplicación creada con el vendedor de prueba. Para Suscripciones puede empezar con `APP_USR`; el prefijo no demuestra que sea una cuenta real. |
+| `MERCADOPAGO_CORREO_PAGADOR_PRUEBA` | Solo desarrollo/pruebas | Correo del comprador de prueba, distinto del vendedor. En la pasarela se debe ingresar con ese comprador. Quitar al pasar a cobros reales. |
+| `MERCADOPAGO_WEBHOOK_SECRETO` | Solo servidor | Firma de notificaciones de Mercado Pago. Pendiente hasta configurar la URL pública. |
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_*` | `.env.local` | Credenciales de Google para Supabase local. |
 
 Secretos de GitHub Actions para aplicar migraciones (`.github/workflows/migraciones.yml`):
@@ -81,7 +84,8 @@ aplicarle las migraciones con `supabase db push`.
 
 ## Entorno de desarrollo actual
 
-Última actualización: 31 de octubre de 2026.
+Última actualización: 3 de noviembre de 2026. La app sigue exclusivamente en local;
+el proyecto Supabase hospedado es el entorno de desarrollo, no un despliegue de producción.
 
 | Pieza | Valor |
 | --- | --- |
@@ -91,7 +95,8 @@ aplicarle las migraciones con `supabase db push`.
 | Auth | Plantillas Nutrisfera publicadas; SMTP de prueba con Gmail (ver `docs/autenticacion.md`) |
 | Site URL | `http://localhost:3000` |
 | Redirect URLs / Google OAuth | Habilitado en hospedado: proveedor Google, Redirect URLs de local y callback de Supabase en Google Cloud (`docs/autenticacion.md`) |
-| Mercado Pago | Credenciales de prueba cargadas. La autorización local ya quedó `authorized`. |
+| Mercado Pago | Token del vendedor de prueba argentino y correo de otro comprador ya alineados. El checkout externo sigue pendiente de autorización por el comprador. |
+| Migración de checkout | `20261103220000_checkout_suscripciones.sql` probada en PGlite; todavía pendiente en Supabase hospedado. |
 | `SUPABASE_SECRET_KEY` y secreto del webhook | Vacíos. Sin ellos no se registra un cobro. |
 | Vercel / secretos de GitHub Actions | Pendientes. El cobro de punta a punta se prueba después de este despliegue (`docs/facturacion.md`). |
 

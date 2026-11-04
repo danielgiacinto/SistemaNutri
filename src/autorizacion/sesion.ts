@@ -84,6 +84,11 @@ export async function cargarProfesional(): Promise<ContextoProfesional> {
   return contexto;
 }
 
+/** Permite regularizar los pagos incluso cuando venció la cobertura comercial. */
+export async function requerirProfesionalParaFacturacion(): Promise<ContextoProfesional> {
+  return cargarProfesional();
+}
+
 async function exigirCoberturaComercial(consultorioId: string): Promise<void> {
   const supabase = await crearClienteServidor();
   const { data, error } = await supabase.rpc("estado_acceso_comercial", { p_consultorio_id: consultorioId });

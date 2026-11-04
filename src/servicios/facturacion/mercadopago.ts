@@ -1,3 +1,4 @@
+import "server-only";
 import type { ClienteSupabase } from "@/lib/supabase/servidor";
 import { obtenerEntornoPublico } from "@/configuracion/entorno";
 import { registrarError } from "@/lib/errores";
@@ -11,11 +12,9 @@ export type ConfiguracionComercial = {
   pruebasHabilitadas: boolean;
 };
 
-export function credencialesMercadoPago(): { token: string; clavePublica: string } | null {
+export function credencialesMercadoPago(): { token: string } | null {
   const token = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
-  const clavePublica = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY?.trim();
-  if (!token || !clavePublica) return null;
-  return { token, clavePublica };
+  return token ? { token } : null;
 }
 
 export async function obtenerConfiguracionComercial(cliente: ClienteSupabase): Promise<ConfiguracionComercial> {
@@ -68,7 +67,7 @@ const URL_RETORNO_RESPALDO = "https://www.mercadopago.com.ar";
 export function urlRetornoMercadoPago(sitio: string | undefined): string {
   if (!sitio) return URL_RETORNO_RESPALDO;
   try {
-    const url = new URL(`${sitio}/panel/facturacion`);
+    const url = new URL("/panel/facturacion", sitio);
     const host = url.hostname.toLowerCase();
     const esIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(":");
     const esLocal = host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || esIp;
@@ -92,7 +91,7 @@ function mensajeAutorizacion(descripcion: string | undefined): string {
   if (/user bad request/i.test(descripcion)) {
     return "Mercado Pago no reconoce al pagador. El correo de prueba tiene que ser el email de otra cuenta (test_user_…@testuser.com), no el usuario que empieza con TESTUSER.";
   }
-  return descripcion;
+  return "No pudimos abrir el pago en Mercado Pago. Intentá nuevamente en unos minutos.";
 }
 
 /** En prueba el pagador tiene que ser otra cuenta de prueba. En producción se usa el correo del titular. */
@@ -101,58 +100,106 @@ export function correoDelPagador(correoProfesional: string, correoPrueba: string
   return prueba || correoProfesional.trim();
 }
 
-/**
- * Crea la autorización recurrente en Mercado Pago.
- * El primer cobro del plan empieza cuando vence nuestra prueba: no hay una segunda prueba en el proveedor.
- * Mercado Pago puede hacer un cobro mínimo de validación y devolverlo; no cuenta como mes de acceso
- * porque el monto es menor al precio de la suscripción.
- * back_url no redirige en este alta: la tarjeta se autoriza en la misma página.
- * Igual Mercado Pago la exige, y rechaza localhost.
- */
-export async function crearAutorizacionRecurrente(entrada: {
+export type SuscripcionMercadoPago = {
+  id: string;
+  status: "pending" | "authorized" | "paused" | "cancelled";
+  external_reference?: string;
+  init_point?: string;
+  next_payment_date?: string;
+  last_modified?: string;
+  auto_recurring?: { transaction_amount?: number; currency_id?: string; start_date?: string };
+};
+
+/** Solo se permite redirigir al checkout oficial argentino. */
+export function urlPagoMercadoPago(valor: string | undefined): string | null {
+  if (!valor) return null;
+  try {
+    const url = new URL(valor);
+    if (url.protocol === "https:" && url.hostname === "www.mercadopago.com.ar" &&
+        url.pathname === "/subscriptions/checkout" && !url.username && !url.password && !url.port &&
+        url.searchParams.has("preapproval_id")) return url.toString();
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+/** Crea un enlace pendiente: la autorización y la tarjeta se completan en Mercado Pago. */
+export async function crearPagoSuscripcion(entrada: {
   consultorioId: string;
   correo: string;
   precio: number;
-  inicioCobro: Date;
-  tokenTarjeta: string;
-}): Promise<{ id: string } | { error: string }> {
+  inicioCobro?: Date;
+}): Promise<{ id: string; url: string } | { error: string }> {
   const credenciales = credencialesMercadoPago();
   if (!credenciales) return { error: "Mercado Pago no está configurado en el servidor." };
 
   const sitio = obtenerEntornoPublico().sitioUrl ?? "http://localhost:3000";
-  const respuesta = await fetch("https://api.mercadopago.com/preapproval", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${credenciales.token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      reason: "Nutrisfera — suscripción mensual",
-      external_reference: entrada.consultorioId,
-      payer_email: correoDelPagador(entrada.correo, process.env.MERCADOPAGO_CORREO_PAGADOR_PRUEBA),
-      card_token_id: entrada.tokenTarjeta,
-      status: "authorized",
-      back_url: urlRetornoMercadoPago(sitio),
-      notification_url: `${sitio}/api/facturacion/mercadopago`,
-      auto_recurring: {
-        frequency: 1,
-        frequency_type: "months",
-        start_date: entrada.inicioCobro.toISOString(),
-        transaction_amount: entrada.precio,
-        currency_id: "ARS",
+  try {
+    const respuesta = await fetch("https://api.mercadopago.com/preapproval", {
+      method: "POST",
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+      headers: {
+        Authorization: `Bearer ${credenciales.token}`,
+        "Content-Type": "application/json",
       },
-    }),
-  });
-
-  const cuerpo = (await respuesta.json()) as { id?: string; message?: string; cause?: { description?: string }[] };
-  if (!respuesta.ok || !cuerpo.id) {
-    registrarError("mercadopago_preapproval", {
-      message: cuerpo.message ?? respuesta.statusText,
-      cause: cuerpo.cause?.[0]?.description,
+      body: JSON.stringify({
+        reason: "Nutrisfera — suscripción mensual",
+        external_reference: entrada.consultorioId,
+        payer_email: correoDelPagador(entrada.correo, process.env.MERCADOPAGO_CORREO_PAGADOR_PRUEBA),
+        status: "pending",
+        back_url: urlRetornoMercadoPago(sitio),
+        ...(urlRetornoMercadoPago(sitio) !== URL_RETORNO_RESPALDO
+          ? { notification_url: `${new URL(sitio).origin}/api/facturacion/mercadopago` }
+          : {}),
+        auto_recurring: {
+          frequency: 1,
+          frequency_type: "months",
+          ...(entrada.inicioCobro && entrada.inicioCobro.getTime() > Date.now()
+            ? { start_date: entrada.inicioCobro.toISOString() }
+            : {}),
+          transaction_amount: entrada.precio,
+          currency_id: "ARS",
+        },
+      }),
     });
-    return { error: mensajeAutorizacion(cuerpo.cause?.[0]?.description || cuerpo.message) };
+
+    const cuerpo = (await respuesta.json()) as { id?: string; init_point?: string; message?: string; cause?: { description?: string }[] };
+    const url = urlPagoMercadoPago(cuerpo.init_point);
+    if (!respuesta.ok || !cuerpo.id || !url || new URL(url).searchParams.get("preapproval_id") !== cuerpo.id) {
+      registrarError("mercadopago_preapproval", {
+        message: cuerpo.message ?? respuesta.statusText,
+        cause: cuerpo.cause?.[0]?.description,
+      });
+      return { error: mensajeAutorizacion(cuerpo.cause?.[0]?.description || cuerpo.message) };
+    }
+    return { id: cuerpo.id, url };
+  } catch (error) {
+    registrarError("mercadopago_checkout", error);
+    return { error: "No pudimos conectar con Mercado Pago. Intentá nuevamente en unos minutos." };
   }
-  return { id: cuerpo.id };
+}
+
+export class ErrorConsultaMercadoPago extends Error {
+  constructor(public readonly estado: number, public readonly perteneceAOtroVendedor = false) {
+    super("No se pudo consultar Mercado Pago.");
+    this.name = "ErrorConsultaMercadoPago";
+  }
+}
+
+/** Permite cambiar de vendedor ficticio sin reutilizar el checkout de otro token. */
+export async function esCambioDeVendedorDePrueba(error: unknown): Promise<boolean> {
+  if (process.env.NODE_ENV !== "development" ||
+      !/@testuser\.com$/i.test(process.env.MERCADOPAGO_CORREO_PAGADOR_PRUEBA?.trim() ?? "") ||
+      !(error instanceof ErrorConsultaMercadoPago) ||
+      !([403, 404].includes(error.estado) || (error.estado === 400 && error.perteneceAOtroVendedor))) return false;
+  try {
+    const vendedor = await consultarRecursoMercadoPago("/users/me") as { tags?: string[] } | null;
+    return vendedor?.tags?.includes("test_user") === true;
+  } catch {
+    return false;
+  }
 }
 
 export async function consultarRecursoMercadoPago(ruta: string): Promise<unknown | null> {
@@ -160,10 +207,14 @@ export async function consultarRecursoMercadoPago(ruta: string): Promise<unknown
   if (!credenciales) return null;
   const respuesta = await fetch(`https://api.mercadopago.com${ruta}`, {
     headers: { Authorization: `Bearer ${credenciales.token}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(15_000),
   });
   if (!respuesta.ok) {
     registrarError("mercadopago_consulta", { message: `${respuesta.status} ${ruta}` });
-    return null;
+    const cuerpo = await respuesta.json().catch(() => null) as { message?: string } | null;
+    const perteneceAOtroVendedor = cuerpo?.message === "the preapprovalId is not valid for callerId";
+    throw new ErrorConsultaMercadoPago(respuesta.status, perteneceAOtroVendedor);
   }
   return respuesta.json();
 }

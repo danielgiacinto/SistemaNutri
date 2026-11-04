@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ClipboardList } from "lucide-react";
+import { Button } from "@/componentes/ui/button";
+import { FilaRecurso } from "@/componentes/comunes/fila-recurso";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { listarEvolucionesRecientes } from "@/servicios/evoluciones";
@@ -34,18 +36,13 @@ async function Contenido() {
           icono={ClipboardList}
           titulo="Todavía no hay evoluciones publicadas"
           descripcion="Abrí la ficha de un paciente y registrá la primera nota clínica."
+          accion={<Button asChild variant="outline"><Link href="/panel/pacientes">Elegir paciente</Link></Button>}
         />
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y overflow-hidden rounded-2xl border bg-card">
           {evoluciones.map((evolucion) => (
-            <li key={evolucion.id} className="px-4 py-3">
-              <Link href={`/panel/pacientes/${evolucion.paciente_id}/historia/${evolucion.id}`} className="block hover:text-primary">
-                <p className="font-medium">{evolucion.titulo || "Evolución clínica"}</p>
-                <p className="text-sm text-muted-foreground">
-                  {evolucion.pacientes ? nombreNatural(evolucion.pacientes) : "Paciente"} ·{" "}
-                  {formatearFechaHora(new Date(evolucion.actualizado_en), contexto.consultorio.zonaHoraria)}
-                </p>
-              </Link>
+            <li key={evolucion.id}>
+              <FilaRecurso href={`/panel/pacientes/${evolucion.paciente_id}/historia/${evolucion.id}`} icono={ClipboardList} titulo={evolucion.titulo || "Evolución clínica"} descripcion={evolucion.pacientes ? nombreNatural(evolucion.pacientes) : "Paciente"} detalle={formatearFechaHora(new Date(evolucion.actualizado_en), contexto.consultorio.zonaHoraria)} />
             </li>
           ))}
         </ul>

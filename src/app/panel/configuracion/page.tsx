@@ -7,7 +7,6 @@ import { RUTAS } from "@/autorizacion/rutas";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { obtenerDatosConsultorio } from "@/servicios/consultorios";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
-import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
 import { FormularioPerfil } from "@/componentes/configuracion/formulario-perfil";
 import { FormularioApariencia } from "@/componentes/configuracion/formulario-apariencia";
 import { FormularioConsultorio } from "@/componentes/configuracion/formulario-consultorio";
@@ -36,12 +35,15 @@ async function SeccionesConfiguracion() {
     : null;
 
   return (
-    <div className="grid gap-6">
+    <div className="space-y-6">
+      <nav aria-label="Secciones de configuración" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {[{ id: "perfil", titulo: "Mi perfil", icono: UserRound }, { id: "consultorio", titulo: "Consultorio", icono: Building2 }, { id: "apariencia", titulo: "Apariencia", icono: Palette }, { id: "seguridad", titulo: "Seguridad", icono: ShieldCheck }].map(({ id, titulo, icono: Icono }) => <a key={id} href={`#${id}`} className="flex items-center gap-2 rounded-xl border bg-card p-3 text-xs font-medium transition-colors outline-none hover:border-primary/30 hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"><Icono className="size-4 shrink-0 text-primary" aria-hidden="true" />{titulo}</a>)}
+      </nav>
       <Card id="perfil" className="scroll-mt-20">
         <CardHeader>
-          <CardTitle>Perfil profesional</CardTitle>
-          <CardDescription>
-            <DescripcionConIcono icono={UserRound}>Así te ven tus pacientes en su portal.</DescripcionConIcono>
+          <CardTitle className="flex items-center gap-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"><UserRound className="size-4" aria-hidden="true" /></span><h2>Perfil profesional</h2></CardTitle>
+          <CardDescription className="sm:pl-12">
+            Así te ven tus pacientes en su portal.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,9 +56,9 @@ async function SeccionesConfiguracion() {
 
       <Card id="consultorio" className="scroll-mt-20">
         <CardHeader>
-          <CardTitle>Consultorio</CardTitle>
-          <CardDescription>
-            <DescripcionConIcono icono={Building2}>Datos generales y zona horaria para la agenda.</DescripcionConIcono>
+          <CardTitle className="flex items-center gap-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"><Building2 className="size-4" aria-hidden="true" /></span><h2>Consultorio</h2></CardTitle>
+          <CardDescription className="sm:pl-12">
+            Datos generales y zona horaria para la agenda.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -80,9 +82,9 @@ async function SeccionesConfiguracion() {
 
       <Card id="apariencia" className="scroll-mt-20">
         <CardHeader>
-          <CardTitle>Apariencia</CardTitle>
-          <CardDescription>
-            <DescripcionConIcono icono={Palette}>Se guarda en tu cuenta y se aplica en todos tus dispositivos.</DescripcionConIcono>
+          <CardTitle className="flex items-center gap-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"><Palette className="size-4" aria-hidden="true" /></span><h2>Apariencia</h2></CardTitle>
+          <CardDescription className="sm:pl-12">
+            Se guarda en tu cuenta y se aplica en todos tus dispositivos.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -92,11 +94,9 @@ async function SeccionesConfiguracion() {
 
       <Card id="seguridad" className="scroll-mt-20">
         <CardHeader>
-          <CardTitle>Seguridad</CardTitle>
-          <CardDescription>
-            <DescripcionConIcono icono={ShieldCheck}>
-              Si ingresás con Google también podés definir una contraseña para ingresar con tu correo.
-            </DescripcionConIcono>
+          <CardTitle className="flex items-center gap-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"><ShieldCheck className="size-4" aria-hidden="true" /></span><h2>Seguridad</h2></CardTitle>
+          <CardDescription className="sm:pl-12">
+            Si ingresás con Google también podés definir una contraseña para ingresar con tu correo.
           </CardDescription>
         </CardHeader>
         <CardContent>

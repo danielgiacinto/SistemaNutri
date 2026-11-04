@@ -58,7 +58,7 @@ export const NAVEGACION = {
       descripcion: "Desafíos y actividades grupales para tus pacientes.",
     },
     {
-      titulo: "Facturación",
+      titulo: "Plan y facturación",
       href: "/panel/facturacion",
       icono: CreditCard,
       descripcion: "Prueba gratuita, suscripción mensual y estado de los cobros.",

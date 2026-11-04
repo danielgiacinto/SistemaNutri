@@ -9,8 +9,8 @@ export type Pestana = {
 
 export function Pestanas({ items, actual }: { items: Pestana[]; actual: string }) {
   return (
-    <nav aria-label="Secciones" className="-mx-1 overflow-x-auto">
-      <ul className="flex min-w-max gap-1 border-b">
+    <nav aria-label="Secciones" className="min-w-0">
+      <ul className="flex flex-wrap gap-1 border-b">
         {items.map((item) => {
           const activa = item.exacta
             ? actual === item.href

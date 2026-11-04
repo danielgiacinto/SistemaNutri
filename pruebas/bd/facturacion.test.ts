@@ -97,4 +97,54 @@ describe("acceso comercial", () => {
       comoAnonimo(bd, (tx) => tx.query("update public.configuracion_comercial set precio_mensual = 1")),
     ).rejects.toThrow();
   });
+
+  it("solo el servidor verificado puede extender la cobertura o confirmar la autorización", async () => {
+    await expect(comoUsuario(bd, profesional, (tx) => tx.query(
+      "update public.suscripciones set cobertura_hasta = now() + interval '1 year' where consultorio_id = $1", [consultorio],
+    ))).rejects.toThrow();
+    await expect(comoUsuario(bd, profesional, (tx) => tx.query(
+      "update public.suscripciones set estado_mp = 'authorized' where consultorio_id = $1", [consultorio],
+    ))).rejects.toThrow();
+    await expect(comoUsuario(bd, profesional, (tx) => tx.query(
+      "select public.registrar_pago_verificado('pre-1', 'inventado', 'aprobado', 99999, 'ARS', now())",
+    ))).rejects.toThrow();
+  });
+
+  it("el titular solo prepara un checkout pendiente al precio comercial", async () => {
+    const titular = await crearUsuario(bd, "checkout@demo.test");
+    const alta = await comoUsuario(bd, titular, (tx) => tx.query<{ id: string }>("select public.crear_consultorio_inicial('Checkout') as id"));
+    const id = alta.rows[0].id;
+    await expect(comoUsuario(bd, titular, (tx) => tx.query(
+      "insert into public.suscripciones (consultorio_id, mp_id, estado_mp, precio) values ($1, 'pre-barato', 'pending', 1)", [id],
+    ))).rejects.toThrow("precio_desactualizado");
+    await comoUsuario(bd, titular, (tx) => tx.query(
+      "insert into public.suscripciones (consultorio_id, mp_id, estado_mp, precio) values ($1, 'pre-checkout', 'pending', 15999)", [id],
+    ));
+    const lecturaAjena = await comoUsuario(bd, profesional, (tx) => tx.query("select id from public.suscripciones where consultorio_id = $1", [id]));
+    expect(lecturaAjena.rows).toHaveLength(0);
+    await expect(comoUsuario(bd, profesional, (tx) => tx.query(
+      "update public.suscripciones set mp_id = 'intruso' where consultorio_id = $1 returning id", [id],
+    ))).resolves.toMatchObject({ rows: [] });
+  });
+
+  it("un pendiente que pasa a aprobado acredita exactamente una vez", async () => {
+    const antes = await bd.query<{ cobertura_hasta: string }>("select cobertura_hasta from public.suscripciones where mp_id = 'pre-1'");
+    await bd.query("select public.registrar_pago_verificado('pre-1', 'pago-transicion', 'pendiente', 10000, 'ARS', now())");
+    await bd.query("select public.registrar_pago_verificado('pre-1', 'pago-transicion', 'aprobado', 10000, 'ARS', now())");
+    const despues = await bd.query<{ cobertura_hasta: string }>("select cobertura_hasta from public.suscripciones where mp_id = 'pre-1'");
+    expect(new Date(despues.rows[0].cobertura_hasta).getTime()).toBeGreaterThan(new Date(antes.rows[0].cobertura_hasta).getTime());
+    await bd.query("select public.registrar_pago_verificado('pre-1', 'pago-transicion', 'aprobado', 10000, 'ARS', now())");
+    await bd.query("select public.registrar_pago_verificado('pre-1', 'pago-transicion', 'pendiente', 10000, 'ARS', now())");
+    const final = await bd.query<{ cobertura_hasta: string }>("select cobertura_hasta from public.suscripciones where mp_id = 'pre-1'");
+    expect(final.rows[0].cobertura_hasta).toEqual(despues.rows[0].cobertura_hasta);
+    const pago = await bd.query<{ estado: string }>("select estado from public.pagos_suscripcion where mp_pago_id = 'pago-transicion'");
+    expect(pago.rows[0].estado).toBe("aprobado");
+  });
+
+  it("un pago en otra moneda no acredita cobertura", async () => {
+    const antes = await bd.query<{ cobertura_hasta: string }>("select cobertura_hasta from public.suscripciones where mp_id = 'pre-1'");
+    await bd.query("select public.registrar_pago_verificado('pre-1', 'pago-moneda', 'aprobado', 10000, 'USD', now())");
+    const despues = await bd.query<{ cobertura_hasta: string }>("select cobertura_hasta from public.suscripciones where mp_id = 'pre-1'");
+    expect(despues.rows[0].cobertura_hasta).toEqual(antes.rows[0].cobertura_hasta);
+  });
 });

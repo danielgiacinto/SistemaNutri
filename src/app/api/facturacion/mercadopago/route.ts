@@ -1,10 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import { verificarFirmaMercadoPago } from "@/servicios/facturacion/firma";
-import { consultarRecursoMercadoPago, credencialesMercadoPago } from "@/servicios/facturacion/mercadopago";
+import { credencialesMercadoPago } from "@/servicios/facturacion/mercadopago";
+import { procesarNotificacionMercadoPago } from "@/servicios/facturacion/notificaciones";
 import { obtenerEntornoPublico } from "@/configuracion/entorno";
 import { registrarError } from "@/lib/errores";
 import type { Database } from "@/tipos/base-datos";
+
+const esquemaNotificacion = z.object({
+  id: z.union([z.string().max(200), z.number()]).optional(),
+  type: z.string().max(100),
+  action: z.string().max(100).optional(),
+  data: z.object({ id: z.union([z.string().max(200), z.number()]) }),
+});
 
 /**
  * Notificaciones de Mercado Pago (suscripciones).
@@ -26,9 +35,16 @@ export async function POST(peticion: NextRequest) {
   });
   if (!firmaValida) return NextResponse.json({ error: "firma_invalida" }, { status: 401 });
 
-  const cuerpo = (await peticion.json()) as { id?: string | number; type?: string; action?: string; data?: { id?: string } };
-  const tipo = cuerpo.type ?? "desconocido";
-  const recursoId = cuerpo.data?.id ?? datoId;
+  const analisis = esquemaNotificacion.safeParse(await peticion.json().catch(() => null));
+  if (!analisis.success || String(analisis.data.data.id).toLowerCase() !== datoId.toLowerCase() || !/^[a-zA-Z0-9_-]+$/.test(datoId)) {
+    return NextResponse.json({ error: "notificacion_invalida" }, { status: 400 });
+  }
+  const cuerpo = analisis.data;
+  const tipo = cuerpo.type;
+  const recursoId = String(cuerpo.data.id);
+  if (!["subscription_preapproval", "subscription_authorized_payment", "payment"].includes(tipo)) {
+    return NextResponse.json({ ok: true, ignorado: true });
+  }
   const idEvento = String(cuerpo.id ?? `${tipo}:${recursoId}:${cuerpo.action ?? ""}`);
 
   const { supabaseUrl } = obtenerEntornoPublico();
@@ -41,43 +57,25 @@ export async function POST(peticion: NextRequest) {
     tipo,
     recurso_id: recursoId,
   });
-  if (errorEvento?.code === "23505") return NextResponse.json({ ok: true, duplicado: true });
-  if (errorEvento) {
+  if (errorEvento?.code === "23505") {
+    const { data: evento, error } = await admin.from("eventos_proveedor").select("procesado_en").eq("proveedor", "mercadopago").eq("id_evento", idEvento).single();
+    if (error) return NextResponse.json({ error: "no_registrado" }, { status: 500 });
+    if (evento.procesado_en) return NextResponse.json({ ok: true, duplicado: true });
+    // Un evento fallido se vuelve a procesar cuando Mercado Pago reintenta.
+  }
+  if (errorEvento && errorEvento.code !== "23505") {
     registrarError("webhook_evento", errorEvento);
     return NextResponse.json({ error: "no_registrado" }, { status: 500 });
   }
 
   try {
-    if (tipo === "subscription_authorized_payment" || tipo === "payment") {
-      const pago = (await consultarRecursoMercadoPago(
-        tipo === "payment" ? `/v1/payments/${recursoId}` : `/authorized_payments/${recursoId}`,
-      )) as {
-        id?: number | string;
-        status?: string;
-        transaction_amount?: number;
-        currency_id?: string;
-        date_approved?: string;
-        preapproval_id?: string;
-        metadata?: { preapproval_id?: string };
-      } | null;
-      const mpPago = String(pago?.id ?? recursoId);
-      const suscripcion = pago?.preapproval_id ?? pago?.metadata?.preapproval_id;
-      if (pago && suscripcion) {
-        const estado = pago.status === "approved" ? "aprobado" : pago.status === "refunded" ? "devuelto" : pago.status === "rejected" ? "rechazado" : "pendiente";
-        await admin.rpc("registrar_pago_verificado", {
-          p_mp_suscripcion: suscripcion,
-          p_mp_pago: mpPago,
-          p_estado: estado,
-          p_monto: pago.transaction_amount ?? 0,
-          p_moneda: pago.currency_id ?? "ARS",
-          p_cobrado_en: pago.date_approved ?? new Date().toISOString(),
-        });
-      }
-    }
-    await admin.from("eventos_proveedor").update({ procesado_en: new Date().toISOString() }).eq("id_evento", idEvento);
+    await procesarNotificacionMercadoPago(admin, tipo, recursoId);
+    const { error } = await admin.from("eventos_proveedor").update({ procesado_en: new Date().toISOString(), error: null }).eq("proveedor", "mercadopago").eq("id_evento", idEvento);
+    if (error) throw error;
   } catch (error) {
     registrarError("webhook_proceso", error);
     await admin.from("eventos_proveedor").update({ error: "no_procesado" }).eq("id_evento", idEvento);
+    return NextResponse.json({ error: "no_procesado" }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

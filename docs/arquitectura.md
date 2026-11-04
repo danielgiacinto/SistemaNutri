@@ -100,12 +100,25 @@ neutros (claro/oscuro) y paleta de marca (`data-paleta` en `<html>`). Las prefer
 se guardan en `perfiles` y se replican en `localStorage` para aplicarlas antes del
 primer pintado.
 
+La palta de marca utiliza los trazos compartidos de `src/configuracion/palta.json`
+y los colores `--palta-*` de `globals.css`. Su inclinación se define en
+`src/configuracion/marca.json`. El logo los representa como SVG; después
+de cambiar trazos, inclinación o colores, `node scripts/generar-icono.mjs` actualiza el favicon
+con la misma ilustración. El modo oscuro conserva los colores de la ilustración.
+
+La agenda usa una línea horaria con la duración real de cada turno y una marca de
+hora actual que se actualiza en el navegador. En pantallas pequeñas la semana se
+presenta como una lista por día y el mes muestra indicadores compactos, sin ancho mínimo forzado.
+
 ## Decisiones pendientes
 
 - **Cobro de punta a punta (fase 5).** El proveedor es Mercado Pago Suscripciones.
-  En local la tarjeta de prueba ya puede quedar `authorized`. El webhook, el cobro
-  registrado y la cobertura se prueban al final, con la app desplegada en Vercel
-  y una URL pública. Ver `docs/facturacion.md`.
+  La vista Plan y facturación y el checkout alojado ya están implementados. El servidor
+  crea o retoma un `pending` y la tarjeta se ingresa en Mercado Pago. La autorización
+  nueva sigue pendiente de confirmar con el comprador de prueba; no debe confundirse
+  con el vendedor ni con la sesión profesional de Nutrisfera. El webhook, el cobro
+  registrado y la cobertura requieren una URL pública y secretos del servidor.
+  La app todavía corre en local. Ver `docs/facturacion.md`.
 - **Envío de correos transaccionales** (recordatorios de turnos): la columna
   `turnos.recordatorio_enviado_en` ya existe. Los correos de Auth ya salen por un SMTP
   de prueba (Gmail). Falta SMTP de producción con dominio propio y el job de recordatorios.
@@ -114,7 +127,6 @@ primer pintado.
   (mejor en celular). El gráfico de peso usa Recharts.
 - **Content-Security-Policy** con nonce: pendiente hasta incorporar recursos externos.
 - **Ideas tomadas de SoloNutris, para una fase posterior** (no están en el producto):
-  - Al elegir el plan, abrir la pasarela de Mercado Pago. El formulario de tarjeta salió de Facturación a propósito.
   - Catálogo de platos con foto y macros, y entrega del plan por link o PDF con la marca del consultorio.
   - Reservas online con link o QR, con confirmación de la profesional.
   - Recordatorios automáticos de turnos.
@@ -130,7 +142,7 @@ primer pintado.
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones, gráficos | Implementada |
 | 3 | Portal del paciente e invitaciones | Implementada |
 | 4 | Planes alimentarios con versiones y publicación | Implementada |
-| 5 | Suscripciones, pagos y panel de administración completo | Autorización de prueba hecha en local. El cobro completo se prueba al final, con la app en Vercel. Ver `docs/facturacion.md`. |
+| 5 | Suscripciones, pagos y panel de administración completo | Vista y checkout externo implementados; nueva autorización en validación. Acreditación de cobros pendiente de URL pública, secretos y migración de checkout. Ver `docs/facturacion.md`. |
 | 6 | Comunidad y desafíos | Implementada. Ver `docs/base-de-datos.md`. |
 
 El detalle de lo que se puede probar hoy, el entorno de Supabase y lo operativo

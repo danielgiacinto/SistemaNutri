@@ -48,8 +48,8 @@ export function MarcoAplicacion({ variante, hrefInicio, subtitulo, usuario, enla
           </div>
         </header>
 
-        <main id="contenido" tabIndex={-1} className="flex-1 px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-10">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+        <main id="contenido" tabIndex={-1} className="min-w-0 flex-1 px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-10">
+          <div className="mx-auto w-full min-w-0 max-w-6xl">{children}</div>
         </main>
       </div>
     </div>

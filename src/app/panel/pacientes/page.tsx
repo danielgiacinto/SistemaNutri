@@ -19,7 +19,7 @@ import { formatearFechaHora } from "@/lib/fechas";
 import { cn } from "@/lib/utilidades";
 
 const COLUMNAS_PACIENTE =
-  "md:grid-cols-[minmax(0,1.5fr)_minmax(0,7.5rem)_6.5rem_minmax(0,1fr)_minmax(0,1fr)]";
+  "xl:grid-cols-[minmax(0,1.5fr)_minmax(0,7.5rem)_6.5rem_minmax(0,1fr)_minmax(0,1fr)]";
 
 export const metadata: Metadata = { title: "Pacientes" };
 
@@ -87,10 +87,10 @@ async function ListadoPacientes({ searchParams }: { searchParams: PageProps<"/pa
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border">
+        <div className="overflow-hidden rounded-2xl border bg-card">
           <div
             className={cn(
-              "hidden border-b bg-muted/40 px-4 py-2.5 text-sm font-medium text-muted-foreground md:grid md:items-center md:gap-4",
+              "hidden border-b bg-muted/40 px-4 py-2.5 text-sm font-medium text-muted-foreground xl:grid xl:items-center xl:gap-4",
               COLUMNAS_PACIENTE,
             )}
           >
@@ -113,22 +113,24 @@ async function ListadoPacientes({ searchParams }: { searchParams: PageProps<"/pa
                   <Link
                     href={`/panel/pacientes/${paciente.id}`}
                     className={cn(
-                      "grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-muted/40 md:gap-4",
+                      "grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-muted/40 xl:gap-4",
                       COLUMNAS_PACIENTE,
                     )}
                   >
-                    <span className="min-w-0">
-                      <span className="block truncate font-medium">{nombreNatural(paciente)}</span>
-                      <span className="mt-0.5 block truncate text-sm text-muted-foreground md:hidden">
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-xs font-semibold text-accent-foreground" aria-hidden="true">{paciente.nombre[0]}{paciente.apellido[0]}</span>
+                      <span className="min-w-0"><span className="block truncate font-medium">{nombreNatural(paciente)}</span>
+                      <span className="mt-0.5 block truncate text-xs text-muted-foreground xl:hidden">
                         {paciente.proximoTurnoInicio ? `Próximo: ${proximo}` : ultima}
                       </span>
+                      </span>
                     </span>
-                    <span className="hidden min-w-0 truncate text-muted-foreground md:block">{paciente.documento ?? "—"}</span>
-                    <span className="justify-self-end md:justify-self-start">
+                    <span className="hidden min-w-0 truncate text-muted-foreground xl:block">{paciente.documento ?? "—"}</span>
+                    <span className="justify-self-end xl:justify-self-start">
                       <InsigniaPaciente estado={paciente.estado} />
                     </span>
-                    <span className="hidden min-w-0 truncate text-muted-foreground md:block">{ultima}</span>
-                    <span className="hidden min-w-0 truncate text-muted-foreground md:block">{proximo}</span>
+                    <span className="hidden min-w-0 truncate text-muted-foreground xl:block">{ultima}</span>
+                    <span className="hidden min-w-0 truncate text-muted-foreground xl:block">{proximo}</span>
                   </Link>
                 </li>
               );
@@ -138,17 +140,19 @@ async function ListadoPacientes({ searchParams }: { searchParams: PageProps<"/pa
       )}
 
       {paginas > 1 && (
-        <p className="flex flex-wrap gap-2 text-sm">
+        <nav aria-label="Páginas de pacientes" className="flex flex-wrap items-center gap-2 text-sm">
           {Array.from({ length: paginas }, (_, indice) => indice + 1).map((pagina) => (
             <Link
               key={pagina}
               href={hrefListadoPacientes({ q: filtro.q, estado: filtro.estado, orden: filtro.orden, pagina })}
-              className={pagina === filtro.pagina ? "font-semibold text-primary" : "text-muted-foreground hover:text-foreground"}
+              aria-label={`Página ${pagina}`}
+              aria-current={pagina === filtro.pagina ? "page" : undefined}
+              className={cn("flex size-9 items-center justify-center rounded-lg border transition-colors", pagina === filtro.pagina ? "border-primary bg-primary font-semibold text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent hover:text-foreground")}
             >
               {pagina}
             </Link>
           ))}
-        </p>
+        </nav>
       )}
     </>
   );

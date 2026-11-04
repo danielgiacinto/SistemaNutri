@@ -6,11 +6,12 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
-Última actualización: 31 de octubre de 2026. El producto está en **fase 4**
-para el uso del consultorio: se puede registrar, trabajar la clínica, invitar al paciente
-y publicar planes alimentarios. La fase 6 ya tiene desafíos y actividades en Comunidad.
+Última actualización: 3 de noviembre de 2026. Las fases **1 a 4 y 6** están
+implementadas para probar en desarrollo: registro, clínica, portal, planes alimentarios
+y desafíos de Comunidad. La aplicación corre en **localhost** y usa Supabase hospedado
+de desarrollo. Todavía no hay un despliegue de producción.
 
-La fase 5 ya autoriza la tarjeta en Mercado Pago y controla la prueba y el acceso.
+La fase 5 abre el checkout de Mercado Pago desde **Plan y facturación** y controla la prueba y el acceso.
 El cobro de punta a punta se prueba **al final**, cuando el resto esté listo y la app
 esté desplegada en Vercel con URL pública. En local el webhook no llega.
 
@@ -20,7 +21,7 @@ esté desplegada en Vercel con URL pública. En local el webhook no llega.
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
 | 4 | Planes alimentarios con versiones | ✅ Listo para probar |
-| 5 | Suscripciones, pagos y administración | Autorización de prueba hecha en local. El cobro completo se prueba al final, con la app en Vercel. |
+| 5 | Suscripciones, pagos y administración | Vista y checkout externo implementados. Autorización en la pasarela pendiente de confirmar con el comprador de prueba. Webhook y cobertura de punta a punta pendientes de URL pública y secretos. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 
 ### Qué se puede probar ahora (profesional)
@@ -33,9 +34,18 @@ esté desplegada en Vercel con URL pública. En local el webhook no llega.
 6. En la ficha → **Planes**: el borrador no se comparte. **Publicar para el paciente** deja esa versión en `/portal/plan`.
 7. En **Comunidad**: creá un desafío, publicalo, y con la cuenta del paciente sumate y escribí una actividad. El borrador no se ve en el portal.
 
-No hace falta recorrer Facturación ahora. La autorización local ya respondió `authorized`
-con las credenciales de prueba. Cobertura, cobro registrado y rechazo se prueban
-cuando exista la URL pública (ver más abajo).
+En **Plan y facturación**, el botón **Elegir este plan** abre Mercado Pago para
+completar la autorización con los datos de prueba. La tarjeta ya no se ingresa
+dentro de Nutrisfera. Si volvés sin terminar, **Continuar con el pago** retoma el
+mismo checkout. Cobertura, cobro registrado y rechazo se prueban cuando exista
+la URL pública (ver más abajo).
+
+Para **Suscripciones**, el checkout usa `mercadopago.com.ar` también en pruebas.
+El servidor usa el Access Token de la cuenta **vendedora de prueba**, y en la pasarela
+se ingresa con la cuenta **compradora de prueba**, distinta de la vendedora y del
+mismo país. La compra de prueba se hace con **Nueva tarjeta**, usando una tarjeta
+de crédito de prueba. No se paga con la cuenta que creó la integración.
+Pasos y diagnóstico del bloqueo de Confirmar en [`docs/facturacion.md`](docs/facturacion.md).
 
 No hay cuenta de prueba precargada: cada quien se registra. **Continuar con Google**
 está habilitado en el proyecto hospedado (alta e ingreso, ver `docs/autenticacion.md`).
@@ -62,7 +72,8 @@ en [`docs/facturacion.md`](docs/facturacion.md).
 | Correos de Auth | Plantillas Nutrisfera publicadas + SMTP de prueba con Gmail |
 | Site URL | `http://localhost:3000` |
 | Redirect URLs / Google OAuth | Habilitado en el proyecto hospedado (local + callback de Supabase) |
-| Mercado Pago | Credenciales de prueba cargadas. La autorización local ya quedó `authorized`. |
+| Mercado Pago | Vendedor y comprador de prueba distintos ya configurados y verificados. Checkout externo disponible; nueva autorización pendiente de completar por el comprador. |
+| Migración de checkout | `20261103220000_checkout_suscripciones.sql` creada y probada en PGlite; pendiente de aplicar en Supabase hospedado. |
 | `SUPABASE_SECRET_KEY` y secreto del webhook | Vacíos. Hacen falta para registrar un cobro. |
 | Vercel y secretos de CI | Pendientes. El cobro completo se prueba después de este despliegue. |
 
