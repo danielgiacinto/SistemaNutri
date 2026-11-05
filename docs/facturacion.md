@@ -258,6 +258,22 @@ y el RPC devolvió `activo` automáticamente, sin habilitación manual posterior
 La conciliación pública respondió 200 y envió un correo de cobro confirmado sin fallos.
 Este ajuste es una preparación de QA; no demuestra que haya transcurrido un ciclo mensual.
 
+### Prueba de recurrencia sobre una misma autorización
+
+El 5/11/2026 se intentó modificar la autorización mensual existente a frecuencia diaria
+y fecha de fin. El PUT respondió 200, pero el GET posterior conservó el calendario mensual:
+no se considera un cambio efectivo ni un cobro de renovación.
+Con autorización explícita del titular, se creó dentro del mismo consultorio de Daniel
+la autorización ficticia `660b18dbc035439080d7ba80d08a269e`, con frecuencia de un día,
+ARS 15.999 por ciclo y fin confirmado por API el 6/11/2026 a las 22:48:39 de Argentina.
+La mensual anterior `3a69efa05326468fb47c3848c98f3552` quedó cancelada y se conservó
+la cobertura y el historial de pagos. El ajuste se auditó como `qa.recurrencia_diaria`.
+Esta excepción es exclusiva de QA y no cambia el plan mensual del producto.
+Pendiente: autorización inicial por el usuario, primer pago y segundo cobro automático
+con el mismo ID de autorización y factura diferente. Deben verificarse el pago por API,
+los webhooks, la ausencia de duplicados y el cese de recurrencia al finalizar la prueba.
+Hasta observar ese segundo cobro no se considera completada esta validación externa.
+
 ### Diagnóstico del bloqueo observado
 
 El desajuste de cuentas descrito a continuación corresponde a la configuración
