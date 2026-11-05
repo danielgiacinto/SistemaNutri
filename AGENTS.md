@@ -15,4 +15,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Esquema de base solo mediante migraciones en `supabase/migrations`, con permisos explícitos y políticas RLS por operación, más pruebas en `pruebas/bd`.
 - Lecturas de sesión dentro de `<Suspense>` (Cache Components). Sin `use cache` sobre datos clínicos.
 - Colores solo mediante tokens de `src/app/globals.css`.
-- Antes de terminar: `npm run verificar`.
+- Ejecutar `npm run verificar` una vez al final cuando se modifique código, configuración, migraciones o pruebas. Si falla, corregir el problema y volver a ejecutarlo. Para cambios solo de documentación, omitirlo.
+
+## Uso eficiente del contexto
+
+- Empezar por los archivos directamente relacionados con el pedido. Usar `rg` para ubicar código y leer solo los fragmentos necesarios; ampliar la búsqueda si el problema lo requiere.
+- Para cambios de Next.js, consultar únicamente la guía de `node_modules/next/dist/docs/` correspondiente a la API que se va a modificar.
+- Agrupar los cambios y resumir las salidas de comandos; mencionar errores relevantes y evitar copiar logs completos salvo que sean necesarios para diagnosticar.
