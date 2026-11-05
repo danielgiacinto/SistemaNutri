@@ -269,10 +269,17 @@ ARS 15.999 por ciclo y fin confirmado por API el 6/11/2026 a las 22:48:39 de Arg
 La mensual anterior `3a69efa05326468fb47c3848c98f3552` quedó cancelada y se conservó
 la cobertura y el historial de pagos. El ajuste se auditó como `qa.recurrencia_diaria`.
 Esta excepción es exclusiva de QA y no cambia el plan mensual del producto.
-Pendiente: autorización inicial por el usuario, primer pago y segundo cobro automático
-con el mismo ID de autorización y factura diferente. Deben verificarse el pago por API,
-los webhooks, la ausencia de duplicados y el cese de recurrencia al finalizar la prueba.
-Hasta observar ese segundo cobro no se considera completada esta validación externa.
+El usuario autorizó el checkout. Primer pago `186838355547`, aprobado por ARS 15.999,
+factura `7033636644`, con los tres tópicos procesados sin errores. La consulta
+autenticada del proveedor y Supabase coinciden en `authorized` y próximo débito
+el **6/11/2026 a las 10:51:41 de Argentina** (13:51:41 UTC).
+La acreditación usa un mes calendario del producto; la frecuencia diaria es solo
+el acelerador de esta prueba ficticia y no modifica la configuración mensual comercial.
+Pendiente después de esa fecha: segundo cobro automático con el mismo ID de autorización
+y una factura/pago distintos, consulta del estado real por API, webhooks sin errores,
+ausencia de duplicados y cese de recurrencia al finalizar la prueba. La fecha programada
+no garantiza la hora exacta de procesamiento del proveedor. Hasta observar ese segundo
+cobro no se considera completada esta validación externa.
 
 ### Diagnóstico del bloqueo observado
 
