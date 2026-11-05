@@ -1,3 +1,6 @@
+import { TituloTarjeta } from "@/componentes/comunes/titulo-tarjeta";
+import { Eye } from "lucide-react";
+import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import type { Metadata } from "next";
 import { Mail, ShieldCheck } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
@@ -6,8 +9,7 @@ import { listarEvoluciones } from "@/servicios/evoluciones";
 import { obtenerInvitacionPendiente } from "@/servicios/invitaciones";
 import { listarObjetivos } from "@/servicios/objetivos";
 import { listarMediciones } from "@/servicios/mediciones";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
-import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
+import { Card, CardContent, CardDescription, CardHeader } from "@/componentes/ui/card";
 
 export const metadata: Metadata = { title: "Visibilidad para el paciente" };
 
@@ -29,11 +31,12 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
 
   return (
     <div className="space-y-6">
+      <EncabezadoPagina nivel={2} titulo="Visibilidad" descripcion="Gestioná el acceso al portal y revisá la información que compartís." />
     <Card>
       <CardHeader>
-        <CardTitle>Invitación al portal</CardTitle>
-        <CardDescription>
-          <DescripcionConIcono icono={paciente.usuario_id ? ShieldCheck : Mail}>
+        <TituloTarjeta icono={Mail}>Invitación al portal</TituloTarjeta>
+        <CardDescription className="sm:pl-12">
+
             {paciente.usuario_id
               ? "Esta persona ya aceptó la invitación y puede entrar al portal."
               : invitacion
@@ -41,7 +44,7 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
                 : paciente.correo
                   ? "Esta persona todavía no tiene acceso al portal."
                   : "Esta persona todavía no tiene acceso al portal. Agregá un correo en la ficha para poder invitarla."}
-          </DescripcionConIcono>
+
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -55,11 +58,11 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
     </Card>
     <Card>
       <CardHeader>
-        <CardTitle>Qué verá el paciente</CardTitle>
-        <CardDescription>
-          <DescripcionConIcono icono={ShieldCheck}>
+        <TituloTarjeta icono={ShieldCheck}>Qué verá el paciente</TituloTarjeta>
+        <CardDescription className="sm:pl-12">
+
             Nada se comparte por defecto. Las notas en borrador nunca se publican.
-          </DescripcionConIcono>
+
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-3">
@@ -74,10 +77,10 @@ export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pa
 
 function Dato({ etiqueta, valor, total }: { etiqueta: string; valor: number; total: number }) {
   return (
-    <div className="rounded-2xl border p-4">
-      <p className="text-3xl font-bold tabular-nums">{valor}</p>
+    <div className="space-y-2 rounded-xl border bg-muted/20 p-4">
+      <Eye className="size-4 text-primary" aria-hidden="true" /><p className="text-3xl font-bold tabular-nums">{valor}<span className="ml-1 text-sm font-normal text-muted-foreground">/ {total}</span></p>
       <p className="text-sm text-muted-foreground">
-        {etiqueta} de {total}
+        {etiqueta}
       </p>
     </div>
   );

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { CalendarDays, Clock3, Pencil, UserRound } from "lucide-react";
+import { Button } from "@/componentes/ui/button";
 import { usePathname } from "next/navigation";
 import { Volver } from "@/componentes/comunes/volver";
 import { Pestanas } from "@/componentes/comunes/pestanas";
@@ -27,30 +29,32 @@ export function EncabezadoFicha({
   return (
     <div className="space-y-6">
       <Volver href="/panel/pacientes" etiqueta="Pacientes" />
-      <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-2">
+      <div className="grid gap-5 rounded-2xl border bg-card p-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-lg font-semibold text-accent-foreground" aria-hidden="true">{paciente.nombre[0]}{paciente.apellido[0]}</span>
+          <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">{nombreNatural(paciente)}</h1>
+            <h1 className="text-2xl font-bold tracking-tight wrap-anywhere">{nombreNatural(paciente)}</h1>
             <InsigniaPaciente estado={paciente.estado} />
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="flex items-start gap-2 text-sm text-muted-foreground wrap-anywhere">
+            <UserRound className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {[paciente.documento ? `Doc. ${paciente.documento}` : null, edad != null ? `${edad} años` : null, paciente.telefono]
               .filter(Boolean)
               .join(" · ") || "Sin datos de contacto adicionales"}
           </p>
         </div>
-        <div className="grid gap-1 text-sm sm:text-right">
-          <p>
+        </div>
+        <div className="grid gap-3 rounded-xl border bg-muted/20 p-4 text-sm">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1"><Clock3 className="size-4 shrink-0 text-primary" aria-hidden="true" />
             <span className="text-muted-foreground">Última consulta: </span>
             {ultimaConsultaInicio ? formatearFechaHora(new Date(ultimaConsultaInicio), zonaHoraria) : "Sin consultas"}
           </p>
-          <p>
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1"><CalendarDays className="size-4 shrink-0 text-primary" aria-hidden="true" />
             <span className="text-muted-foreground">Próximo turno: </span>
             {proximoTurnoInicio ? formatearFechaHora(new Date(proximoTurnoInicio), zonaHoraria) : "Sin turnos próximos"}
           </p>
-          <Link href={`${base}/editar`} className="cursor-pointer text-primary hover:underline">
-            Editar ficha
-          </Link>
+          <Button asChild variant="outline" size="sm" className="w-full xl:w-fit xl:justify-self-end"><Link href={`${base}/editar`}><Pencil aria-hidden="true" />Editar ficha</Link></Button>
         </div>
       </div>
       <Pestanas

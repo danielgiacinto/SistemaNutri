@@ -1,3 +1,6 @@
+import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
+import { TituloTarjeta } from "@/componentes/comunes/titulo-tarjeta";
+import { ChartNoAxesCombined, History } from "lucide-react";
 import type { Metadata } from "next";
 import { Plus, Scale } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
@@ -8,7 +11,7 @@ import { GraficoPeso } from "@/componentes/clinica/grafico-peso";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { VentanaFormulario } from "@/componentes/comunes/ventana-formulario";
 import { Badge } from "@/componentes/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/componentes/ui/card";
+import { Card, CardContent, CardHeader } from "@/componentes/ui/card";
 import { calcularImc } from "@/lib/antropometria";
 import { fechaEnZona, formatearFechaHora, horaEnZona, hoyEnZona } from "@/lib/fechas";
 import { cn } from "@/lib/utilidades";
@@ -36,8 +39,7 @@ export default async function PaginaMediciones({ params }: PageProps<"/panel/pac
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">Registros</h2>
+      <EncabezadoPagina nivel={2} titulo="Mediciones" descripcion="Seguí la evolución de sus medidas y consultá cada registro." acciones={
         <VentanaFormulario icono={<Plus aria-hidden="true" />} etiqueta="Registrar medición" titulo="Nueva medición" descripcion="El IMC se calcula con peso y talla.">
           <FormularioMedicion
             pacienteId={paciente.id}
@@ -45,11 +47,11 @@ export default async function PaginaMediciones({ params }: PageProps<"/panel/pac
             horaPredeterminada={horaEnZona(contexto.consultorio.zonaHoraria)}
           />
         </VentanaFormulario>
-      </div>
+      } />
 
       <Card>
         <CardHeader>
-          <CardTitle>Evolución del peso</CardTitle>
+          <TituloTarjeta icono={ChartNoAxesCombined}>Evolución del peso</TituloTarjeta>
         </CardHeader>
         <CardContent>
           {puntosPeso.length === 0 ? (
@@ -62,7 +64,7 @@ export default async function PaginaMediciones({ params }: PageProps<"/panel/pac
 
       <Card>
         <CardHeader>
-          <CardTitle>Historial</CardTitle>
+          <TituloTarjeta icono={History}>Historial de mediciones</TituloTarjeta>
         </CardHeader>
         <CardContent>
           {mediciones.length === 0 ? (
@@ -86,7 +88,7 @@ export default async function PaginaMediciones({ params }: PageProps<"/panel/pac
                   <li
                     key={medicion.id}
                     className={cn(
-                      "grid grid-cols-2 items-center gap-x-4 gap-y-2 border-b py-3 text-sm last:border-0 sm:gap-3",
+                      "grid grid-cols-2 items-center gap-x-4 gap-y-2 border-b py-4 text-sm last:border-0 sm:gap-3",
                       COLUMNAS_MEDICION,
                     )}
                   >

@@ -1,3 +1,4 @@
+import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarDays, CalendarPlus, ArrowUpRight } from "lucide-react";
@@ -17,26 +18,27 @@ export default async function PaginaTurnosPaciente({ params }: PageProps<"/panel
   const turnos = await listarTurnosDelPaciente(cliente, contexto.consultorio.id, paciente.id);
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
+    <div className="space-y-6">
+      <EncabezadoPagina nivel={2} titulo="Turnos" descripcion="Consultá las próximas citas y el historial de consultas." acciones={
         <Button asChild>
           <Link href={`/panel/agenda/nuevo?paciente=${paciente.id}`}>
             <CalendarPlus aria-hidden="true" />
             Agendar turno
           </Link>
         </Button>
-      </div>
+      } />
       {turnos.length === 0 ? (
         <EstadoVacio icono={CalendarDays} titulo="Sin turnos" descripcion="Agendá la primera consulta para este paciente." />
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y overflow-hidden rounded-2xl border bg-card">
           {turnos.map((turno) => (
-            <li key={turno.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-              <div>
-                <p className="font-medium">{formatearFechaHora(new Date(turno.inicio), contexto.consultorio.zonaHoraria)}</p>
-                <p className="text-sm text-muted-foreground">{ETIQUETAS_TIPO_CONSULTA[turno.tipo]}</p>
+            <li key={turno.id} className="flex flex-wrap items-center justify-between gap-4 p-4 sm:px-6 sm:py-5">
+              <div className="flex min-w-0 items-start gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"><CalendarDays className="size-4" aria-hidden="true" /></span>
+                <div className="min-w-0"><p className="font-medium wrap-anywhere">{formatearFechaHora(new Date(turno.inicio), contexto.consultorio.zonaHoraria)}</p>
+                <p className="text-sm text-muted-foreground">{ETIQUETAS_TIPO_CONSULTA[turno.tipo]}</p></div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex w-full items-center justify-between gap-3 sm:w-auto">
                 <InsigniaTurno estado={turno.estado} />
                 <Button asChild variant="ghost" size="sm">
                   <Link href={`/panel/agenda/${turno.id}`}>

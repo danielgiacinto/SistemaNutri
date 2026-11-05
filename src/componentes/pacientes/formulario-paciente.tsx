@@ -67,7 +67,7 @@ export function FormularioPaciente(propiedades: PropiedadesAlta | PropiedadesEdi
   return (
     <form onSubmit={alEnviar} noValidate>
       <FieldGroup>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 [&>*]:min-w-0 sm:grid-cols-2">
           <CampoTexto
             id="paciente-nombre"
             etiqueta="Nombre"
@@ -83,7 +83,7 @@ export function FormularioPaciente(propiedades: PropiedadesAlta | PropiedadesEdi
             {...formulario.register("apellido")}
           />
         </div>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 [&>*]:min-w-0 sm:grid-cols-2">
           <CampoTexto
             id="paciente-correo"
             etiqueta="Correo (opcional)"
@@ -102,7 +102,7 @@ export function FormularioPaciente(propiedades: PropiedadesAlta | PropiedadesEdi
             {...formulario.register("telefono")}
           />
         </div>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 [&>*]:min-w-0 sm:grid-cols-2">
           <CampoTexto
             id="paciente-documento"
             etiqueta="Documento (opcional)"
@@ -143,7 +143,7 @@ export function FormularioPaciente(propiedades: PropiedadesAlta | PropiedadesEdi
           error={errores.notasAdministrativas?.message}
           {...formulario.register("notasAdministrativas")}
         />
-        <div className="flex justify-end">
+        <div className="flex justify-end border-t pt-5 [&>button]:w-full sm:[&>button]:w-auto">
           <BotonEnvio pendiente={pendiente} textoPendiente={esEdicion ? "Guardando…" : "Registrando…"} icono={esEdicion ? Save : UserPlus} size="lg">
             {esEdicion ? "Guardar cambios" : "Registrar paciente"}
           </BotonEnvio>

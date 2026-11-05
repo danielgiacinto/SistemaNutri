@@ -43,6 +43,15 @@ async function Contenido() {
           <FormularioDesafio />
         </VentanaFormulario>
       } />
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        {[{ etiqueta: "Desafíos", valor: desafios.length, icono: HeartHandshake }, { etiqueta: "Publicados", valor: desafios.filter((desafio) => desafio.estado === "publicado").length, icono: Users }, { etiqueta: "Borradores", valor: desafios.filter((desafio) => desafio.estado === "borrador").length, icono: CalendarDays }].map(({ etiqueta, valor, icono: Icono }) => (
+          <div key={etiqueta} className="min-w-0 rounded-2xl border bg-card p-3 sm:p-5">
+            <span className="mb-3 flex size-9 items-center justify-center rounded-xl bg-accent text-accent-foreground"><Icono className="size-4" aria-hidden="true" /></span>
+            <p className="text-2xl font-bold tabular-nums sm:text-3xl">{valor}</p>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">{etiqueta}</p>
+          </div>
+        ))}
+      </div>
       {desafios.length === 0 ? (
         <EstadoVacio
           icono={HeartHandshake}
@@ -51,11 +60,11 @@ async function Contenido() {
         />
       ) : (
         desafios.map((desafio) => (
-          <article key={desafio.id} className="space-y-4 rounded-2xl border bg-card p-5">
+          <article key={desafio.id} className="space-y-5 rounded-2xl border bg-card p-4 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-semibold wrap-anywhere">{desafio.titulo}</h2>
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"><HeartHandshake className="size-4" aria-hidden="true" /></span><h2 className="min-w-0 text-lg font-semibold wrap-anywhere">{desafio.titulo}</h2>
                   <Badge variant={desafio.estado === "publicado" ? "default" : desafio.estado === "borrador" ? "secondary" : "outline"}>{ETIQUETA_ESTADO[desafio.estado]}</Badge>
                 </div>
                 <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
@@ -67,7 +76,7 @@ async function Contenido() {
             </div>
             <p className="text-sm leading-relaxed wrap-anywhere whitespace-pre-wrap">{desafio.consigna}</p>
             {desafio.actividades_comunidad.length > 0 && (
-              <ul className="space-y-3 rounded-xl border bg-muted/20 p-4">
+              <ul className="divide-y rounded-xl border bg-muted/20 px-4 [&>li]:py-4">
                 {desafio.actividades_comunidad.map((actividad) => (
                   <li key={actividad.id} className="flex items-start justify-between gap-3">
                     <div className="min-w-0">

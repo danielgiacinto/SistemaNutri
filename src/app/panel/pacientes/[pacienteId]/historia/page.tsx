@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ClipboardList, ArrowUpRight, ClipboardPen } from "lucide-react";
+import { ClipboardList, ArrowUpRight, ClipboardPen, Scale, Target, CalendarDays, Salad } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { obtenerLineaDeTiempo } from "@/servicios/linea-tiempo";
 import { listarTurnosDelPaciente } from "@/servicios/turnos";
@@ -23,6 +23,8 @@ const ETIQUETA_TIPO = {
   plan: "Plan",
 };
 
+const ICONOS_TIPO = { evolucion: ClipboardPen, medicion: Scale, objetivo: Target, turno: CalendarDays, plan: Salad };
+
 export default async function PaginaHistoria({ params }: PageProps<"/panel/pacientes/[pacienteId]/historia">) {
   const { pacienteId } = await params;
   const { paciente, contexto, cliente } = await requerirPacienteDelConsultorio(pacienteId);
@@ -31,7 +33,7 @@ export default async function PaginaHistoria({ params }: PageProps<"/panel/pacie
 
   return (
     <div className="space-y-6">
-      <EncabezadoPagina
+      <EncabezadoPagina nivel={2}
         titulo="Historia clínica"
         descripcion="Evoluciones, mediciones, objetivos y turnos."
         acciones={
@@ -53,36 +55,39 @@ export default async function PaginaHistoria({ params }: PageProps<"/panel/pacie
           descripcion="Registrá una evolución, una medición o un turno para construir la línea de tiempo."
         />
       ) : (
-        <ol className="space-y-4">
-          {eventos.map((evento) => (
-            <li key={evento.id} className="rounded-2xl border bg-card p-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <Badge variant="outline">{ETIQUETA_TIPO[evento.tipo]}</Badge>
-                <time className="text-xs text-muted-foreground" dateTime={evento.instante}>
-                  {formatearFechaHora(new Date(evento.instante), contexto.consultorio.zonaHoraria)}
-                </time>
-              </div>
-              <h2 className="mt-1 font-semibold">{evento.titulo}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{evento.resumen}</p>
-              {evento.destacado && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {evento.tipo === "turno"
-                    ? ETIQUETAS_ESTADO_TURNO[evento.destacado as keyof typeof ETIQUETAS_ESTADO_TURNO] ?? evento.destacado
-                    : evento.tipo === "objetivo"
-                      ? ETIQUETAS_ESTADO_OBJETIVO[evento.destacado as keyof typeof ETIQUETAS_ESTADO_OBJETIVO] ?? evento.destacado
-                      : evento.destacado}
-                </p>
-              )}
-              {evento.href && (
-                <Button asChild variant="ghost" size="sm" className="mt-2 px-0">
-                  <Link href={evento.href}>
-                    <ArrowUpRight aria-hidden="true" />
-                    Ver detalle
-                  </Link>
-                </Button>
-              )}
-            </li>
-          ))}
+        <ol className="relative space-y-4 border-l border-border pl-5 sm:pl-8">
+          {eventos.map((evento) => {
+            const Icono = ICONOS_TIPO[evento.tipo];
+            return (
+              <li key={evento.id} className="relative min-w-0 space-y-2 rounded-2xl border bg-card p-4 sm:p-5"><span className="absolute -left-8 top-5 flex size-6 items-center justify-center rounded-full border bg-accent text-accent-foreground sm:-left-11"><Icono className="size-3.5" aria-hidden="true" /></span>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <Badge variant="outline">{ETIQUETA_TIPO[evento.tipo]}</Badge>
+                  <time className="text-xs text-muted-foreground" dateTime={evento.instante}>
+                    {formatearFechaHora(new Date(evento.instante), contexto.consultorio.zonaHoraria)}
+                  </time>
+                </div>
+                <h2 className="mt-1 font-semibold wrap-anywhere">{evento.titulo}</h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground wrap-anywhere">{evento.resumen}</p>
+                {evento.destacado && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {evento.tipo === "turno"
+                      ? ETIQUETAS_ESTADO_TURNO[evento.destacado as keyof typeof ETIQUETAS_ESTADO_TURNO] ?? evento.destacado
+                      : evento.tipo === "objetivo"
+                        ? ETIQUETAS_ESTADO_OBJETIVO[evento.destacado as keyof typeof ETIQUETAS_ESTADO_OBJETIVO] ?? evento.destacado
+                        : evento.destacado}
+                  </p>
+                )}
+                {evento.href && (
+                  <Button asChild variant="ghost" size="sm" className="mt-2 px-0">
+                    <Link href={evento.href}>
+                      <ArrowUpRight aria-hidden="true" />
+                      Ver detalle
+                    </Link>
+                  </Button>
+                )}
+              </li>
+            );
+          })}
         </ol>
       )}
     </div>

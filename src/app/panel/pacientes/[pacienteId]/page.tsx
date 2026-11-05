@@ -1,3 +1,4 @@
+import { TituloTarjeta } from "@/componentes/comunes/titulo-tarjeta";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -8,7 +9,7 @@ import { ultimaMedicion } from "@/servicios/mediciones";
 import { listarEvoluciones } from "@/servicios/evoluciones";
 import { calcularImc } from "@/lib/antropometria";
 import { formatearFechaHora } from "@/lib/fechas";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/componentes/ui/card";
 import { Button } from "@/componentes/ui/button";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { InsigniaObjetivo } from "@/componentes/comunes/insignia-estado";
@@ -35,20 +36,17 @@ async function Contenido({ params }: { params: PageProps<"/panel/pacientes/[paci
   const ultimaEvolucion = evoluciones[0];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="size-4" aria-hidden="true" />
-            Objetivos activos
-          </CardTitle>
+          <TituloTarjeta icono={Target}>Objetivos activos</TituloTarjeta>
         </CardHeader>
         <CardContent className="space-y-3">
           {objetivos.length === 0 ? (
             <p className="text-sm text-muted-foreground">Todavía no hay objetivos en curso.</p>
           ) : (
             objetivos.slice(0, 3).map((objetivo) => (
-              <div key={objetivo.id} className="flex items-start justify-between gap-3">
+              <div key={objetivo.id} className="flex flex-wrap items-start justify-between gap-3 rounded-xl border bg-muted/20 p-4 [&>div]:min-w-0 [&>div]:wrap-anywhere">
                 <div>
                   <p className="font-medium">{objetivo.titulo}</p>
                   {objetivo.descripcion && <p className="text-sm text-muted-foreground">{objetivo.descripcion}</p>}
@@ -68,17 +66,14 @@ async function Contenido({ params }: { params: PageProps<"/panel/pacientes/[paci
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Scale className="size-4" aria-hidden="true" />
-            Última medición
-          </CardTitle>
+          <TituloTarjeta icono={Scale}>Última medición</TituloTarjeta>
           <CardDescription>
             {medicion ? formatearFechaHora(new Date(medicion.registrado_en), contexto.consultorio.zonaHoraria) : "Sin registros"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {medicion ? (
-            <dl className="grid grid-cols-2 gap-2 text-sm">
+            <dl className="grid grid-cols-2 gap-3 text-sm [&>div]:rounded-xl [&>div]:border [&>div]:bg-muted/20 [&>div]:p-4">
               <div>
                 <dt className="text-muted-foreground">Peso</dt>
                 <dd className="text-lg font-semibold tabular-nums">{medicion.peso_kg != null ? `${medicion.peso_kg} kg` : "—"}</dd>
@@ -102,10 +97,7 @@ async function Contenido({ params }: { params: PageProps<"/panel/pacientes/[paci
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ClipboardList className="size-4" aria-hidden="true" />
-            Última evolución
-          </CardTitle>
+          <TituloTarjeta icono={ClipboardList}>Última evolución</TituloTarjeta>
         </CardHeader>
         <CardContent className="space-y-3">
           {ultimaEvolucion ? (
@@ -127,12 +119,9 @@ async function Contenido({ params }: { params: PageProps<"/panel/pacientes/[paci
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarDays className="size-4" aria-hidden="true" />
-            Acciones rápidas
-          </CardTitle>
+          <TituloTarjeta icono={CalendarDays}>Acciones rápidas</TituloTarjeta>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
+        <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 [&_a]:justify-start [&_a]:whitespace-normal">
           <Button asChild>
             <Link href={`/panel/agenda/nuevo?paciente=${paciente.id}`}>
               <CalendarPlus aria-hidden="true" />

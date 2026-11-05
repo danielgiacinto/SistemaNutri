@@ -27,6 +27,24 @@ webhooks de pago/factura, cobertura, recuperación de acceso y conciliación rep
   en 26 archivos y compilación el 5/11/2026. Revisión visual previa de las seis vistas en
   escritorio y móvil; Inicio también revisado a 320 px sin desborde horizontal.
 
+## Ajuste visual de agenda y fichas (5/11/2026)
+
+- Se retocaron las 12 rutas solicitadas: disponibilidad, nuevo turno, nuevo paciente,
+  resumen de ficha, historia, mediciones, objetivos, turnos, planes, visibilidad,
+  edición de paciente y comunidad. No quedaron vistas pendientes de esta lista.
+- Se unificaron encabezados con iconos, tarjetas, acciones, badges y estados vacíos
+  siguiendo Configuración, Plan y facturación, Agenda e Inicio. La historia usa una
+  línea de tiempo; las altas incorporan ayuda lateral y la edición separa el estado.
+- Revisión en el navegador local autenticado: las 12 rutas cargan a 320, 768 y
+  1440 px sin desbordamiento horizontal con los datos disponibles. También se
+  inspeccionaron visualmente las fichas y formularios en móvil y escritorio.
+- `npm run verificar`: lint, tipos y las 202 pruebas en 26 archivos pasan.
+  La compilación de esta sesión falla en Turbopack al iniciar el proceso Node que
+  transforma `globals.css.css` (el proceso termina antes de conectar, código 0).
+  Se reprodujo fuera del sandbox y con terminal interactiva. Queda pendiente
+  completar la compilación de producción; no se modificó la configuración para
+  ocultar el fallo.
+
 ## Cierre de fase 5
 
 El webhook ya existe en `src/app/api/facturacion/mercadopago/route.ts`, con firma,

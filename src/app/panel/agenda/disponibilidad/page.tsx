@@ -1,3 +1,4 @@
+import { TituloTarjeta } from "@/componentes/comunes/titulo-tarjeta";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Ban, Clock } from "lucide-react";
@@ -5,12 +6,11 @@ import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { listarBloqueos, listarHorarios } from "@/servicios/agenda";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
-import { DescripcionConIcono } from "@/componentes/comunes/descripcion-con-icono";
 import { FormularioHorario } from "@/componentes/agenda/formulario-horario";
 import { FormularioBloqueo } from "@/componentes/agenda/formulario-bloqueo";
 import { VentanaFormulario } from "@/componentes/comunes/ventana-formulario";
 import { BotonEliminarBloqueo, BotonEliminarHorario } from "@/componentes/agenda/boton-eliminar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/componentes/ui/card";
 import { DIAS_SEMANA } from "@/configuracion/clinica";
 import { formatearFechaHora, hoyEnZona, inicioDelDia } from "@/lib/fechas";
 import { Skeleton } from "@/componentes/ui/skeleton";
@@ -38,25 +38,25 @@ async function Contenido() {
     <div className="space-y-8">
       <EncabezadoPagina
         titulo="Horarios y bloqueos"
-        descripcion="Sin franjas, se puede agendar a cualquier hora."
+        descripcion="Organizá tu semana de atención y reservá los momentos en los que no estás disponible."
         volverA="/panel/agenda"
         etiquetaVolver="Agenda"
       />
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Horarios de atención</CardTitle>
-            <CardDescription>
-              <DescripcionConIcono icono={Clock}>Hora local del consultorio ({contexto.consultorio.zonaHoraria}).</DescripcionConIcono>
+            <TituloTarjeta icono={Clock}>Horarios de atención</TituloTarjeta>
+            <CardDescription className="sm:pl-12">
+              Hora local del consultorio ({contexto.consultorio.zonaHoraria}).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {horarios.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Todavía no hay franjas. La agenda no restringe el horario.</p>
+              <div className="rounded-xl border border-dashed bg-muted/20 p-5"><p className="font-medium">Tu agenda está abierta</p><p className="mt-1 text-sm text-muted-foreground">Agregá franjas para definir tus días y horarios de atención. Sin franjas, podés agendar a cualquier hora.</p></div>
             ) : (
               <ul className="divide-y rounded-xl border">
                 {horarios.map((horario) => (
-                  <li key={horario.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                  <li key={horario.id} className="flex items-center justify-between gap-3 px-4 py-4 text-sm [&>span]:min-w-0 [&>span]:wrap-anywhere">
                     <span>
                       {DIAS_SEMANA.find((dia) => dia.iso === horario.dia_semana)?.etiqueta} {horario.hora_inicio.slice(0, 5)} –{" "}
                       {horario.hora_fin.slice(0, 5)}
@@ -73,18 +73,18 @@ async function Contenido() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Bloqueos</CardTitle>
-            <CardDescription>
-              <DescripcionConIcono icono={Ban}>Vacaciones, reuniones u otros intervalos no reservables.</DescripcionConIcono>
+            <TituloTarjeta icono={Ban}>Bloqueos</TituloTarjeta>
+            <CardDescription className="sm:pl-12">
+              Vacaciones, reuniones u otros intervalos no reservables.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {bloqueos.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No hay bloqueos vigentes.</p>
+              <div className="rounded-xl border border-dashed bg-muted/20 p-5"><p className="font-medium">Sin bloqueos vigentes</p><p className="mt-1 text-sm text-muted-foreground">Cuando necesites reservar tiempo para vos, agregá un bloqueo.</p></div>
             ) : (
               <ul className="divide-y rounded-xl border">
                 {bloqueos.map((bloqueo) => (
-                  <li key={bloqueo.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                  <li key={bloqueo.id} className="flex items-center justify-between gap-3 px-4 py-4 text-sm [&>span]:min-w-0 [&>span]:wrap-anywhere">
                     <span>
                       {formatearFechaHora(new Date(bloqueo.inicio), contexto.consultorio.zonaHoraria)} –{" "}
                       {formatearFechaHora(new Date(bloqueo.fin), contexto.consultorio.zonaHoraria)}

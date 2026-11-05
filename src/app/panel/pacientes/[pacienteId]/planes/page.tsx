@@ -1,3 +1,5 @@
+import { ArrowUpRight } from "lucide-react";
+import { Badge } from "@/componentes/ui/badge";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus, Salad } from "lucide-react";
@@ -17,7 +19,7 @@ export default async function PaginaPlanesPaciente({ params }: PageProps<"/panel
 
   return (
     <div className="space-y-6">
-      <EncabezadoPagina
+      <EncabezadoPagina nivel={2}
         titulo="Planes alimentarios"
         descripcion="El borrador se puede cambiar tranquilo. El paciente ve solo la versión que publiques."
         acciones={
@@ -44,12 +46,12 @@ export default async function PaginaPlanesPaciente({ params }: PageProps<"/panel
           }
         />
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="grid gap-4 xl:grid-cols-2">
           {planes.map((plan) => (
             <li key={plan.id}>
-              <Link href={`/panel/pacientes/${paciente.id}/planes/${plan.id}`} className="block px-4 py-3 hover:bg-muted/40">
-                <p className="font-medium">{plan.titulo}</p>
-                <p className="text-sm text-muted-foreground">{estadoDelPlan(plan.cambios_sin_publicar, plan.planes_publicaciones.length)}</p>
+              <Link href={`/panel/pacientes/${paciente.id}/planes/${plan.id}`} className="group flex h-full items-start gap-3 rounded-2xl border bg-card p-5 transition-colors outline-none hover:border-primary/30 hover:bg-accent/20 focus-visible:ring-2 focus-visible:ring-ring">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"><Salad className="size-5" aria-hidden="true" /></span><div className="min-w-0 flex-1 space-y-2"><h2 className="font-semibold wrap-anywhere">{plan.titulo}</h2>
+                <Badge variant={plan.planes_publicaciones.length ? "secondary" : "outline"} className="h-auto whitespace-normal">{estadoDelPlan(plan.cambios_sin_publicar, plan.planes_publicaciones.length)}</Badge></div><ArrowUpRight className="size-4 shrink-0 text-muted-foreground group-hover:text-primary" aria-hidden="true" />
               </Link>
             </li>
           ))}

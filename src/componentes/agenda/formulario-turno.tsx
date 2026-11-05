@@ -84,7 +84,7 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
             />
           )}
         />
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid gap-5 [&>*]:min-w-0 sm:grid-cols-3">
           <Controller
             control={formulario.control}
             name="fecha"
@@ -131,7 +131,7 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
             )}
           />
         </div>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 [&>*]:min-w-0 sm:grid-cols-2">
           <Controller
             control={formulario.control}
             name="tipo"
@@ -171,7 +171,7 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
           error={errores.notasAdministrativas?.message}
           {...formulario.register("notasAdministrativas")}
         />
-        <div className="flex justify-end">
+        <div className="flex justify-end border-t pt-5 [&>button]:w-full sm:[&>button]:w-auto">
           <BotonEnvio pendiente={pendiente} textoPendiente="Guardando…" icono={modo === "alta" ? CalendarPlus : Save} size="lg">
             {modo === "alta" ? "Agendar turno" : "Guardar cambios"}
           </BotonEnvio>
