@@ -27,7 +27,7 @@ Rechazos/renovaciones están cubiertos por pruebas automáticas; falta su valida
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
 | 4 | Planes alimentarios con versiones | ✅ Listo para probar |
-| 5 | Suscripciones, pagos y administración | Circuito principal validado con cuentas ficticias: cancelación, autorización, cobro aprobado, cobertura, acceso e idempotencia. Cron diario observado; Gmail SMTP configurado y correo de prueba recibido. Falta observar un aviso automático y los eventos externos de rechazo y renovación. |
+| 5 | Suscripciones, pagos y administración | Circuito principal validado con cuentas ficticias: cancelación, autorización, cobro aprobado, cobertura, acceso e idempotencia. Cron diario observado; correo comercial automático enviado desde Vercel. En curso: rechazo y renovación externos con la cuenta de Daniel. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 
 ### Qué se puede probar ahora (profesional)

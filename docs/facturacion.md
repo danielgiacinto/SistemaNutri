@@ -81,7 +81,11 @@ la autenticación respondió correctamente y un único mensaje de prueba a la mi
 casilla remitente fue aceptado por Gmail y confirmado por el usuario en Recibidos.
 Vercel Production tiene ambas variables privadas y sirve el commit `a27e053` en estado
 `READY`. Esta prueba verifica SMTP y entrega a esa casilla; el primer aviso disparado
-automáticamente por un evento comercial sigue pendiente de observarse.
+automáticamente por un evento comercial se verificó después desde el endpoint público:
+la primera ejecución falló por autenticación SMTP en Vercel; tras recargar las variables
+privadas y corregir el diagnóstico seguro, la respuesta fue HTTP 200 con un aviso
+`cobro_confirmado` enviado y cero fallos. El registro se generó a partir del pago
+verificado `187766047476`, sin insertar pagos ficticios en el historial.
 
 ## Mercado Pago
 
@@ -224,9 +228,18 @@ suscripción sin fallos y mantuvo un único pago y la misma cobertura. Esto vali
 circuito principal con cuentas ficticias. Rechazo, renovación y recuperación tienen
 pruebas automatizadas, pero todavía no se observaron sus eventos externos de prueba.
 No se afirma haber probado cobros con cuentas reales ni habilitado cobros en producción.
-El usuario decidió no crear otra cuenta de prueba ni modificar la suscripción paga
-de Daniel para provocar un rechazo. Su próximo ciclo programado es el 4/12/2026;
-el rechazo y la renovación reales del proveedor no se han observado todavía.
+El usuario autorizó posteriormente modificar libremente la suscripción de Daniel
+para estas pruebas, manteniendo la decisión de no crear otra cuenta. El vendedor
+se verificó con la etiqueta `test_user` antes de operar. Cambiar `start_date` por PUT
+respondió 200, pero no adelantó el cobro: no se considera una renovación probada.
+La autorización `a067fa49aca34c64b78446b444e9a7eb` quedó cancelada en Mercado Pago.
+El intento de devolver su pago ficticio respondió 401 (`Unauthorized use of live
+credentials`), por lo que el pago permanece aprobado y la cobertura se conserva.
+Se preparó un checkout inmediato, exclusivamente para QA y sin diferirlo hasta la
+cobertura anterior: `718b659c2a654a2b8b3bf8d4da484d57`. No se alteraron pagos ni se
+crearon usuarios. Está pendiente completar su autorización con `OTHE` y distinguir
+un rechazo del alta de un cobro recurrente rechazado. El rechazo y la renovación
+reales del proveedor no se han acreditado todavía.
 
 ### Diagnóstico del bloqueo observado
 
