@@ -991,6 +991,30 @@ export type Database = {
         }
         Relationships: []
       }
+      correos_comerciales: {
+        Row: {
+          id: string; consultorio_id: string; clave_evento: string; tipo: string
+          destinatario: string; asunto: string; texto: string; intentos: number
+          siguiente_intento_en: string; reclamado_en: string | null
+          enviado_en: string | null; mensaje_id: string | null
+          ultimo_error: string | null; creado_en: string
+        }
+        Insert: {
+          id?: string; consultorio_id: string; clave_evento: string; tipo: string
+          destinatario: string; asunto: string; texto: string; intentos?: number
+          siguiente_intento_en?: string; reclamado_en?: string | null
+          enviado_en?: string | null; mensaje_id?: string | null
+          ultimo_error?: string | null; creado_en?: string
+        }
+        Update: {
+          id?: string; consultorio_id?: string; clave_evento?: string; tipo?: string
+          destinatario?: string; asunto?: string; texto?: string; intentos?: number
+          siguiente_intento_en?: string; reclamado_en?: string | null
+          enviado_en?: string | null; mensaje_id?: string | null
+          ultimo_error?: string | null; creado_en?: string
+        }
+        Relationships: []
+      }
       desafios: {
         Row: {
           consigna: string
@@ -1199,6 +1223,10 @@ export type Database = {
       reclamar_conciliaciones: {
         Args: { p_limite?: number }
         Returns: { id: string; mp_id: string; conciliacion_cursor: number; conciliacion_intento_en: string }[]
+      }
+      reclamar_correos_comerciales: {
+        Args: { p_limite?: number }
+        Returns: Database["public"]["Tables"]["correos_comerciales"]["Row"][]
       }
       resumen_comercial: {
         Args: never

@@ -70,8 +70,11 @@ producto esté listo y la app tenga un despliegue público HTTPS de pruebas (por
 Sin el token, el secreto del webhook y `SUPABASE_SECRET_KEY`, no se acepta un webhook.
 La clave pública y el SDK de tarjeta ya no son necesarios. No se simula un cobro.
 
-Los correos comerciales (aviso de vencimiento, cobro rechazado) no se envían todavía.
-El aviso se muestra en Facturación. El correo de Auth sigue siendo solo el de la cuenta.
+Los correos de autenticación siguen usando las plantillas de Supabase Auth. Los avisos
+comerciales se preparan en una cola privada y se envían por Gmail SMTP al ejecutar la
+conciliación diaria, solo si están configuradas las variables del servidor.
+La clave única por consultorio y evento evita repetir un aviso al volver a ejecutar el cron.
+La entrega SMTP debe verificarse en la cuenta remitente y destinataria antes de darla por operativa.
 
 ## Mercado Pago
 
@@ -172,9 +175,13 @@ y [webhooks](https://www.mercadopago.com.ar/developers/es/docs/your-integrations
 - Avisos de inicio/fin próximo de prueba, falta de autorización, cobertura confirmada,
   gracia, vencimiento, cancelación y suspensión en Inicio/Facturación. Los informativos
   descartados se recuerdan durante la sesión del navegador por evento y consultorio;
-  los bloqueos no se pueden ocultar. El correo comercial sigue pendiente: las credenciales
-  SMTP configuradas dentro de Supabase Auth no habilitan por sí mismas un emisor transaccional
-  del servidor. No se simulan esos envíos ni se reutilizan correos de confirmación para facturación.
+  los bloqueos no se pueden ocultar. Los correos comerciales de prueba próxima a vencer,
+  prueba vencida, cobro aprobado y cobro rechazado se preparan desde datos verificados
+  para la cola privada `correos_comerciales`. El cron los envía por Gmail SMTP con
+  `CORREO_COMERCIAL_USUARIO` y `CORREO_COMERCIAL_CLAVE_APLICACION`. Las credenciales de
+  SMTP configuradas dentro de Supabase Auth no habilitan por sí mismas este emisor.
+  No se incluyen datos clínicos. Los fallos quedan pendientes para reintento con un máximo
+  de cinco intentos; una aceptación SMTP no garantiza la entrega final al buzón.
 
 ### Verificación técnica del 4/11/2026
 
@@ -188,7 +195,9 @@ para la suscripción actual. No se da por aprobado un cobro mensual a partir de 
 La ejecución autenticada del endpoint público de conciliación respondió 200, con una
 suscripción revisada, cero fallos y ninguna página pendiente. Sin secreto respondió 401.
 Se comprobaron en la base la fecha de conciliación y el error nulo. El disparo diario
-de Vercel está configurado, pero aún no se observó su primera ejecución programada.
+de Vercel está configurado. El 5/11/2026 se observó `conciliada_en` a las
+06:59:24 UTC, compatible con la ejecución diaria programada; no hubo errores de
+conciliación. La cola SMTP aún no tenía credenciales configuradas en ese momento.
 
 El usuario confirmó **Cancelar renovación** desde su cuenta de prueba el 4/11/2026.
 La consulta posterior confirmó `cancelled`, solicitud y cancelación con sus fechas,

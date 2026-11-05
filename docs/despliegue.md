@@ -12,6 +12,8 @@
 | `MERCADOPAGO_CORREO_PAGADOR_PRUEBA` | Solo desarrollo/pruebas | Correo del comprador de prueba, distinto del vendedor. En la pasarela se debe ingresar con ese comprador. Quitar al pasar a cobros reales. |
 | `MERCADOPAGO_WEBHOOK_SECRETO` | Solo servidor | Clave secreta de Webhooks de la misma aplicación de Mercado Pago que emite el Access Token. Cargar en Vercel y volver a desplegar. |
 | `CRON_SECRET` | Solo servidor, Vercel Production | Secreto aleatorio para `/api/facturacion/conciliar`. Vercel lo envía como `Authorization: Bearer …`. Nunca exponer en el cliente ni en URLs. |
+| `CORREO_COMERCIAL_USUARIO` | Solo servidor | Cuenta Gmail remitente de avisos de facturación, por ejemplo `nutri.notificacion@gmail.com`. |
+| `CORREO_COMERCIAL_CLAVE_APLICACION` | Solo servidor | Contraseña de aplicación de Google con verificación en dos pasos; nunca la contraseña habitual. Configurar en `.env.local` y Vercel Production sin versionarla. |
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_*` | `.env.local` | Credenciales de Google para Supabase local. |
 
 Secretos de GitHub Actions para aplicar migraciones (`.github/workflows/migraciones.yml`):
