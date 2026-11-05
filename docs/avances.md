@@ -1,6 +1,6 @@
 # Avances y criterios de cierre del MVP
 
-Actualizado el **4 de noviembre de 2026**. App en localhost y en
+Actualizado el **5 de noviembre de 2026**. App en localhost y en
 `https://nutrisfera.vercel.app`, con Supabase hospedado de desarrollo.
 Las fases 1 a 4 y 6 están implementadas para probar. El circuito principal de la
 fase 5 quedó validado con cuentas ficticias: cancelación, nuevo cobro aprobado,
@@ -23,8 +23,8 @@ webhooks de pago/factura, cobertura, recuperación de acceso y conciliación rep
   Historias y Planes con filas completas pulsables y acciones en estados vacíos;
   Comunidad con estados y metadatos más claros; Configuración con accesos por sección.
   Tarjetas, filtros, iconos y espaciados mantienen una línea visual común.
-- **Validación técnica:** `npm run verificar` completo, con lint, tipos, 201 pruebas
-  en 25 archivos y compilación el 4/11/2026. Revisión visual previa de las seis vistas en
+- **Validación técnica:** `npm run verificar` completo, con lint, tipos, 202 pruebas
+  en 26 archivos y compilación el 5/11/2026. Revisión visual previa de las seis vistas en
   escritorio y móvil; Inicio también revisado a 320 px sin desborde horizontal.
 
 ## Cierre de fase 5
@@ -59,9 +59,12 @@ Falta demostrar el recorrido completo con notificaciones externas:
 - [x] Reconciliación repetida sobre ese pago: una suscripción revisada, cero fallos,
   un solo pago y la misma fecha de cobertura. El usuario confirmó acceso a Inicio
   y Pacientes desde su navegador tras la acreditación.
-- [ ] Validar también rechazo, renovación y recuperación mediante notificaciones
-  externas del proveedor. Sus transiciones, idempotencia y permisos ya tienen
-  cobertura en las pruebas automáticas; no se presentan como pruebas externas realizadas.
+- [x] Rechazo externo `186835393717` y recuperación mediante nuevo pago aprobado
+  `187895829450`, con facturas vinculadas y webhooks sin errores. El usuario confirmó
+  el bloqueo previo; el servidor recuperó `activo` y cobertura al 5/12/2026.
+  El vencimiento previo fue simulado y auditado; los pagos no se modificaron.
+- [ ] Observar la renovación periódica de una misma autorización. Las pruebas
+  automáticas cubren sus transiciones; el nuevo checkout aprobado no prueba esa recurrencia.
 - [x] Cancelación de renovación visible para el titular, con confirmación y motivo.
   Solicitud auditada desde la identidad; confirmación por API y recuperación por cron
   si falla el proveedor. Conserva la prueba/cobertura pagada. El usuario completó la
@@ -83,14 +86,16 @@ Falta demostrar el recorrido completo con notificaciones externas:
   continuar manualmente desde Facturación o Administración. En el despliegue público:
   401 sin secreto y 200 con secreto, una suscripción revisada y cero fallos; cursor,
   fecha de éxito y error nulo confirmados en Supabase. La ejecución programada futura
-  queda configurada; no se afirma haber observado todavía el disparo diario de Vercel.
+  se observó el 5/11/2026 a las 06:59 UTC, sin errores de conciliación.
 - [x] Cobertura por ciclo de factura, independiente del orden de llegada. Devoluciones
   retiran el período acreditado; las repeticiones no suman meses. Pruebas PostgreSQL.
 - [x] Bloqueo comercial centralizado en RLS y funciones clínicas, manteniendo lectura
   administrativa de facturación y lectura del paciente de lo previamente compartido.
   La comunidad queda en solo lectura cuando el consultorio pierde cobertura o se suspende.
-- [ ] Completar los avisos comerciales previstos por correo; hoy solo existen avisos
-  en la interfaz y correos de autenticación.
+- [x] Cola privada y Gmail SMTP para prueba próxima a vencer/vencida y cobros
+  aprobados/rechazados. Entrega a Recibidos confirmada y envíos de eventos comerciales
+  verificados desde Vercel, con deduplicación. Los demás avisos comerciales siguen
+  disponibles en la interfaz; no se afirma que todos tengan correo.
 
 Registrar el resultado de esas pruebas y sus limitaciones antes de marcar fase 5
 como cerrada. Una compilación o un webhook simulado no sustituyen esta validación.

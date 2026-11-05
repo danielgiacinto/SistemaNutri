@@ -6,7 +6,7 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
-Última actualización: 4 de noviembre de 2026. Las fases **1 a 4 y 6** están
+Última actualización: 5 de noviembre de 2026. Las fases **1 a 4 y 6** están
 implementadas para probar en desarrollo: registro, clínica, portal, planes alimentarios
 y desafíos de Comunidad. La aplicación corre en **localhost** y en el despliegue
 público de pruebas **https://nutrisfera.vercel.app**, con Supabase hospedado de desarrollo.
@@ -19,7 +19,9 @@ El webhook firmado de autorización ya se comprobó en Vercel. Están implementa
 conciliación diaria, la cancelación de renovación, el detalle comercial y el bloqueo
 clínico desde la base. El 4/11/2026 se validaron cancelación, nuevo cobro de prueba
 aprobado por ARS 15.999, cobertura hasta el 4/12/2026 y recuperación del acceso.
-Rechazos/renovaciones están cubiertos por pruebas automáticas; falta su validación externa.
+El 5/11/2026 también se verificaron un cobro rechazado, su correo comercial y un nuevo
+cobro aprobado que recuperó el acceso tras un vencimiento simulado y auditado.
+La renovación periódica de una misma autorización todavía no se observó externamente.
 
 | Fase | Contenido | Estado |
 | --- | --- | --- |
@@ -27,7 +29,7 @@ Rechazos/renovaciones están cubiertos por pruebas automáticas; falta su valida
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
 | 4 | Planes alimentarios con versiones | ✅ Listo para probar |
-| 5 | Suscripciones, pagos y administración | Circuito principal validado con cuentas ficticias: cancelación, autorización, cobro aprobado, cobertura, acceso e idempotencia. Cron diario observado; correo comercial automático enviado desde Vercel. En curso: rechazo y renovación externos con la cuenta de Daniel. |
+| 5 | Suscripciones, pagos y administración | Cobros aprobados/rechazados, webhooks, correos, cancelación y recuperación de acceso validados con cuentas ficticias. Queda observar la renovación periódica de una misma autorización. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 
 ### Qué se puede probar ahora (profesional)

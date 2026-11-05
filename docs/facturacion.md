@@ -239,7 +239,24 @@ Se preparó un checkout inmediato, exclusivamente para QA y sin diferirlo hasta 
 cobertura anterior: `718b659c2a654a2b8b3bf8d4da484d57`. No se alteraron pagos ni se
 crearon usuarios. Está pendiente completar su autorización con `OTHE` y distinguir
 un rechazo del alta de un cobro recurrente rechazado. El rechazo y la renovación
-reales del proveedor no se han acreditado todavía.
+reales del proveedor no se habían acreditado en ese punto.
+
+El usuario completó `OTHE` el 5/11/2026: pago `186835393717`, ARS 15.999,
+`rejected / cc_rejected_other_reason`, vinculado a factura recurrente `7033636193`.
+Los webhooks `payment` y `subscription_authorized_payment` se procesaron sin errores.
+Nutrisfera lo guardó como rechazado, sin período de cobertura, y el aviso comercial
+de rechazo se envió desde Vercel (HTTP 200, un envío, cero fallos). La autorización
+`718b659c2a654a2b8b3bf8d4da484d57` terminó cancelada en el proveedor.
+Para comprobar recuperación se preparó el checkout inmediato
+`3a69efa05326468fb47c3848c98f3552`. La prueba y la cobertura de Daniel se vencieron
+de forma simulada y auditada (`qa.vencimiento_simulado`), sin modificar los pagos.
+El RPC de acceso devolvió `vencido` y el usuario confirmó «acceso suspendido» en la interfaz.
+Después completó `APRO`: pago `187895829450` aprobado por ARS 15.999, factura
+`7033636561`, autorización `3a69efa05326468fb47c3848c98f3552` activa. Los tres tópicos
+se procesaron sin errores. La cobertura se actualizó al 5/12/2026 10:41:32 (Argentina)
+y el RPC devolvió `activo` automáticamente, sin habilitación manual posterior.
+La conciliación pública respondió 200 y envió un correo de cobro confirmado sin fallos.
+Este ajuste es una preparación de QA; no demuestra que haya transcurrido un ciclo mensual.
 
 ### Diagnóstico del bloqueo observado
 
@@ -292,7 +309,9 @@ validada, como se registra en «Verificación técnica del 4/11/2026».
 El endpoint `/api/facturacion/mercadopago` ya valida la firma, consulta la API del
 proveedor y procesa eventos con deduplicación y reintentos. Se verificaron entregas
 firmadas de autorización, pago y factura, además de acreditación y conciliación.
-Quedan validaciones externas de rechazo/renovación y el correo comercial.
+El rechazo, la recuperación por nuevo cobro y los correos comerciales ya se verificaron
+externamente. Queda observar la renovación periódica de una misma autorización;
+reautorizar un checkout y cobrar de inmediato no demuestra esa renovación.
 Los criterios de cierre están en [`avances.md`](avances.md).
 
 Fuentes oficiales para este flujo: [prueba de Suscripciones `pending`](https://www.mercadopago.com.ar/developers/es/news/2023/11/16/Questions-on-how-to-test-your-integration--#Suscripciones),
