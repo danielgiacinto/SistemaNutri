@@ -1,6 +1,6 @@
 import "server-only";
 import type { ClienteSupabase } from "@/lib/supabase/servidor";
-import { enviarCorreoComercial } from "./correo-comercial";
+import { enviarCorreoComercial, codigoErrorCorreo } from "./correo-comercial";
 
 type Aviso = { consultorio_id: string; clave_evento: string; tipo: string; destinatario: string; asunto: string; texto: string };
 
@@ -91,8 +91,10 @@ export async function despacharAvisosComerciales(cliente: ClienteSupabase) {
         .eq("id", aviso.id).eq("reclamado_en", aviso.reclamado_en!);
       if (guardar) throw guardar;
       enviados++;
-    } catch {
-      await cliente.from("correos_comerciales").update({ ultimo_error: "envio_pendiente" }).eq("id", aviso.id);
+    } catch (error) {
+      const codigo = codigoErrorCorreo(error);
+      console.error("[correo_comercial]", { codigo });
+      await cliente.from("correos_comerciales").update({ ultimo_error: codigo }).eq("id", aviso.id);
       fallidos++;
     }
   }
