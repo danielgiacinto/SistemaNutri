@@ -76,6 +76,13 @@ conciliación diaria, solo si están configuradas las variables del servidor.
 La clave única por consultorio y evento evita repetir un aviso al volver a ejecutar el cron.
 La entrega SMTP debe verificarse en la cuenta remitente y destinataria antes de darla por operativa.
 
+El 5/11/2026 se verificó Gmail SMTP con una contraseña de aplicación de 16 caracteres:
+la autenticación respondió correctamente y un único mensaje de prueba a la misma
+casilla remitente fue aceptado por Gmail y confirmado por el usuario en Recibidos.
+Vercel Production tiene ambas variables privadas y sirve el commit `a27e053` en estado
+`READY`. Esta prueba verifica SMTP y entrega a esa casilla; el primer aviso disparado
+automáticamente por un evento comercial sigue pendiente de observarse.
+
 ## Mercado Pago
 
 1. Crear una aplicación en [Tus integraciones](https://www.mercadopago.com.ar/developers/panel/app).
@@ -217,6 +224,9 @@ suscripción sin fallos y mantuvo un único pago y la misma cobertura. Esto vali
 circuito principal con cuentas ficticias. Rechazo, renovación y recuperación tienen
 pruebas automatizadas, pero todavía no se observaron sus eventos externos de prueba.
 No se afirma haber probado cobros con cuentas reales ni habilitado cobros en producción.
+El usuario decidió no crear otra cuenta de prueba ni modificar la suscripción paga
+de Daniel para provocar un rechazo. Su próximo ciclo programado es el 4/12/2026;
+el rechazo y la renovación reales del proveedor no se han observado todavía.
 
 ### Diagnóstico del bloqueo observado
 
