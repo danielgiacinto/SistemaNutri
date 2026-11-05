@@ -1,3 +1,6 @@
+import { consultarEconomiaTurnos } from "@/servicios/finanzas";
+import { estadoEconomico } from "@/tipos/finanzas";
+import { CobroRapido } from "@/componentes/finanzas/cobro-rapido";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -67,16 +70,20 @@ async function ContenidoAgenda({ searchParams }: { searchParams: PageProps<"/pan
     listarBloqueos(cliente, contexto.consultorio.id, rango.desde),
   ]);
 
+  const operaciones = await consultarEconomiaTurnos(cliente,turnos.map(t=>t.id));
   return (
+    <>
     <CalendarioAgenda
       vista={filtro.vista}
       fecha={fecha}
       fechaHoy={fechaHoy}
       horaHoy={horaHoy}
       zonaHoraria={contexto.consultorio.zonaHoraria}
-      turnos={turnos}
+      turnos={turnos.map(t=>({...t,estadoEconomico:estadoEconomico(operaciones.find(o=>o.turno_id===t.id))}))}
       horarios={horarios}
       bloqueos={bloqueos}
     />
+    <section className="grid gap-3 rounded-xl border bg-card p-4" aria-label="Cobro rápido de los turnos"><h2 className="font-semibold">Cobros de esta agenda</h2>{turnos.filter(t=>t.profesional_id===contexto.usuarioId).map(t=><div key={t.id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-sm"><span>{t.pacientes?.nombre} {t.pacientes?.apellido} · {new Date(t.inicio).toLocaleString("es-AR",{timeZone:contexto.consultorio.zonaHoraria})}</span><CobroRapido zona={contexto.consultorio.zonaHoraria} turnoId={t.id} estado={estadoEconomico(operaciones.find(o=>o.turno_id===t.id))}/></div>)}{!turnos.length&&<p className="text-sm text-muted-foreground">Sin turnos en este período.</p>}</section>
+    </>
   );
 }

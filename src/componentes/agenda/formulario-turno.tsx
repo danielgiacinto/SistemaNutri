@@ -23,12 +23,13 @@ type PacienteOpcion = { id: string; nombre: string; apellido: string };
 
 type Propiedades = {
   pacientes: PacienteOpcion[];
+  servicios?: { id: string; nombre: string; precio: number; moneda: string }[];
   duracionPredeterminada: number;
   inicial?: Partial<DatosEdicionTurno>;
   modo: "alta" | "edicion";
 };
 
-export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, modo }: Propiedades) {
+export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, modo, servicios = [] }: Propiedades) {
   const [pendiente, iniciarTransicion] = useTransition();
   const duracionInicial = (DURACIONES_TURNO_MINUTOS as readonly number[]).includes(duracionPredeterminada)
     ? duracionPredeterminada
@@ -39,6 +40,7 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
     defaultValues: {
       turnoId: inicial?.turnoId ?? "",
       pacienteId: inicial?.pacienteId ?? "",
+      servicioId: inicial?.servicioId ?? "",
       fecha: inicial?.fecha ?? "",
       hora: inicial?.hora ?? "09:00",
       duracionMinutos: inicial?.duracionMinutos ?? duracionInicial,
@@ -66,6 +68,13 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
   return (
     <form onSubmit={alEnviar} noValidate>
       <FieldGroup>
+        {modo === "alta" && <Controller control={formulario.control} name="servicioId" render={({field: campo}) => (
+          <CampoSelect id="turno-servicio" etiqueta="Servicio y precio" valor={campo.value || "sin_configurar"} alCambiar={v=>campo.onChange(v === "sin_configurar" ? "" : v)} opciones={[
+            {valor:"sin_configurar",etiqueta:"Sin configurar (no se genera un cobro)"},
+            ...servicios.map(s=>({valor:s.id,etiqueta:`${s.nombre} · ${s.precio === 0 ? "Sin cargo" : `${s.precio} ${s.moneda}`}`}))
+          ]} />
+        )} />}
+
         <Controller
           control={formulario.control}
           name="pacienteId"

@@ -82,10 +82,6 @@ export async function SeccionPlan() {
               Crear mi consultorio
             </Link>
           </Button>
-          <p className="mt-4 text-xs text-muted-foreground">
-            El pago recurrente lo procesa Mercado Pago. Este precio es el que configuró la administración y es el mismo
-            que ve el profesional en Facturación.
-          </p>
         </article>
       </div>
     </section>

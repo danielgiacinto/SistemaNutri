@@ -6,6 +6,7 @@ const duraciones = DURACIONES_TURNO_MINUTOS as unknown as [number, ...number[]];
 
 export const esquemaAltaTurno = z.object({
   pacienteId: esquemaUuid,
+  servicioId: z.union([esquemaUuid, z.literal("")]).optional(),
   fecha: esquemaFechaIso,
   hora: esquemaHora,
   duracionMinutos: z.coerce

@@ -6,6 +6,8 @@ import type { Paciente, Turno } from "@/tipos/entidades";
 import type { DatosAltaTurnoValidados, DatosEdicionTurnoValidados } from "@/esquemas/turno";
 
 export const MENSAJES_TURNO: Record<string, string> = {
+  operacion_historica: "El turno ya tiene una operación económica: conservá su paciente y servicio.",
+  servicio_invalido: "El servicio no está activo o no corresponde a este profesional.",
   turno_solapado: "Ya hay un turno en ese horario para este consultorio.",
   turno_fuera_de_horario: "Ese horario está fuera de tu atención. Revisá la disponibilidad.",
   turno_en_bloqueo: "Ese horario está bloqueado en la agenda.",
@@ -19,6 +21,7 @@ export const MENSAJES_TURNO: Record<string, string> = {
 };
 
 export type TurnoConPaciente = Turno & {
+  estadoEconomico?: string;
   pacientes: Pick<Paciente, "id" | "nombre" | "apellido" | "documento" | "telefono"> | null;
 };
 
@@ -103,6 +106,7 @@ export async function crearTurno(
     .insert({
       consultorio_id: consultorioId,
       paciente_id: datos.pacienteId,
+      servicio_id: datos.servicioId || null,
       inicio: rango.inicio,
       fin: rango.fin,
       tipo: datos.tipo,
@@ -135,6 +139,7 @@ export async function actualizarTurno(
     .from("turnos")
     .update({
       paciente_id: datos.pacienteId,
+      ...(datos.servicioId ? { servicio_id: datos.servicioId } : {}),
       inicio: rango.inicio,
       fin: rango.fin,
       tipo: datos.tipo,

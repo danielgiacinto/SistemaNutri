@@ -1,3 +1,4 @@
+import { ResumenFinanciero } from "@/componentes/finanzas/resumen-financiero";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -15,7 +16,6 @@ import { AvisoComercial } from "@/componentes/facturacion/aviso-comercial";
 import { LOCALE_PREDETERMINADO } from "@/configuracion/producto";
 import { formatearFechaHora, hoyEnZona, minutosEntre } from "@/lib/fechas";
 import { nombreNatural } from "@/lib/antropometria";
-import { cn } from "@/lib/utilidades";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -37,7 +37,6 @@ async function ContenidoInicio() {
     dateStyle: "full",
     timeZone: contexto.consultorio.zonaHoraria,
   }).format(new Date());
-  const maximoActividad = Math.max(1, ...tablero.actividadHabil.map((punto) => punto.cantidad));
   const destacado = tablero.turnoEnCurso ?? tablero.proximoTurno;
   const progresoConsulta =
     tablero.turnoEnCurso != null
@@ -175,31 +174,7 @@ async function ContenidoInicio() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Actividad del consultorio</CardTitle>
-            <CardDescription>Turnos de los últimos 5 días hábiles.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex h-48 items-end gap-3">
-            {tablero.actividadHabil.every((punto) => punto.cantidad === 0) ? (
-              <p className="self-center text-sm text-muted-foreground">Todavía no hay actividad para graficar.</p>
-            ) : (
-              tablero.actividadHabil.map((punto) => (
-                <div key={punto.fecha} className="flex h-40 min-w-0 flex-1 flex-col items-center gap-2">
-                  <div className="flex w-full flex-1 flex-col items-center justify-end gap-1">
-                  <span className="text-xs font-semibold tabular-nums text-muted-foreground">{punto.cantidad}</span>
-                  <div
-                    className={cn("w-full max-w-12 rounded-lg bg-primary/75", punto.cantidad === 0 && "bg-muted")}
-                    style={{ height: `${Math.max(8, (punto.cantidad / maximoActividad) * 100)}%` }}
-                    title={`${punto.cantidad} turnos`}
-                  />
-                  </div>
-                  <span className="text-xs text-muted-foreground">{Number(punto.fecha.slice(8))}/{Number(punto.fecha.slice(5, 7))}</span>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+        <ResumenFinanciero cliente={cliente} zona={contexto.consultorio.zonaHoraria} />
       </div>
 
       <Card>

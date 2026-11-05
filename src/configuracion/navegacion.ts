@@ -3,6 +3,7 @@ import {
   CalendarDays,
   ClipboardList,
   CreditCard,
+  Wallet,
   HeartHandshake,
   House,
   LayoutDashboard,
@@ -57,6 +58,7 @@ export const NAVEGACION = {
       icono: HeartHandshake,
       descripcion: "Desafíos y actividades grupales para tus pacientes.",
     },
+    { titulo: "Finanzas", href: "/panel/finanzas", icono: Wallet, descripcion: "Servicios, cobros a pacientes, deudas y caja del consultorio." },
     {
       titulo: "Plan y facturación",
       href: "/panel/facturacion",

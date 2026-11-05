@@ -65,6 +65,7 @@ export function EncabezadoFicha({
           { href: `${base}/mediciones`, etiqueta: "Mediciones" },
           { href: `${base}/objetivos`, etiqueta: "Objetivos" },
           { href: `${base}/turnos`, etiqueta: "Turnos" },
+          { href: `${base}/pagos`, etiqueta: "Pagos y deudas" },
           { href: `${base}/planes`, etiqueta: "Planes" },
           { href: `${base}/visibilidad`, etiqueta: "Visibilidad" },
         ]}

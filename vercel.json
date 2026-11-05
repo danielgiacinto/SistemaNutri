@@ -1,4 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "crons": [{ "path": "/api/facturacion/conciliar", "schedule": "0 6 * * *" }]
+  "crons": [
+    {
+      "path": "/api/facturacion/conciliar",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/finanzas/recordatorios",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

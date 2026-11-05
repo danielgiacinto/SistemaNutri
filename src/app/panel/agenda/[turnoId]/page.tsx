@@ -1,3 +1,6 @@
+import { consultarEconomiaTurnos } from "@/servicios/finanzas";
+import { estadoEconomico } from "@/tipos/finanzas";
+import { CobroRapido } from "@/componentes/finanzas/cobro-rapido";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -29,9 +32,10 @@ export default function PaginaTurno({ params }: PageProps<"/panel/agenda/[turnoI
 async function Contenido({ params }: { params: PageProps<"/panel/agenda/[turnoId]">["params"] }) {
   const { turnoId } = await params;
   const { turno, paciente, contexto, cliente } = await requerirTurnoDelConsultorio(turnoId);
-  const [pacientes, consultorio] = await Promise.all([
+  const [pacientes, consultorio, operaciones] = await Promise.all([
     listarPacientesActivos(cliente, contexto.consultorio.id),
     obtenerDatosConsultorio(cliente, contexto.consultorio.id),
+    consultarEconomiaTurnos(cliente,[turno.id]),
   ]);
   const inicio = new Date(turno.inicio);
   const duracion = minutosEntre(inicio, new Date(turno.fin));
@@ -65,6 +69,7 @@ async function Contenido({ params }: { params: PageProps<"/panel/agenda/[turnoId
         )}
       </div>
       <AccionesTurno turnoId={turno.id} estado={turno.estado} />
+      {turno.profesional_id===contexto.usuarioId && <CobroRapido estado={estadoEconomico(operaciones[0])} zona={contexto.consultorio.zonaHoraria} turnoId={turno.id}/>}
       <Card>
         <CardContent>
           <FormularioTurno

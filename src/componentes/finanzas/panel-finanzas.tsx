@@ -1,0 +1,85 @@
+"use client";
+import { useState } from 'react';
+import { Plus, Settings2, Wallet, ReceiptText, Pencil, SlidersHorizontal } from 'lucide-react';
+import { CONFIGURACION_FINANCIERA_INICIAL, dineroFinanzas, estadoEconomico, deudaExigible, saldoOperacion, movimientosEfectivos, type DatosFinanzas, type ServicioConsultorio, type ConfiguracionFinanciera } from '@/tipos/finanzas';
+import { EstadoVacio } from '@/componentes/comunes/estado-vacio';
+import { cn } from '@/lib/utilidades';
+import { CampoFinanciero as Campo, estiloCampoFinanzas as estilo, FormularioFinanzas } from './formulario-finanzas';
+import { CobroRapido } from './cobro-rapido';
+import { DialogoFinanciero } from './dialogo-financiero';
+const dinero=(valor:number)=>dineroFinanzas(valor,'ARS');
+
+export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{datos:DatosFinanzas;pacienteId?:string;vistaInicial?:string;zona:string}) {
+  const [vista,fijarVista]=useState(vistaInicial==='resumen'?'cobros':vistaInicial);
+  const [busqueda,fijarBusqueda]=useState('');
+  const [estado,fijarEstado]=useState(!pacienteId?'deuda':'');
+  const [servicio,fijarServicio]=useState('');
+  const [desde,fijarDesde]=useState('');const [hasta,fijarHasta]=useState('');
+  const [minimo,fijarMinimo]=useState('');const [maximo,fijarMaximo]=useState('');
+  const [antiguedad,fijarAntiguedad]=useState('');const [orden,fijarOrden]=useState('antiguas');
+  const [tipo,fijarTipo]=useState('');
+  const [categoria,fijarCategoria]=useState('');const [medio,fijarMedio]=useState('');
+  const configuracion=datos.configuracion??CONFIGURACION_FINANCIERA_INICIAL;
+  const fecha=(valor:string)=>new Intl.DateTimeFormat('en-CA',{timeZone:zona,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(valor));
+  const mes=fecha(datos.ahora).slice(0,7);
+  const pendientes=datos.operaciones.filter(o=>o.moneda==='ARS'&&(!pacienteId||o.paciente_id===pacienteId)&&deudaExigible(o));
+  const saldoPendiente=pendientes.reduce((s,o)=>s+saldoOperacion(o),0);
+  const efectivos=movimientosEfectivos(datos).filter(m=>m.moneda==='ARS'&&fecha(m.fecha).startsWith(mes));
+  const total=(tipo:'ingreso'|'egreso')=>efectivos.filter(m=>m.tipo===tipo).reduce((s,m)=>s+m.importe,0);
+  const filas=datos.operaciones.filter(o=>o.moneda==='ARS'&&(!pacienteId||o.paciente_id===pacienteId)&&o.paciente.toLocaleLowerCase().includes(busqueda.toLocaleLowerCase())&&(!servicio||o.servicio_nombre===servicio)&&(!desde||fecha(o.inicio)>=desde)&&(!hasta||fecha(o.inicio)<=hasta)&&(!minimo||saldoOperacion(o)>=Number(minimo))&&(!maximo||saldoOperacion(o)<=Number(maximo))&&(!antiguedad||(o.vence_en&&new Date(datos.ahora).getTime()-new Date(o.vence_en).getTime()>=Number(antiguedad)*86400000))&&(!estado||(estado==='deuda'?deudaExigible(o):estado==='vencido'?deudaExigible(o)&&!!o.vence_en&&o.vence_en<datos.ahora:estadoEconomico(o)===estado))).sort((a,b)=>orden==='importe'?saldoOperacion(b)-saldoOperacion(a):a.inicio.localeCompare(b.inicio));
+  const movimientos=datos.movimientos.filter(m=>m.moneda==='ARS'&&(!desde||fecha(m.fecha)>=desde)&&(!hasta||fecha(m.fecha)<=hasta)&&(!tipo||m.tipo===tipo)&&(!categoria||m.categoria.toLowerCase().includes(categoria.toLowerCase()))&&(!medio||m.medio===medio));
+  return <div className="min-w-0 space-y-6">
+    {!pacienteId&&<>
+      <div className="grid gap-5 rounded-2xl border bg-card p-5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:p-6">
+        {[["Ingresos del mes",total('ingreso')],["Pendiente de cobro",saldoPendiente],["Egresos del mes",total('egreso')]].map(([nombre,importe])=><div key={nombre} className="sm:px-6 sm:first:pl-0 sm:last:pr-0"><p className="text-xs text-muted-foreground">{nombre}</p><p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">{dinero(Number(importe))}</p></div>)}
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <nav className="flex gap-1" aria-label="Secciones de finanzas">{[['cobros','Cobros'],['movimientos','Caja'],['servicios','Servicios']].map(([valor,etiqueta])=><button type="button" key={valor} aria-current={vista===valor?'page':undefined} onClick={()=>fijarVista(valor)} className={cn('border-b-2 px-3 py-2.5 text-sm font-medium transition-colors',vista===valor?'border-primary text-foreground':'border-transparent text-muted-foreground hover:text-foreground')}>{etiqueta}</button>)}</nav>
+        <ConfiguracionDialogo configuracion={configuracion}/>
+      </div>
+    </>}
+    {(pacienteId||vista==='cobros')&&<section className="overflow-hidden rounded-2xl border bg-card">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b p-5">
+        <div><h2 className="font-semibold">{pacienteId?'Pagos y deudas':'Cobros de consultas'}</h2><p className="mt-1 text-xs text-muted-foreground">{pendientes.length} {pendientes.length===1?'consulta pendiente':'consultas pendientes'} · {dinero(saldoPendiente)}</p></div>
+        <div className="flex flex-wrap gap-2"><input aria-label="Buscar paciente" className={cn(estilo,'w-44')} value={busqueda} onChange={e=>fijarBusqueda(e.target.value)} placeholder="Buscar paciente…"/><select aria-label="Estado económico" className={cn(estilo,'w-auto')} value={estado} onChange={e=>fijarEstado(e.target.value)}><option value="deuda">Pendientes</option><option value="">Todo el historial</option><option value="vencido">Vencidos</option>{['Pago parcial','Pagado','Pagado anticipadamente','Sin cargo','Bonificado','Anticipo por resolver'].map(e=><option key={e}>{e}</option>)}</select></div>
+      </div>
+      <details className="border-b px-5 py-3"><summary className="flex w-fit cursor-pointer items-center gap-2 text-xs text-muted-foreground"><SlidersHorizontal className="size-3.5"/>Más filtros</summary><div className="grid gap-3 py-4 sm:grid-cols-2 lg:grid-cols-3"><Campo etiqueta="Servicio"><select className={estilo} value={servicio} onChange={e=>fijarServicio(e.target.value)}><option value="">Todos</option>{[...new Set(datos.operaciones.map(o=>o.servicio_nombre))].map(s=><option key={s}>{s}</option>)}</select></Campo>
+        <Campo etiqueta="Orden"><select className={estilo} value={orden} onChange={e=>fijarOrden(e.target.value)}><option value="antiguas">Consultas más antiguas</option><option value="importe">Mayor saldo</option></select></Campo>
+        <Campo etiqueta="Desde"><input type="date" value={desde} onChange={e=>fijarDesde(e.target.value)} className={estilo}/></Campo><Campo etiqueta="Hasta"><input type="date" value={hasta} onChange={e=>fijarHasta(e.target.value)} className={estilo}/></Campo>
+        <Campo etiqueta="Saldo mínimo"><input type="number" min="0" value={minimo} onChange={e=>fijarMinimo(e.target.value)} className={estilo}/></Campo><Campo etiqueta="Saldo máximo"><input type="number" min="0" value={maximo} onChange={e=>fijarMaximo(e.target.value)} className={estilo}/></Campo>
+        <Campo etiqueta="Días de atraso mínimos"><input type="number" min="0" value={antiguedad} onChange={e=>fijarAntiguedad(e.target.value)} className={estilo}/></Campo></div></details>
+      {!filas.length?<EstadoVacio icono={ReceiptText} titulo="No hay cobros para mostrar" descripcion="Los cobros de tus consultas aparecerán acá. Podés cambiar el filtro para ver todo el historial."/>:<div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-muted/25 text-xs text-muted-foreground"><tr>{['Paciente y servicio','Consulta','Saldo','Estado',''].map(t=><th key={t} className="px-5 py-3 font-medium">{t}</th>)}</tr></thead><tbody className="divide-y">{filas.map(o=><tr key={o.id}><td className="px-5 py-4"><p className="font-medium">{o.paciente}</p><p className="mt-1 text-xs text-muted-foreground">{o.servicio_nombre}</p></td><td className="px-5 py-4 whitespace-nowrap text-muted-foreground">{fecha(o.inicio)}</td><td className="px-5 py-4 font-medium tabular-nums whitespace-nowrap">{dinero(saldoOperacion(o))}</td><td className="px-5 py-4"><span className="text-xs">{estadoEconomico(o)}</span>{deudaExigible(o)&&o.vence_en&&o.vence_en<datos.ahora&&<p className="mt-1 text-xs text-destructive">Vencido · {fecha(o.vence_en)}</p>}</td><td className="px-5 py-4 text-right"><CobroRapido zona={zona} turnoId={o.turno_id} estado={estadoEconomico(o)} inicial={datos}/></td></tr>)}</tbody></table></div>}
+    </section>}
+    {!pacienteId&&vista==='servicios'&&<section className="rounded-2xl border bg-card">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b p-5"><div><h2 className="font-semibold">Tus servicios</h2><p className="mt-1 text-xs text-muted-foreground">Precios y duración de tus consultas.</p></div><DialogoFinanciero titulo="Nuevo servicio" descripcion="Definí el precio en pesos. Usá $0 para un servicio sin cargo." boton={<><Plus/>Nuevo servicio</>} principal>{cerrar=><EditorServicio alGuardar={cerrar}/>}</DialogoFinanciero></div>
+      {!datos.servicios.length?<EstadoVacio icono={ReceiptText} titulo="Tu catálogo de servicios" descripcion="Creá tu primer servicio para asociarlo a los turnos y empezar a registrar cobros."/>:<div className="divide-y">{datos.servicios.map(s=><article key={s.id} className="flex flex-wrap items-center justify-between gap-4 px-5 py-4"><div className="min-w-0"><h3 className="font-medium">{s.nombre}</h3><p className="mt-1 text-xs text-muted-foreground">{s.duracion_minutos?`${s.duracion_minutos} min · `:''}{s.activo?'Activo':'Inactivo'}</p></div><div className="flex items-center gap-4"><span className="text-sm font-semibold tabular-nums">{s.precio===0?'Sin cargo':dinero(s.precio)}</span><DialogoFinanciero titulo="Editar servicio" descripcion="Los turnos existentes conservan su precio original." boton={<><Pencil/>Editar</>}>{cerrar=><EditorServicio servicio={s} alGuardar={cerrar}/>}</DialogoFinanciero></div></article>)}</div>}
+    </section>}
+    {!pacienteId&&vista==='movimientos'&&<section className="overflow-hidden rounded-2xl border bg-card">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b p-5"><div><h2 className="font-semibold">Movimientos de caja</h2><p className="mt-1 text-xs text-muted-foreground">Ingresos y egresos del consultorio.</p></div><DialogoFinanciero titulo="Registrar movimiento" descripcion="Los pagos de consultas se registran automáticamente. Agregá acá otros ingresos o gastos." boton={<><Plus/>Nuevo movimiento</>} principal>{cerrar=><EditorMovimiento configuracion={configuracion} alGuardar={cerrar}/>}</DialogoFinanciero></div>
+      <div className="grid gap-3 border-b p-5 sm:grid-cols-3"><Campo etiqueta="Desde"><input type="date" value={desde} onChange={e=>fijarDesde(e.target.value)} className={estilo}/></Campo><Campo etiqueta="Hasta"><input type="date" value={hasta} onChange={e=>fijarHasta(e.target.value)} className={estilo}/></Campo><Campo etiqueta="Tipo"><select value={tipo} onChange={e=>fijarTipo(e.target.value)} className={estilo}><option value="">Todos</option><option value="ingreso">Ingresos</option><option value="egreso">Egresos</option></select></Campo></div>
+      <details className="border-b px-5 py-3"><summary className="flex w-fit cursor-pointer items-center gap-2 text-xs text-muted-foreground"><SlidersHorizontal className="size-3.5"/>Más filtros de caja</summary><div className="grid gap-3 py-4 sm:grid-cols-2"><Campo etiqueta="Categoría"><input className={estilo} value={categoria} onChange={e=>fijarCategoria(e.target.value)}/></Campo><Campo etiqueta="Medio de pago"><select className={estilo} value={medio} onChange={e=>fijarMedio(e.target.value)}><option value="">Todos</option>{[...new Set(datos.movimientos.map(m=>m.medio))].map(m=><option key={m}>{m}</option>)}</select></Campo></div></details>
+      {!movimientos.length?<EstadoVacio icono={Wallet} titulo="Tu caja, en un solo lugar" descripcion="Los pagos y los movimientos que registres aparecerán acá."/>:<div className="divide-y">{movimientos.map(m=><article key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div><p className="text-sm font-medium">{m.descripcion}</p><p className="mt-1 text-xs text-muted-foreground">{fecha(m.fecha)} · {m.categoria} · {m.medio}</p></div><div className="flex items-center gap-3"><span className={cn('text-sm font-semibold tabular-nums',m.tipo==='ingreso'?'text-exito':'text-foreground')}>{m.tipo==='ingreso'?'+':'−'}{dinero(m.importe)}</span>{!m.pago_id&&!m.compensacion_de&&!datos.movimientos.some(c=>c.compensacion_de===m.id)&&<DialogoFinanciero titulo="Corregir movimiento" descripcion="Se conservará el original y se agregará un movimiento compensatorio." boton="Corregir">{cerrar=><FormularioFinanzas accion="revertir_movimiento" fijos={{id:m.id}} alGuardar={cerrar} boton="Confirmar corrección"><Campo etiqueta="Motivo"><input name="motivo" minLength={3} className={estilo} required/></Campo><label className="text-sm"><input type="checkbox" required/> Confirmo la corrección de este movimiento.</label></FormularioFinanzas>}</DialogoFinanciero>}</div></article>)}</div>}
+      <p className="border-t px-5 py-3 text-xs text-muted-foreground">Comprobantes internos. No constituyen facturas fiscales.</p>
+    </section>}
+  </div>;
+}
+
+function ConfiguracionDialogo({configuracion}:{configuracion:ConfiguracionFinanciera}) {
+  return <DialogoFinanciero titulo="Configuración de cobros" descripcion="Personalizá los vencimientos y los recordatorios de tus consultas." boton={<><Settings2/>Configuración</>}>
+    {cerrar=><FormularioFinanzas accion="configuracion" fijos={{moneda:'ARS'}} alGuardar={cerrar}>
+      <Campo etiqueta="Días de vencimiento desde la atención"><input name="dias" type="number" min="0" max="365" defaultValue={configuracion.dias_vencimiento} className={estilo} required/></Campo>
+      <label className="text-sm"><input name="recordatorios" type="checkbox" defaultChecked={configuracion.recordatorios}/> Activar recordatorios automáticos (requiere autorización del paciente)</label>
+      <Campo etiqueta="Plazos en horas, separados por comas"><input name="plazos" defaultValue={configuracion.plazos.join(', ')} className={estilo} required/></Campo>
+      <Campo etiqueta="Nombre del consultorio en correos"><input name="nombre" defaultValue={configuracion.nombre_remitente} className={estilo} required/></Campo>
+      <Campo etiqueta="Texto del recordatorio"><textarea name="texto" defaultValue={configuracion.texto_recordatorio} className={estilo} required/></Campo>
+      <Campo etiqueta="Instrucciones de pago"><textarea name="instrucciones" defaultValue={configuracion.instrucciones} className={estilo}/></Campo>
+      <Campo etiqueta="Medios de pago, separados por comas"><input name="medios" defaultValue={configuracion.medios.join(', ')} className={estilo} required/></Campo>
+    </FormularioFinanzas>}
+  </DialogoFinanciero>;
+}
+function EditorMovimiento({configuracion,alGuardar}:{configuracion:ConfiguracionFinanciera;alGuardar:()=>void}) {
+  return <FormularioFinanzas accion="movimiento" fijos={{moneda:'ARS'}} alGuardar={alGuardar} boton="Registrar movimiento">
+      <div className="grid gap-3 sm:grid-cols-2"><Campo etiqueta="Tipo"><select name="tipo" className={estilo}><option value="egreso">Egreso</option><option value="ingreso">Ingreso</option></select></Campo><Campo etiqueta="Categoría"><input name="categoria" placeholder="Alquiler, materiales, otros…" className={estilo} required/></Campo><Campo etiqueta="Descripción"><input name="descripcion" className={estilo} required/></Campo><Campo etiqueta="Importe"><input name="importe" type="number" min="0.01" step="0.01" className={estilo} required/></Campo><Campo etiqueta="Fecha efectiva"><input name="fecha" type="datetime-local" className={estilo} required/></Campo><Campo etiqueta="Medio"><select name="medio" className={estilo}>{configuracion.medios.map(m=><option key={m}>{m}</option>)}</select></Campo></div>
+    </FormularioFinanzas>;
+}
+function EditorServicio({servicio,alGuardar}:{servicio?:ServicioConsultorio;alGuardar:()=>void}) {return <FormularioFinanzas accion="servicio" fijos={{id:servicio?.id??'',moneda:'ARS'}} alGuardar={alGuardar} boton={servicio?'Guardar servicio':'Crear servicio'}><Campo etiqueta="Nombre"><input name="nombre" defaultValue={servicio?.nombre} maxLength={100} required className={estilo}/></Campo><Campo etiqueta="Descripción (opcional)"><textarea name="descripcion" defaultValue={servicio?.descripcion??''} className={estilo}/></Campo><Campo etiqueta="Precio (0 para servicio sin cargo)"><input name="precio" type="number" min="0" step="0.01" defaultValue={servicio?.precio} required className={estilo}/></Campo><Campo etiqueta="Duración estimada en minutos (opcional)"><input name="duracion" type="number" min="10" max="240" defaultValue={servicio?.duracion_minutos??''} className={estilo}/></Campo><label className="text-sm"><input name="activo" type="checkbox" defaultChecked={servicio?.activo??true}/> Servicio activo</label><p className="text-xs text-muted-foreground">Los cambios de precio se aplican a nuevos turnos. Los existentes conservan su importe.</p></FormularioFinanzas>;}

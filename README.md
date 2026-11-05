@@ -23,6 +23,16 @@ El 5/11/2026 también se verificaron un cobro rechazado, su correo comercial y u
 cobro aprobado que recuperó el acceso tras un vencimiento simulado y auditado.
 La renovación periódica de una misma autorización todavía no se observó externamente.
 
+La fase 7 incorpora la administración económica del consultorio: servicios pagos y
+gratuitos, precios históricos por turno, pagos parciales y anticipados, descuentos,
+bonificaciones, reversiones, caja, estadísticas y recordatorios de pago. Está
+implementada y verificada técnicamente en el repositorio. La migración financiera
+se aplicó y registró en Supabase hospedado de desarrollo el 5/11/2026. Se comprobaron
+el panel y los formularios autenticados en localhost, con persistencia y limpieza de
+datos temporales, y el diseño móvil a 390 px. Se verificó la autenticación del SMTP
+existente sin enviar mensajes. Quedan por comprobar el scheduler desplegado y la
+entrega real de recordatorios. Ver [Finanzas del consultorio](docs/finanzas-consultorio.md).
+
 | Fase | Contenido | Estado |
 | --- | --- | --- |
 | 1 | Fundamentos: autenticación, roles, multi-tenencia con RLS, layouts, configuración | ✅ Listo para probar |
@@ -31,6 +41,7 @@ La renovación periódica de una misma autorización todavía no se observó ext
 | 4 | Planes alimentarios con versiones | ✅ Listo para probar |
 | 5 | Suscripciones, pagos y administración | Cobros aprobados/rechazados, webhooks, correos, cancelación y recuperación de acceso validados con cuentas ficticias. Queda observar la renovación periódica de una misma autorización. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
+| 7 | Servicios, cobros a pacientes, caja, estadísticas y recordatorios | Migración aplicada; formularios, persistencia, panel y diseño móvil verificados en localhost. Lint, tipos, 230 pruebas y build aprobados. Pendientes scheduler desplegado y entrega real de correo. |
 
 ### Qué se puede probar ahora (profesional)
 
@@ -41,6 +52,7 @@ La renovación periódica de una misma autorización todavía no se observó ext
 5. En la ficha del paciente → **Visibilidad** → **Invitar al portal**. Llega un correo: al abrirlo elige una contraseña, acepta y entra a `/portal`.
 6. En la ficha → **Planes**: el borrador no se comparte. **Publicar para el paciente** deja esa versión en `/portal/plan`.
 7. En **Comunidad**: creá un desafío, publicalo, y con la cuenta del paciente sumate y escribí una actividad. El borrador no se ve en el portal.
+8. Tras aplicar `20261106000000_finanzas_consultorio.sql`: en **Finanzas**, configurá servicios y precios, incluyendo servicios sin cargo. Asociá un servicio al agendar y registrá pagos desde **Cobros de esta agenda**. Consultá **Pagos y deudas** en la ficha del paciente y el gráfico de ingresos en Inicio. Los recordatorios requieren SMTP, scheduler, activación del profesional y autorización del paciente.
 
 En **Plan y facturación**, el botón **Elegir este plan** abre Mercado Pago para
 completar la autorización con los datos de prueba; este recorrido ya se completó correctamente. La tarjeta ya no se ingresa
@@ -99,7 +111,9 @@ Decisiones de arquitectura: [`docs/arquitectura.md`](docs/arquitectura.md).
 - Correcciones de la revisión de roles: política de lectura del consultorio del paciente, cookies seguras en HTTPS y etiquetas únicas por instancia de formulario. La migración `20261104180000` está aplicada en Supabase hospedado.
 - Facturación: sincronización explícita de autorización para el titular y superadministrador, sin acreditar pagos; auditoría con responsable y motivo, fechas administrativas con zona explícita.
 - Operación comercial: conciliación diaria con cursor y reserva recuperable; cancelación auditada; ingresos y vencimientos agregados en la base. Las migraciones `20261104200000` y `20261104210000` están aplicadas y registradas en Supabase hospedado.
-- Última verificación técnica (4/11/2026): `npm run verificar` completo, con lint, TypeScript, **201 pruebas en 25 archivos** y compilación.
+- Diseño de Finanzas: tres totales breves, pestañas Cobros/Caja/Servicios y formularios en diálogos. Inicio muestra un único gráfico de ingresos con vistas día/semana/mes. Operaciones nuevas en pesos argentinos, sin selector de moneda.
+- Fase 7: cobros manuales a pacientes separados de la suscripción a Nutrisfera; operaciones transaccionales, historial de ajustes y reversiones, aislamiento por profesional y recordatorios con consentimiento. Configuración y límites en [`docs/finanzas-consultorio.md`](docs/finanzas-consultorio.md).
+- Última verificación técnica (5/11/2026): `npm run verificar` completo, con lint, TypeScript, **230 pruebas en 31 archivos** y compilación. Migración financiera aplicada y registrada; formularios comprobados en localhost contra Supabase de desarrollo. No se enviaron correos reales.
 
 El núcleo funcional del MVP está implementado para desarrollo. Cerrar fase 5 exige
 demostrar la acreditación automática de cobros, además de la autorización ya conseguida.
@@ -147,5 +161,6 @@ Guía completa (Supabase, Google OAuth, Vercel, primer superadministrador) en
 - [Autenticación y Google OAuth](docs/autenticacion.md)
 - [Despliegue y variables de entorno](docs/despliegue.md)
 - [Facturación y Mercado Pago](docs/facturacion.md)
+- [Finanzas del consultorio — Fase 7](docs/finanzas-consultorio.md)
 - [Avances y criterios de cierre del MVP](docs/avances.md)
 - [Seguridad y privacidad](docs/seguridad-y-privacidad.md)

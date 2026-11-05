@@ -1,3 +1,4 @@
+import { listarServiciosActivos } from "@/servicios/finanzas";
 import { TituloTarjeta } from "@/componentes/comunes/titulo-tarjeta";
 import { CalendarPlus, Info } from "lucide-react";
 import { Suspense } from "react";
@@ -28,9 +29,10 @@ async function Contenido({ searchParams }: { searchParams: PageProps<"/panel/age
   const contexto = await requerirProfesional();
   const parametros = await searchParams;
   const cliente = await crearClienteServidor();
-  const [pacientes, consultorio] = await Promise.all([
+  const [pacientes, consultorio, servicios] = await Promise.all([
     listarPacientesActivos(cliente, contexto.consultorio.id),
     obtenerDatosConsultorio(cliente, contexto.consultorio.id),
+    listarServiciosActivos(cliente),
   ]);
   const fecha = typeof parametros.fecha === "string" && esFechaIso(parametros.fecha) ? parametros.fecha : "";
   const hora = typeof parametros.hora === "string" && /^\d{2}:\d{2}$/.test(parametros.hora) ? parametros.hora : "09:00";
@@ -54,6 +56,7 @@ async function Contenido({ searchParams }: { searchParams: PageProps<"/panel/age
           <CardContent>
             <FormularioTurno
               modo="alta"
+              servicios={servicios}
               pacientes={pacientes}
               duracionPredeterminada={consultorio?.duracion_turno_minutos ?? DURACION_TURNO_PREDETERMINADA}
               inicial={{ fecha, hora, pacienteId: paciente }}

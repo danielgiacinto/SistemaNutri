@@ -1,0 +1,62 @@
+'use client';
+import { ZONA_HORARIA_PREDETERMINADA } from '@/configuracion/producto';
+import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
+import { cargarFinanzas } from '@/acciones/finanzas';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/componentes/ui/dialog';
+import { Button } from '@/componentes/ui/button';
+import { CONFIGURACION_FINANCIERA_INICIAL, dineroFinanzas, estadoEconomico, saldoOperacion, type DatosFinanzas } from '@/tipos/finanzas';
+import { CampoFinanciero as Campo, estiloCampoFinanzas as estilo, FormularioFinanzas } from './formulario-finanzas';
+
+function fechaLocal(ahora=new Date()) {return new Date(ahora.getTime()-ahora.getTimezoneOffset()*60000).toISOString().slice(0,16);}
+export function CobroRapido({turnoId,estado='Sin configurar',inicial,zona=ZONA_HORARIA_PREDETERMINADA}:{turnoId:string;estado?:string;inicial?:DatosFinanzas;zona?:string}) {
+  const [datos,fijarDatos]=useState(inicial);
+  const [abierto,fijarAbierto]=useState(false);
+  const [cargando,iniciar]=useTransition();
+  const recargar=()=>iniciar(async()=>{try{fijarDatos(await cargarFinanzas(turnoId));}catch{toast.error('No se pudo cargar el detalle del cobro.');}});
+  const operacion=datos?.operaciones.find(o=>o.turno_id===turnoId);
+  const configuracion=datos?.configuracion??CONFIGURACION_FINANCIERA_INICIAL;
+  return <Dialog open={abierto} onOpenChange={valor=>{fijarAbierto(valor);if(valor)recargar();}}>
+    <Button variant="outline" size="sm" onClick={()=>{fijarAbierto(true);recargar();}}>Cobros · {datos ? estadoEconomico(operacion) : estado}</Button>
+    <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+      <DialogHeader><DialogTitle>{operacion?`${operacion.paciente} · ${estadoEconomico(operacion)}`:'Configurar cobro'}</DialogTitle><DialogDescription>{operacion?`${operacion.servicio_nombre} · ${new Date(operacion.inicio).toLocaleString('es-AR',{timeZone:zona,hourCycle:'h23'})}`:'Asigná un servicio para definir el precio. Un turno sin configurar no se considera gratuito.'}</DialogDescription></DialogHeader>
+      {cargando && <p role="status">Actualizando…</p>}
+      {!datos ? <p>Cargando información económica…</p> : !operacion ? <FormularioFinanzas accion="asignar" fijos={{turno:turnoId}} alGuardar={recargar} boton="Asignar servicio">
+        <Campo etiqueta="Servicio"><select name="servicio" className={estilo} required><option value="">Elegí un servicio</option>{datos.servicios.filter(s=>s.activo).map(s=><option key={s.id} value={s.id}>{s.nombre} · {dineroFinanzas(s.precio,s.moneda)}</option>)}</select></Campo>
+      </FormularioFinanzas> : <div className="grid gap-6">
+        <dl className="grid grid-cols-2 gap-3 rounded-xl bg-muted p-4 text-sm">{[['Precio original',operacion.original],['Descuento',operacion.descuento],['Importe final',operacion.original-operacion.descuento],['Abonado',operacion.abonado],['Saldo',saldoOperacion(operacion)]].map(([nombre,valor])=><div key={String(nombre)}><dt className="text-muted-foreground">{nombre}</dt><dd className="font-semibold">{dineroFinanzas(Number(valor),operacion.moneda)}</dd></div>)}</dl>
+        {operacion.estado_turno==='cancelado' && operacion.abonado>0 && <p role="alert" className="text-sm text-destructive">El anticipo sigue registrado. Registrá su devolución desde el historial para resolverlo.</p>}
+        {saldoOperacion(operacion)>0 && !['cancelado','ausente'].includes(operacion.estado_turno) && <FormularioFinanzas accion="pago" fijos={{turno:turnoId}} alGuardar={recargar} boton="Registrar pago">
+          <h3 className="font-semibold">Registrar pago</h3>
+          <div className="grid gap-3 sm:grid-cols-2"><Campo etiqueta={`Importe (${operacion.moneda})`}><input name="importe" type="number" min="0.01" step="0.01" max={saldoOperacion(operacion)} defaultValue={saldoOperacion(operacion)} key={`${operacion.abonado}-${operacion.descuento}`} required className={estilo}/></Campo>
+          <Campo etiqueta="Fecha efectiva del pago"><input name="fecha" type="datetime-local" defaultValue={fechaLocal()} required className={estilo}/></Campo></div>
+          <Campo etiqueta="Medio de pago"><select name="medio" className={estilo}>{configuracion.medios.map(m=><option key={m}>{m}</option>)}</select></Campo>
+          <Campo etiqueta="Referencia (opcional)"><input name="referencia" maxLength={200} className={estilo}/></Campo>
+          <Campo etiqueta="Observaciones (opcional)"><textarea name="observaciones" maxLength={1000} className={estilo}/></Campo>
+        </FormularioFinanzas>}
+        <details className="rounded-xl border p-4"><summary className="cursor-pointer font-medium">Descuento, bonificación y vencimiento</summary><div className="pt-4"><FormularioFinanzas accion="ajuste" fijos={{turno:turnoId}} alGuardar={recargar} boton="Guardar ajuste">
+          <p className="text-xs text-muted-foreground">El valor reemplaza el descuento de esta consulta. No cambia el precio del servicio ni puede reducir el importe final por debajo de lo ya abonado.</p>
+          <Campo etiqueta="Tipo de descuento"><select name="tipo" className={estilo}><option value="fijo">Importe fijo</option><option value="porcentaje">Porcentaje del precio original</option></select></Campo>
+          <Campo etiqueta="Descuento"><input name="descuento" type="number" min="0" step="0.01" defaultValue={operacion.descuento} className={estilo} required/></Campo>
+          <label className="flex gap-2 text-sm"><input name="bonificado" type="checkbox" defaultChecked={operacion.bonificado}/>Bonificar el 100 %</label>
+          <Campo etiqueta="Motivo (opcional)"><input name="motivo" defaultValue={operacion.motivo??''} className={estilo}/></Campo>
+          <Campo etiqueta="Vencimiento (opcional)"><input name="vence" type="datetime-local" defaultValue={operacion.vence_en?fechaLocal(new Date(operacion.vence_en)):''} className={estilo}/></Campo>
+          <label className="text-sm"><input type="checkbox" required/> Confirmo el ajuste de esta consulta.</label>
+        </FormularioFinanzas></div></details>
+        <section className="grid gap-3"><h3 className="font-semibold">Historial de pagos</h3>
+          {datos.pagos.filter(p=>p.operacion_id===operacion.id).map(p=><div key={p.id} className="rounded-lg border p-3 text-sm">
+            <p className="font-medium">{dineroFinanzas(p.importe,operacion.moneda)} · {p.medio}</p><p>{new Date(p.fecha).toLocaleString('es-AR',{timeZone:zona,hourCycle:'h23'})} {p.referencia&&`· ${p.referencia}`}</p>{p.observaciones&&<p>{p.observaciones}</p>}
+            {p.revertido_en?<p className="text-muted-foreground">Revertido: {p.motivo_reversion} · {new Date(p.revertido_en).toLocaleString('es-AR',{timeZone:zona,hourCycle:'h23'})}</p>:<details className="mt-2"><summary className="cursor-pointer">Corregir o devolver pago</summary><FormularioFinanzas accion="reversion" fijos={{turno:turnoId,pago:p.id}} alGuardar={recargar} boton="Confirmar reversión"><Campo etiqueta="Operación"><select name="tipo" className={estilo}><option value="error">Reversión por error</option><option value="devolucion">Devolución del pago completo</option></select></Campo><Campo etiqueta="Motivo obligatorio"><input name="motivo" minLength={3} required className={estilo}/></Campo><label><input type="checkbox" required/> Confirmo la reversión y el ajuste del saldo.</label></FormularioFinanzas></details>}
+          </div>)}
+          {!datos.pagos.some(p=>p.operacion_id===operacion.id)&&<p className="text-sm text-muted-foreground">Sin pagos registrados.</p>}
+          {datos.ajustes.filter(a=>a.operacion_id===operacion.id).map(a=><p key={a.id} className="text-xs text-muted-foreground">{new Date(a.fecha).toLocaleString('es-AR',{timeZone:zona,hourCycle:'h23'})} · Descuento: {dineroFinanzas(a.detalle.anterior,operacion.moneda)} → {dineroFinanzas(a.detalle.nuevo,operacion.moneda)} · {a.detalle.motivo}</p>)}
+        </section>
+        <details className="rounded-xl border p-4"><summary className="cursor-pointer font-medium">Recordatorios y autorización</summary><div className="grid gap-4 pt-4">
+          <FormularioFinanzas accion="consentimiento" fijos={{paciente:operacion.paciente_id}} alGuardar={recargar}><label className="text-sm"><input name="autorizado" type="checkbox" defaultChecked={datos.consentimientos.some(c=>c.paciente_id===operacion.paciente_id&&c.autorizado)}/> El paciente autorizó recibir recordatorios de pago por correo.</label></FormularioFinanzas>
+          <FormularioFinanzas accion="recordatorio" fijos={{turno:turnoId}} alGuardar={recargar} boton="Programar recordatorio manual"><p className="text-xs text-muted-foreground">Se enviará mediante el proceso programado, si continúa existiendo saldo y autorización.</p></FormularioFinanzas>
+          {datos.recordatorios.filter(r=>r.operacion_id===operacion.id).map(r=><div key={r.id} className="text-xs"><p>{new Date(r.programado_en).toLocaleString('es-AR',{timeZone:zona,hourCycle:'h23'})} · {r.estado} · {r.intentos} intentos</p>{datos.intentos.filter(i=>i.recordatorio_id===r.id).map(i=><p key={i.id}>{new Date(i.fecha).toLocaleString('es-AR',{timeZone:zona,hourCycle:'h23'})} · {i.resultado}</p>)}</div>)}
+        </div></details>
+      </div>}
+    </DialogContent>
+  </Dialog>;
+}

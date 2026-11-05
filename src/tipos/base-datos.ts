@@ -12,6 +12,355 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      servicios_consultorio: {
+        Row: {
+          id: string
+          consultorio_id: string
+          profesional_id: string
+          nombre: string
+          descripcion: string | null
+          precio: number
+          moneda: string
+          duracion_minutos: number | null
+          activo: boolean
+        }
+        Insert: {
+          id?: string
+          consultorio_id: string
+          profesional_id: string
+          nombre: string
+          descripcion?: string | null
+          precio: number
+          moneda: string
+          duracion_minutos?: number | null
+          activo?: boolean
+        }
+        Update: {
+          id?: string
+          consultorio_id?: string
+          profesional_id?: string
+          nombre?: string
+          descripcion?: string | null
+          precio?: number
+          moneda?: string
+          duracion_minutos?: number | null
+          activo?: boolean
+        }
+        Relationships: []
+      }
+      configuracion_financiera: {
+        Row: {
+          profesional_id: string
+          consultorio_id: string
+          moneda: string
+          dias_vencimiento: number
+          recordatorios: boolean
+          plazos: number[]
+          instrucciones: string
+          texto_recordatorio: string
+          nombre_remitente: string
+          medios: string[]
+        }
+        Insert: {
+          profesional_id: string
+          consultorio_id: string
+          moneda?: string
+          dias_vencimiento?: number
+          recordatorios?: boolean
+          plazos?: number[]
+          instrucciones?: string
+          texto_recordatorio?: string
+          nombre_remitente?: string
+          medios?: string[]
+        }
+        Update: {
+          profesional_id?: string
+          consultorio_id?: string
+          moneda?: string
+          dias_vencimiento?: number
+          recordatorios?: boolean
+          plazos?: number[]
+          instrucciones?: string
+          texto_recordatorio?: string
+          nombre_remitente?: string
+          medios?: string[]
+        }
+        Relationships: []
+      }
+      consentimientos_cobro: {
+        Row: {
+          paciente_id: string
+          consultorio_id: string
+          profesional_id: string
+          autorizado: boolean
+          registrado_en: string
+        }
+        Insert: {
+          paciente_id: string
+          consultorio_id: string
+          profesional_id: string
+          autorizado?: boolean
+          registrado_en?: string
+        }
+        Update: {
+          paciente_id?: string
+          consultorio_id?: string
+          profesional_id?: string
+          autorizado?: boolean
+          registrado_en?: string
+        }
+        Relationships: []
+      }
+      operaciones_consultorio: {
+        Row: {
+          id: string
+          turno_id: string
+          consultorio_id: string
+          profesional_id: string
+          paciente_id: string
+          servicio_nombre: string
+          moneda: string
+          original: number
+          descuento: number
+          abonado: number
+          bonificado: boolean
+          motivo: string | null
+          vence_en: string | null
+        }
+        Insert: {
+          id?: string
+          turno_id: string
+          consultorio_id: string
+          profesional_id: string
+          paciente_id: string
+          servicio_nombre: string
+          moneda: string
+          original: number
+          descuento?: number
+          abonado?: number
+          bonificado?: boolean
+          motivo?: string | null
+          vence_en?: string | null
+        }
+        Update: {
+          id?: string
+          turno_id?: string
+          consultorio_id?: string
+          profesional_id?: string
+          paciente_id?: string
+          servicio_nombre?: string
+          moneda?: string
+          original?: number
+          descuento?: number
+          abonado?: number
+          bonificado?: boolean
+          motivo?: string | null
+          vence_en?: string | null
+        }
+        Relationships: []
+      }
+      pagos_consultorio: {
+        Row: {
+          id: string
+          operacion_id: string
+          consultorio_id: string
+          profesional_id: string
+          registrado_por: string
+          importe: number
+          fecha: string
+          medio: string
+          referencia: string | null
+          observaciones: string | null
+          clave: string
+          revertido_en: string | null
+          motivo_reversion: string | null
+          tipo_reversion: string | null
+        }
+        Insert: {
+          id?: string
+          operacion_id: string
+          consultorio_id: string
+          profesional_id: string
+          registrado_por: string
+          importe: number
+          fecha: string
+          medio: string
+          referencia?: string | null
+          observaciones?: string | null
+          clave: string
+          revertido_en?: string | null
+          motivo_reversion?: string | null
+          tipo_reversion?: string | null
+        }
+        Update: {
+          id?: string
+          operacion_id?: string
+          consultorio_id?: string
+          profesional_id?: string
+          registrado_por?: string
+          importe?: number
+          fecha?: string
+          medio?: string
+          referencia?: string | null
+          observaciones?: string | null
+          clave?: string
+          revertido_en?: string | null
+          motivo_reversion?: string | null
+          tipo_reversion?: string | null
+        }
+        Relationships: []
+      }
+      movimientos_consultorio: {
+        Row: {
+          id: string
+          consultorio_id: string
+          profesional_id: string
+          registrado_por: string
+          pago_id: string | null
+          tipo: string
+          categoria: string
+          descripcion: string
+          importe: number
+          moneda: string
+          medio: string
+          fecha: string
+          clave: string
+          compensacion_de: string | null
+        }
+        Insert: {
+          id?: string
+          consultorio_id: string
+          profesional_id: string
+          registrado_por: string
+          pago_id?: string | null
+          tipo: string
+          categoria: string
+          descripcion: string
+          importe: number
+          moneda: string
+          medio: string
+          fecha: string
+          clave: string
+          compensacion_de?: string | null
+        }
+        Update: {
+          id?: string
+          consultorio_id?: string
+          profesional_id?: string
+          registrado_por?: string
+          pago_id?: string | null
+          tipo?: string
+          categoria?: string
+          descripcion?: string
+          importe?: number
+          moneda?: string
+          medio?: string
+          fecha?: string
+          clave?: string
+          compensacion_de?: string | null
+        }
+        Relationships: []
+      }
+      ajustes_consultorio: {
+        Row: {
+          id: string
+          operacion_id: string
+          consultorio_id: string
+          profesional_id: string
+          registrado_por: string
+          fecha: string
+          detalle: Json
+        }
+        Insert: {
+          id?: string
+          operacion_id: string
+          consultorio_id: string
+          profesional_id: string
+          registrado_por: string
+          fecha?: string
+          detalle: Json
+        }
+        Update: {
+          id?: string
+          operacion_id?: string
+          consultorio_id?: string
+          profesional_id?: string
+          registrado_por?: string
+          fecha?: string
+          detalle?: Json
+        }
+        Relationships: []
+      }
+      recordatorios_cobro: {
+        Row: {
+          id: string
+          operacion_id: string
+          consultorio_id: string
+          profesional_id: string
+          clave: string
+          programado_en: string
+          intentos: number
+          estado: string
+          reclamado_en: string | null
+          enviado_en: string | null
+          mensaje_id: string | null
+        }
+        Insert: {
+          id?: string
+          operacion_id: string
+          consultorio_id: string
+          profesional_id: string
+          clave: string
+          programado_en: string
+          intentos?: number
+          estado?: string
+          reclamado_en?: string | null
+          enviado_en?: string | null
+          mensaje_id?: string | null
+        }
+        Update: {
+          id?: string
+          operacion_id?: string
+          consultorio_id?: string
+          profesional_id?: string
+          clave?: string
+          programado_en?: string
+          intentos?: number
+          estado?: string
+          reclamado_en?: string | null
+          enviado_en?: string | null
+          mensaje_id?: string | null
+        }
+        Relationships: []
+      }
+      intentos_recordatorio_cobro: {
+        Row: {
+          id: string
+          recordatorio_id: string
+          consultorio_id: string
+          profesional_id: string
+          fecha: string
+          resultado: string
+        }
+        Insert: {
+          id?: string
+          recordatorio_id: string
+          consultorio_id: string
+          profesional_id: string
+          fecha?: string
+          resultado: string
+        }
+        Update: {
+          id?: string
+          recordatorio_id?: string
+          consultorio_id?: string
+          profesional_id?: string
+          fecha?: string
+          resultado?: string
+        }
+        Relationships: []
+      }
+
       administradores_plataforma: {
         Row: {
           creado_en: string
@@ -309,6 +658,8 @@ export type Database = {
       }
       turnos: {
         Row: {
+          servicio_id: string | null
+          atendido_en: string | null
           actualizado_en: string
           cancelado_en: string | null
           consultorio_id: string
@@ -326,6 +677,8 @@ export type Database = {
           tipo: Database["public"]["Enums"]["tipo_consulta"]
         }
         Insert: {
+          servicio_id?: string | null
+          atendido_en?: string | null
           actualizado_en?: string
           cancelado_en?: string | null
           consultorio_id: string
@@ -343,6 +696,8 @@ export type Database = {
           tipo?: Database["public"]["Enums"]["tipo_consulta"]
         }
         Update: {
+          servicio_id?: string | null
+          atendido_en?: string | null
           actualizado_en?: string
           cancelado_en?: string | null
           consultorio_id?: string
@@ -1162,6 +1517,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      gestionar_finanzas: { Args: { p_accion: string; p_datos: Json }; Returns: Json }
+      consultar_finanzas: { Args: {p_turno?:string;p_paciente?:string}; Returns: Json }
+      consultar_economia_turnos: { Args: {p_turnos:string[]}; Returns: Json }
+      validar_recordatorio_cobro: { Args: {p_id:string}; Returns: Json }
+      preparar_recordatorios_cobro: { Args: never; Returns: undefined }
+      reclamar_recordatorios_cobro: { Args: never; Returns: Json }
+      confirmar_recordatorio_cobro: { Args: {p_id:string;p_reclamado:string;p_resultado:string;p_mensaje:string}; Returns: undefined }
+
       aceptar_invitacion: {
         Args: { p_huella?: string }
         Returns: undefined
