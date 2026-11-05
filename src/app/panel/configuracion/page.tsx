@@ -36,9 +36,6 @@ async function SeccionesConfiguracion() {
 
   return (
     <div className="space-y-6">
-      <nav aria-label="Secciones de configuración" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {[{ id: "perfil", titulo: "Mi perfil", icono: UserRound }, { id: "consultorio", titulo: "Consultorio", icono: Building2 }, { id: "apariencia", titulo: "Apariencia", icono: Palette }, { id: "seguridad", titulo: "Seguridad", icono: ShieldCheck }].map(({ id, titulo, icono: Icono }) => <a key={id} href={`#${id}`} className="flex items-center gap-2 rounded-xl border bg-card p-3 text-xs font-medium transition-colors outline-none hover:border-primary/30 hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"><Icono className="size-4 shrink-0 text-primary" aria-hidden="true" />{titulo}</a>)}
-      </nav>
       <Card id="perfil" className="scroll-mt-20">
         <CardHeader>
           <CardTitle className="flex items-center gap-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"><UserRound className="size-4" aria-hidden="true" /></span><h2>Perfil profesional</h2></CardTitle>
