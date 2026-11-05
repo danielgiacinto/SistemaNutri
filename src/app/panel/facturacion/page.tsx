@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ArrowDown, CalendarDays, Check, CircleCheck, Clock3, CreditCard, FlaskConical, Gift, HeartHandshake, LockKeyhole, ReceiptText, Salad, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowDown, CalendarDays, Check, CircleCheck, Clock3, CreditCard, Gift, HeartHandshake, LockKeyhole, ReceiptText, Salad, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { requerirProfesionalParaFacturacion } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { registrarError } from "@/lib/errores";
@@ -97,7 +97,6 @@ async function ContenidoFacturacion() {
   const disponible = Boolean(credencialesMercadoPago() && configuracion.precioMensual);
   const puedeElegir = contexto.consultorio.rol === "titular" && disponible && !autorizada && estadoSuscripcion !== "paused" &&
     (!suscripcion.data?.cancelacion_solicitada_en || estadoSuscripcion === "cancelled") && codigo !== "suspendido_admin";
-  const compradorDePrueba = process.env.NODE_ENV === "development" ? process.env.MERCADOPAGO_CORREO_PAGADOR_PRUEBA?.trim() : undefined;
   const tituloEstado = enPrueba ? "Estás en tu prueba gratis" : activo ? "Tu plan está activo" : codigo === "gracia" ? "Hay un cobro pendiente" : vencido ? "Es momento de activar tu plan" : "Tu cuenta está suspendida";
   const IconoEstado = enPrueba ? Gift : activo ? CircleCheck : Clock3;
   const pagos = suscripcion.data
@@ -142,17 +141,6 @@ async function ContenidoFacturacion() {
           {estadoSinActualizar ? <p role="status" className="text-xs text-muted-foreground">No pudimos actualizar la suscripción con Mercado Pago. Mostramos el último estado registrado; volvé a actualizar en unos instantes.</p> : null}
         </CardContent>
       </Card>
-
-      {compradorDePrueba ? (
-        <aside aria-labelledby="titulo-prueba-mercadopago" className="flex items-start gap-3 rounded-xl border border-primary/20 bg-accent/40 p-4 text-sm">
-          <FlaskConical className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
-          <div className="min-w-0 space-y-2">
-            <h2 id="titulo-prueba-mercadopago" className="font-semibold">Prueba de Mercado Pago</h2>
-            <p className="leading-relaxed text-muted-foreground">En la pasarela, ingresá con la cuenta <strong className="break-all font-medium text-foreground">{compradorDePrueba}</strong>. Tiene que ser el comprador de prueba: la cuenta vendedora que creó la integración no puede pagar su propia suscripción.</p>
-            <p className="leading-relaxed text-muted-foreground">Para esta prueba elegí <strong className="font-medium text-foreground">Nueva tarjeta</strong> y usá una <a href="https://www.mercadopago.com.ar/developers/es/docs/subscriptions/additional-content/your-integrations/test/cards" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline underline-offset-4">tarjeta de crédito de prueba</a>. Que la dirección sea mercadopago.com.ar también es normal durante las pruebas.</p>
-          </div>
-        </aside>
-      ) : null}
 
       <section id="opciones-de-pago" aria-labelledby="titulo-plan" className="scroll-mt-24">
         <Card className="gap-0 overflow-hidden p-0">

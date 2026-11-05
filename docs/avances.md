@@ -38,12 +38,15 @@ webhooks de pago/factura, cobertura, recuperación de acceso y conciliación rep
 - Revisión en el navegador local autenticado: las 12 rutas cargan a 320, 768 y
   1440 px sin desbordamiento horizontal con los datos disponibles. También se
   inspeccionaron visualmente las fichas y formularios en móvil y escritorio.
-- `npm run verificar`: lint, tipos y las 202 pruebas en 26 archivos pasan.
-  La compilación de esta sesión falla en Turbopack al iniciar el proceso Node que
-  transforma `globals.css.css` (el proceso termina antes de conectar, código 0).
-  Se reprodujo fuera del sandbox y con terminal interactiva. Queda pendiente
-  completar la compilación de producción; no se modificó la configuración para
-  ocultar el fallo.
+- `npm run verificar` completo: lint, tipos, 202 pruebas en 26 archivos y
+  compilación de producción pasan, con las 58 páginas generadas.
+- El fallo de Turbopack se aisló en la ejecución de loaders mediante procesos
+  auxiliares: en este entorno Windows terminaban antes de conectar (código 0).
+  `next.config.ts` usa ahora `experimental.turbopackPluginRuntimeStrategy` con
+  `workerThreads` en Windows; los otros sistemas conservan `childProcesses`.
+  La opción está documentada en el Next.js 16.4.3 instalado. La verificación
+  completa se ejecutó fuera del sandbox porque este bloqueó después la creación
+  de un directorio de prerenderizado en `.next` con `EPERM`.
 
 ## Cierre de fase 5
 

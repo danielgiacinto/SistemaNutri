@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
     // contraseñas y datos clínicos en la terminal.
     serverFunctions: false,
   },
+  experimental: {
+    // En Windows los procesos auxiliares de los loaders terminan antes de conectar.
+    // Los hilos evitan ese fallo; en otros sistemas se conserva la estrategia habitual.
+    turbopackPluginRuntimeStrategy: process.platform === "win32" ? "workerThreads" : "childProcesses",
+  },
   turbopack: {
     rules: {
       "*.css": {
