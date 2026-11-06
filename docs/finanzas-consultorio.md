@@ -71,8 +71,12 @@ No se otorgan permisos de borrado de pagos ni movimientos a los usuarios.
 
 Endpoint: `GET /api/finanzas/recordatorios`, protegido por `CRON_SECRET` mediante
 `Authorization: Bearer …`. No depende del navegador ni de Mercado Pago.
-`vercel.json` define una ejecución por hora. Debe usarse un plan o scheduler que
-admita esa frecuencia; el envío se realiza en la siguiente ejecución posterior al plazo.
+`vercel.json` define una ejecución diaria a las 12:00 UTC (09:00 de Argentina),
+compatible con Vercel Hobby. En ese plan puede ejecutarse entre las 09:00 y las
+09:59 de Argentina. El envío se realiza en la siguiente ejecución posterior al plazo,
+por lo que los avisos y reintentos pueden quedar pendientes hasta la ejecución del
+día siguiente; si se acumulan más de 10 avisos, el resto espera ejecuciones posteriores.
+Para procesarlos con mayor frecuencia se necesita un plan o scheduler que lo permita.
 
 El profesional activa la función y configura los plazos (inicialmente 24 y 48 horas),
 texto, nombre e instrucciones. Además, debe registrar la autorización del paciente

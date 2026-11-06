@@ -270,6 +270,12 @@ La configuración `vercel.json` incluye conciliación diaria a las **06:00 UTC**
 La frecuencia diaria es compatible con Hobby; una mayor frecuencia requiere revisar
 los límites del plan. El cron es respaldo del webhook, no un mecanismo de cobro.
 
+Los recordatorios de cobro (`/api/finanzas/recordatorios`) se ejecutan diariamente
+a las **12:00 UTC** (09:00 de Argentina; en Hobby, durante esa hora). Ambos cron
+son compatibles con Hobby. Los avisos vencidos y sus reintentos se procesan en la
+siguiente ejecución diaria, con un máximo de 10 avisos por ejecución. Para aumentar
+la frecuencia se requiere un plan o scheduler que lo admita.
+
 Se comprobó el despliegue del commit `dc36ed7`: endpoint de conciliación público con
 401 sin secreto y 200 con el secreto correcto. Revisó una suscripción sin fallos;
 se verificaron cursor, fecha de éxito y ausencia de error en Supabase. Las nuevas
