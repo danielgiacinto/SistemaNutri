@@ -1,6 +1,6 @@
 import 'server-only';
 import type { ClienteSupabase } from '@/lib/supabase/servidor';
-import type { DatosFinanzas, OperacionConsultorio } from '@/tipos/finanzas';
+import type { DatosFinanzas, OperacionConsultorio, ServicioConsultorio } from '@/tipos/finanzas';
 import { registrarError } from '@/lib/errores';
 
 export async function consultarFinanzas(cliente: ClienteSupabase, filtros: {p_turno?:string;p_paciente?:string} = {}): Promise<DatosFinanzas> {
@@ -20,6 +20,15 @@ export async function consultarEconomiaTurnos(cliente: ClienteSupabase, turnos: 
     throw new Error('No se pudieron cargar los estados económicos.');
   }
   return data as unknown as OperacionConsultorio[];
+}
+
+export async function listarServicios(cliente: ClienteSupabase): Promise<ServicioConsultorio[]> {
+  const { data, error } = await cliente.from('servicios_consultorio').select('id,nombre,descripcion,precio,moneda,duracion_minutos,activo').order('nombre');
+  if (error) {
+    registrarError('listar_servicios', error);
+    throw new Error('No se pudieron cargar los servicios.');
+  }
+  return data;
 }
 
 export async function listarServiciosActivos(cliente: ClienteSupabase) {

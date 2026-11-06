@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTransition } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +9,7 @@ import { CalendarPlus, Save } from "lucide-react";
 import { guardarTurno, registrarTurno } from "@/acciones/turnos";
 import { esquemaAltaTurno, esquemaEdicionTurno, type DatosAltaTurno, type DatosEdicionTurno } from "@/esquemas/turno";
 import { aplicarErroresServidor } from "@/lib/formularios";
+import { dineroFinanzas } from "@/tipos/finanzas";
 import { CampoTexto } from "@/componentes/formularios/campo-texto";
 import { CampoArea } from "@/componentes/formularios/campo-area";
 import { CampoSelect } from "@/componentes/formularios/campo-select";
@@ -16,7 +18,6 @@ import { FieldGroup } from "@/componentes/ui/field";
 import {
   DURACIONES_TURNO_MINUTOS,
   ETIQUETAS_ESTADO_TURNO,
-  ETIQUETAS_TIPO_CONSULTA,
 } from "@/configuracion/clinica";
 
 type PacienteOpcion = { id: string; nombre: string; apellido: string };
@@ -44,7 +45,7 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
       fecha: inicial?.fecha ?? "",
       hora: inicial?.hora ?? "09:00",
       duracionMinutos: inicial?.duracionMinutos ?? duracionInicial,
-      tipo: inicial?.tipo ?? "seguimiento",
+      tipo: inicial?.tipo ?? "otro",
       motivo: inicial?.motivo ?? "",
       notasAdministrativas: inicial?.notasAdministrativas ?? "",
       estado: inicial?.estado ?? "programado",
@@ -71,9 +72,10 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
         {modo === "alta" && <Controller control={formulario.control} name="servicioId" render={({field: campo}) => (
           <CampoSelect id="turno-servicio" etiqueta="Servicio y precio" valor={campo.value || "sin_configurar"} alCambiar={v=>campo.onChange(v === "sin_configurar" ? "" : v)} opciones={[
             {valor:"sin_configurar",etiqueta:"Sin configurar (no se genera un cobro)"},
-            ...servicios.map(s=>({valor:s.id,etiqueta:`${s.nombre} · ${s.precio === 0 ? "Sin cargo" : `${s.precio} ${s.moneda}`}`}))
+            ...servicios.map(s=>({valor:s.id,etiqueta:`${s.nombre} · ${s.precio === 0 ? "Sin cargo" : dineroFinanzas(s.precio, s.moneda)}`}))
           ]} />
         )} />}
+        {modo === "alta" && <p className="text-sm text-muted-foreground"><Link href="/panel/configuracion/servicios" className="font-medium text-primary underline-offset-4 hover:underline">Configurar servicios y precios</Link> · Podés crear servicios distintos con el mismo precio o sin cargo.</p>}
 
         <Controller
           control={formulario.control}
@@ -141,20 +143,6 @@ export function FormularioTurno({ pacientes, duracionPredeterminada, inicial, mo
           />
         </div>
         <div className="grid gap-5 [&>*]:min-w-0 sm:grid-cols-2">
-          <Controller
-            control={formulario.control}
-            name="tipo"
-            render={({ field: campo }) => (
-              <CampoSelect
-                id="turno-tipo"
-                etiqueta="Tipo de consulta"
-                valor={campo.value}
-                alCambiar={campo.onChange}
-                error={errores.tipo?.message}
-                opciones={Object.entries(ETIQUETAS_TIPO_CONSULTA).map(([valor, etiqueta]) => ({ valor, etiqueta }))}
-              />
-            )}
-          />
           {modo === "edicion" && (
             <Controller
               control={formulario.control}

@@ -9,7 +9,8 @@ import type { TurnoConPaciente } from "@/servicios/turnos";
 import { distribuirTurnos, formatoMinutos, intervaloDelDia } from "./distribucion-turnos";
 import { ContenedorHorarioAgenda, IndicadorHoraAgenda, RelojAgenda } from "./reloj-agenda";
 
-type Propiedades = { vista: VistaAgenda; fecha: string; fechaHoy: string; horaHoy: string; zonaHoraria: string; turnos: TurnoConPaciente[]; horarios: HorarioAtencion[]; bloqueos: BloqueoAgenda[] };
+export type PropiedadesCalendario = { vista: VistaAgenda; fecha: string; fechaHoy: string; horaHoy: string; zonaHoraria: string; turnos: TurnoConPaciente[]; horarios: HorarioAtencion[]; bloqueos: BloqueoAgenda[] };
+type Propiedades = PropiedadesCalendario & { alCambiarVista?: (vista: VistaAgenda) => void };
 const COLOR_ESTADO: Record<string, string> = {
   programado: "border-primary/25 bg-accent/70 text-accent-foreground",
   confirmado: "border-primary/50 bg-accent text-accent-foreground",
@@ -34,7 +35,7 @@ export function CalendarioAgenda(propiedades: Propiedades) {
       <div className="space-y-4 rounded-2xl border bg-card p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <nav aria-label="Vista de la agenda" className="grid grid-cols-3 gap-1 rounded-xl bg-muted/60 p-1 sm:w-64">
-            {(["dia", "semana", "mes"] as const).map((opcion) => <Link key={opcion} href={hrefAgenda(opcion, fecha)} aria-current={vista === opcion ? "page" : undefined} className={cn("rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors", vista === opcion ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>{opcion === "dia" ? "Día" : opcion === "semana" ? "Semana" : "Mes"}</Link>)}
+            {(["dia", "semana", "mes"] as const).map((opcion) => <Link key={opcion} href={hrefAgenda(opcion, fecha)} prefetch={false} onNavigate={propiedades.alCambiarVista ? (evento) => { evento.preventDefault(); propiedades.alCambiarVista?.(opcion); } : undefined} aria-current={vista === opcion ? "page" : undefined} className={cn("rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors", vista === opcion ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>{opcion === "dia" ? "Día" : opcion === "semana" ? "Semana" : "Mes"}</Link>)}
           </nav>
           <div className="flex items-center justify-between gap-2 sm:justify-end">
             <Link href={hrefAgenda(vista, fechaHoy)} className="rounded-lg border px-3 py-2 text-xs font-semibold transition-colors hover:bg-accent">Hoy</Link>

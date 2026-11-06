@@ -1,5 +1,5 @@
 import { consultarEconomiaTurnos } from "@/servicios/finanzas";
-import { estadoEconomico } from "@/tipos/finanzas";
+import { dineroFinanzas, estadoEconomico } from "@/tipos/finanzas";
 import { CobroRapido } from "@/componentes/finanzas/cobro-rapido";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -72,6 +72,10 @@ async function Contenido({ params }: { params: PageProps<"/panel/agenda/[turnoId
       {turno.profesional_id===contexto.usuarioId && <CobroRapido estado={estadoEconomico(operaciones[0])} zona={contexto.consultorio.zonaHoraria} turnoId={turno.id}/>}
       <Card>
         <CardContent>
+          <div className="mb-6 rounded-xl border bg-muted/30 p-4 text-sm">
+            <p className="font-medium">Servicio y precio</p>
+            <p className="mt-1 text-muted-foreground">{operaciones[0] ? `${operaciones[0].servicio_nombre} · ${operaciones[0].original === 0 ? "Sin cargo" : dineroFinanzas(operaciones[0].original, operaciones[0].moneda)}` : "Sin configurar. Podés asignar un servicio desde Cobros."}</p>
+          </div>
           <FormularioTurno
             modo="edicion"
             pacientes={pacientes.some((item) => item.id === paciente.id) ? pacientes : [{ id: paciente.id, nombre: paciente.nombre, apellido: paciente.apellido }, ...pacientes]}
@@ -79,6 +83,7 @@ async function Contenido({ params }: { params: PageProps<"/panel/agenda/[turnoId
             inicial={{
               turnoId: turno.id,
               pacienteId: turno.paciente_id,
+              servicioId: turno.servicio_id ?? "",
               fecha: fechaEnZona(inicio, contexto.consultorio.zonaHoraria),
               hora: horaCortaEnZona(inicio, contexto.consultorio.zonaHoraria),
               duracionMinutos: duracionValida,

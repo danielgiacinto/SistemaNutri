@@ -52,7 +52,7 @@ entrega real de recordatorios. Ver [Finanzas del consultorio](docs/finanzas-cons
 5. En la ficha del paciente → **Visibilidad** → **Invitar al portal**. Llega un correo: al abrirlo elige una contraseña, acepta y entra a `/portal`.
 6. En la ficha → **Planes**: el borrador no se comparte. **Publicar para el paciente** deja esa versión en `/portal/plan`.
 7. En **Comunidad**: creá un desafío, publicalo, y con la cuenta del paciente sumate y escribí una actividad. El borrador no se ve en el portal.
-8. Tras aplicar `20261106000000_finanzas_consultorio.sql`: en **Finanzas**, configurá servicios y precios, incluyendo servicios sin cargo. Asociá un servicio al agendar y registrá pagos desde **Cobros de esta agenda**. Consultá **Pagos y deudas** en la ficha del paciente y el gráfico de ingresos en Inicio. Los recordatorios requieren SMTP, scheduler, activación del profesional y autorización del paciente.
+8. Tras aplicar `20261106000000_finanzas_consultorio.sql`: en **Configuración → Servicios y precios**, configurá tus prestaciones, incluyendo servicios sin cargo. Asociá un servicio al agendar y registrá pagos desde **Cobros de esta agenda**. Consultá **Pagos y deudas** en la ficha del paciente y el gráfico de ingresos en Inicio. Los recordatorios requieren SMTP, scheduler, activación del profesional y autorización del paciente.
 
 En **Plan y facturación**, el botón **Elegir este plan** abre Mercado Pago para
 completar la autorización con los datos de prueba; este recorrido ya se completó correctamente. La tarjeta ya no se ingresa

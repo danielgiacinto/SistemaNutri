@@ -2,13 +2,17 @@
 
 ## Alcance y ubicación
 
-`/panel/finanzas` permite administrar servicios, precios, cobros, historial,
+`/panel/configuracion/servicios` permite administrar el catálogo de servicios y
+precios, con accesos desde Agenda y Nuevo turno. Los servicios pueden
+tener el mismo precio o ser sin cargo. El alta del turno usa únicamente «Servicio
+y precio»; el tipo anterior se conserva internamente para los turnos históricos.
+`/panel/finanzas` permite administrar cobros, historial,
 movimientos manuales y configuración. La agenda ofrece cobro rápido mediante un
 diálogo sin cambiar de pantalla. La ficha del paciente incorpora “Pagos y deudas”.
 El inicio muestra un único gráfico de líneas de ingresos: día (por hora), semana
 (últimos siete días) y mes (últimos doce meses). Reemplaza el gráfico de turnos y
 evita repetir indicadores clínicos. Finanzas muestra tres totales breves y las
-secciones Cobros, Caja y Servicios; los formularios de alta, edición, corrección
+secciones Cobros y Caja; los formularios de alta, edición, corrección
 y configuración se abren en diálogos. Los filtros adicionales quedan plegados.
 Estos registros son internos: no emiten facturas fiscales ni cobran con una pasarela.
 La suscripción a Nutrisfera conserva sus tablas, pantallas y procesos anteriores.

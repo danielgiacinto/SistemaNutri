@@ -1,6 +1,5 @@
 import { consultarEconomiaTurnos } from "@/servicios/finanzas";
 import { estadoEconomico } from "@/tipos/finanzas";
-import { CobroRapido } from "@/componentes/finanzas/cobro-rapido";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -12,7 +11,7 @@ import { listarTurnosEnRango } from "@/servicios/turnos";
 import { listarBloqueos, listarHorarios } from "@/servicios/agenda";
 import { horaEnZona, hoyEnZona, rangoDeVista } from "@/lib/fechas";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
-import { CalendarioAgenda } from "@/componentes/agenda/calendario-agenda";
+import { AgendaInteractiva } from "@/componentes/agenda/agenda-interactiva";
 import { Button } from "@/componentes/ui/button";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { esFechaIso } from "@/lib/fechas";
@@ -27,6 +26,7 @@ export default function PaginaAgenda({ searchParams }: PageProps<"/panel/agenda"
         descripcion="Tu día, organizado. Consultá tus turnos y encontrá el próximo espacio disponible."
         acciones={
           <>
+            <Button asChild variant="outline"><Link href="/panel/configuracion/servicios">Servicios y precios</Link></Button>
             <Button asChild variant="outline">
               <Link href="/panel/agenda/disponibilidad">
                 <Clock aria-hidden="true" />
@@ -62,7 +62,7 @@ async function ContenidoAgenda({ searchParams }: { searchParams: PageProps<"/pan
   const fechaHoy = hoyEnZona(contexto.consultorio.zonaHoraria, ahora);
   const horaHoy = horaEnZona(contexto.consultorio.zonaHoraria, ahora);
   const fecha = filtro.fecha ?? fechaHoy;
-  const rango = rangoDeVista(filtro.vista, fecha, contexto.consultorio.zonaHoraria);
+  const rango = rangoDeVista("mes", fecha, contexto.consultorio.zonaHoraria);
   const cliente = await crearClienteServidor();
   const [turnos, horarios, bloqueos] = await Promise.all([
     listarTurnosEnRango(cliente, contexto.consultorio.id, rango.desde, rango.hasta),
@@ -72,8 +72,7 @@ async function ContenidoAgenda({ searchParams }: { searchParams: PageProps<"/pan
 
   const operaciones = await consultarEconomiaTurnos(cliente,turnos.map(t=>t.id));
   return (
-    <>
-    <CalendarioAgenda
+    <AgendaInteractiva
       vista={filtro.vista}
       fecha={fecha}
       fechaHoy={fechaHoy}
@@ -82,8 +81,7 @@ async function ContenidoAgenda({ searchParams }: { searchParams: PageProps<"/pan
       turnos={turnos.map(t=>({...t,estadoEconomico:estadoEconomico(operaciones.find(o=>o.turno_id===t.id))}))}
       horarios={horarios}
       bloqueos={bloqueos}
+      profesionalId={contexto.usuarioId}
     />
-    <section className="grid gap-3 rounded-xl border bg-card p-4" aria-label="Cobro rápido de los turnos"><h2 className="font-semibold">Cobros de esta agenda</h2>{turnos.filter(t=>t.profesional_id===contexto.usuarioId).map(t=><div key={t.id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-sm"><span>{t.pacientes?.nombre} {t.pacientes?.apellido} · {new Date(t.inicio).toLocaleString("es-AR",{timeZone:contexto.consultorio.zonaHoraria})}</span><CobroRapido zona={contexto.consultorio.zonaHoraria} turnoId={t.id} estado={estadoEconomico(operaciones.find(o=>o.turno_id===t.id))}/></div>)}{!turnos.length&&<p className="text-sm text-muted-foreground">Sin turnos en este período.</p>}</section>
-    </>
   );
 }
