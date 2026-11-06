@@ -1,6 +1,6 @@
 # Escena de palta de la Home
 
-La sección `#esencia` usa dos mitades y una semilla como capas fotográficas independientes. El desplazamiento controla su apertura, inclinación, profundidad y sombras; el cursor agrega una inclinación leve en dispositivos con puntero preciso. No usa un motor WebGL ni nuevas dependencias.
+La sección `#esencia` usa dos mitades y una semilla como capas fotográficas independientes. El desplazamiento controla su apertura, inclinación, profundidad y sombras. La escena no reacciona al movimiento del cursor. No usa un motor WebGL ni nuevas dependencias.
 
 ## Recursos
 

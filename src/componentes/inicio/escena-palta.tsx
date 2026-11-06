@@ -21,14 +21,12 @@ export function EscenaPalta() {
     if (!raiz) return;
 
     const preferencia = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const punteroFino = window.matchMedia("(hover: hover) and (pointer: fine)");
     let detener = () => {};
 
     function iniciarMovimiento() {
       if (!raiz) return () => {};
       const buscar = (nombre: string) => raiz.querySelector<HTMLElement>(`.inicio-palta-${nombre}`)!;
       const escena = buscar("escena");
-      const conjunto = buscar("conjunto");
       const frontal = buscar("frontal");
       const posterior = buscar("posterior");
       const semilla = buscar("semilla");
@@ -36,7 +34,7 @@ export function EscenaPalta() {
       const sombraSemilla = buscar("sombra-semilla");
       const orbita = buscar("orbita");
       const etiquetas = Array.from(raiz.querySelectorAll<HTMLElement>(".inicio-palta-etiqueta"));
-      const elementos = [conjunto, frontal, posterior, semilla, sombra, sombraSemilla, orbita, ...etiquetas];
+      const elementos = [frontal, posterior, semilla, sombra, sombraSemilla, orbita, ...etiquetas];
 
       let fotograma = 0;
       let visible = false;
@@ -47,7 +45,6 @@ export function EscenaPalta() {
       let objetivo = 0;
       let anterior = 0;
       let etapa = -1;
-      const puntero = { x: 0, y: 0, destinoX: 0, destinoY: 0 };
 
       function dibujar() {
         const apertura = suavizar(limitar((progreso - 0.12) / 0.76));
@@ -56,7 +53,6 @@ export function EscenaPalta() {
         const unidad = escena.clientWidth / 600;
         const px = (valor: number) => `${(valor * unidad).toFixed(2)}px`;
 
-        conjunto.style.transform = `rotateX(${(-puntero.y * 4).toFixed(2)}deg) rotateY(${(puntero.x * 6).toFixed(2)}deg)`;
         posterior.style.transform = `translate(-50%, -50%) translate3d(${px(-37 - apertura * 107)}, ${px(-16 + apertura * 46)}, ${px(-50 - apertura * 35)}) rotateX(${apertura * -5}deg) rotateY(${-12 - apertura * 14}deg) rotateZ(${-9 - apertura * 18}deg) scale(${0.94 - apertura * 0.03})`;
         frontal.style.transform = `translate(-50%, -50%) translate3d(${px(29 + apertura * 86)}, ${px(14 - apertura * 49)}, ${px(24 + apertura * 42)}) rotateX(${apertura * 6}deg) rotateY(${8 + apertura * 10}deg) rotateZ(${10 + apertura * 12}deg)`;
         semilla.style.transform = `translate(-50%, -50%) translate3d(${px(elevacion * -151)}, ${px(elevacion * 14)}, ${px(elevacion * 120)}) rotateY(${elevacion * -25}deg) rotateZ(${elevacion * -40}deg) scale(${1 - elevacion * 0.09})`;
@@ -84,10 +80,8 @@ export function EscenaPalta() {
         anterior = instante;
         const mezcla = 1 - Math.exp(-delta / 85);
         progreso += (objetivo - progreso) * mezcla;
-        puntero.x += (puntero.destinoX - puntero.x) * mezcla;
-        puntero.y += (puntero.destinoY - puntero.y) * mezcla;
         dibujar();
-        if (Math.abs(objetivo - progreso) > 0.0001 || Math.abs(puntero.destinoX - puntero.x) > 0.001 || Math.abs(puntero.destinoY - puntero.y) > 0.001) {
+        if (Math.abs(objetivo - progreso) > 0.0001) {
           fotograma = requestAnimationFrame(animar);
         } else {
           anterior = 0;
@@ -108,20 +102,6 @@ export function EscenaPalta() {
         inicio = raiz!.getBoundingClientRect().top + window.scrollY - altoVentana * 0.55;
         recorrido = Math.max(1, raiz!.offsetHeight - altoVentana * 0.1);
         actualizarScroll();
-      }
-
-      function moverPuntero(evento: PointerEvent) {
-        if (!punteroFino.matches || evento.pointerType !== "mouse") return;
-        const limites = escena.getBoundingClientRect();
-        puntero.destinoX = limitar((evento.clientX - limites.left) / limites.width * 2 - 1, -1, 1);
-        puntero.destinoY = limitar((evento.clientY - limites.top) / limites.height * 2 - 1, -1, 1);
-        solicitarFotograma();
-      }
-
-      function centrarPuntero() {
-        puntero.destinoX = 0;
-        puntero.destinoY = 0;
-        solicitarFotograma();
       }
 
       function actualizarVisibilidad() {
@@ -156,8 +136,6 @@ export function EscenaPalta() {
       tamanos.observe(escena);
       window.addEventListener("scroll", actualizarScroll, { passive: true });
       window.addEventListener("resize", medir, { passive: true });
-      escena.addEventListener("pointermove", moverPuntero, { passive: true });
-      escena.addEventListener("pointerleave", centrarPuntero);
       document.addEventListener("visibilitychange", actualizarVisibilidad);
       void document.fonts.ready.then(() => { if (!terminado) medir(); });
 
@@ -168,8 +146,6 @@ export function EscenaPalta() {
         tamanos.disconnect();
         window.removeEventListener("scroll", actualizarScroll);
         window.removeEventListener("resize", medir);
-        escena.removeEventListener("pointermove", moverPuntero);
-        escena.removeEventListener("pointerleave", centrarPuntero);
         document.removeEventListener("visibilitychange", actualizarVisibilidad);
         elementos.forEach((elemento) => elemento.removeAttribute("style"));
         raiz.style.removeProperty("--palta-progreso");
