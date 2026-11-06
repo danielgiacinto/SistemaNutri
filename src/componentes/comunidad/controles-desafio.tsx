@@ -25,7 +25,7 @@ export function ControlesDesafio({ desafioId, estado }: { desafioId: string; est
             <Send aria-hidden="true" />
             Publicar
           </Button>
-          <Button type="button" variant="outline" disabled={pendiente} onClick={() => ejecutar(() => borrarBorradorDesafio(desafioId))}>
+          <Button type="button" variant="outline" className="border-destructive/25 text-destructive hover:bg-destructive/10 hover:text-destructive" disabled={pendiente} onClick={() => ejecutar(() => borrarBorradorDesafio(desafioId))}>
             <Trash2 aria-hidden="true" />
             Borrar borrador
           </Button>
@@ -68,6 +68,7 @@ export function BotonBorrarActividad({ actividadId }: { actividadId: string }) {
     <Button
       type="button"
       variant="ghost"
+      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
       size="sm"
       disabled={pendiente}
       onClick={() =>

@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import CargandoSeccionPaciente from "../loading";
 import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/componentes/ui/badge";
 import type { Metadata } from "next";
@@ -12,7 +14,11 @@ import { estadoDelPlan } from "@/componentes/planes/estado-plan";
 
 export const metadata: Metadata = { title: "Planes alimentarios" };
 
-export default async function PaginaPlanesPaciente({ params }: PageProps<"/panel/pacientes/[pacienteId]/planes">) {
+export default function PaginaPlanesPaciente({ params }: PageProps<"/panel/pacientes/[pacienteId]/planes">) {
+  return <Suspense fallback={<CargandoSeccionPaciente />}><ContenidoSeccion params={params} /></Suspense>;
+}
+
+async function ContenidoSeccion({ params }: Pick<PageProps<"/panel/pacientes/[pacienteId]/planes">, "params">) {
   const { pacienteId } = await params;
   const { paciente, contexto, cliente } = await requerirPacienteDelConsultorio(pacienteId);
   const planes = await listarPlanesDelPaciente(cliente, contexto.consultorio.id, paciente.id);

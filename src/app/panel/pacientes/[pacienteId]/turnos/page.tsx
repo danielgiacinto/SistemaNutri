@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import CargandoSeccionPaciente from "../loading";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -12,7 +14,11 @@ import { formatearFechaHora } from "@/lib/fechas";
 
 export const metadata: Metadata = { title: "Turnos del paciente" };
 
-export default async function PaginaTurnosPaciente({ params }: PageProps<"/panel/pacientes/[pacienteId]/turnos">) {
+export default function PaginaTurnosPaciente({ params }: PageProps<"/panel/pacientes/[pacienteId]/turnos">) {
+  return <Suspense fallback={<CargandoSeccionPaciente />}><ContenidoSeccion params={params} /></Suspense>;
+}
+
+async function ContenidoSeccion({ params }: Pick<PageProps<"/panel/pacientes/[pacienteId]/turnos">, "params">) {
   const { pacienteId } = await params;
   const { paciente, contexto, cliente } = await requerirPacienteDelConsultorio(pacienteId);
   const turnos = await listarTurnosDelPaciente(cliente, contexto.consultorio.id, paciente.id);

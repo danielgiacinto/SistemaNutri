@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import CargandoSeccionPaciente from "../loading";
 import { TituloTarjeta } from "@/componentes/comunes/titulo-tarjeta";
 import { Eye } from "lucide-react";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
@@ -13,7 +15,11 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/componentes/ui
 
 export const metadata: Metadata = { title: "Visibilidad para el paciente" };
 
-export default async function PaginaVisibilidad({ params }: PageProps<"/panel/pacientes/[pacienteId]/visibilidad">) {
+export default function PaginaVisibilidad({ params }: PageProps<"/panel/pacientes/[pacienteId]/visibilidad">) {
+  return <Suspense fallback={<CargandoSeccionPaciente />}><ContenidoSeccion params={params} /></Suspense>;
+}
+
+async function ContenidoSeccion({ params }: Pick<PageProps<"/panel/pacientes/[pacienteId]/visibilidad">, "params">) {
   const { pacienteId } = await params;
   const { paciente, contexto, cliente } = await requerirPacienteDelConsultorio(pacienteId);
   const [evoluciones, objetivos, mediciones, invitacion] = await Promise.all([

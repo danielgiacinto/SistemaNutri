@@ -1,5 +1,7 @@
 'use client';
+import { InsigniaCobro } from "@/componentes/comunes/insignia-estado";
 import { ZONA_HORARIA_PREDETERMINADA } from '@/configuracion/producto';
+import { ReceiptText, ChevronRight } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { cargarFinanzas } from '@/acciones/finanzas';
@@ -17,7 +19,7 @@ export function CobroRapido({turnoId,estado='Sin configurar',inicial,zona=ZONA_H
   const operacion=datos?.operaciones.find(o=>o.turno_id===turnoId);
   const configuracion=datos?.configuracion??CONFIGURACION_FINANCIERA_INICIAL;
   return <Dialog open={abierto} onOpenChange={valor=>{fijarAbierto(valor);if(valor)recargar();}}>
-    <Button variant="outline" size="sm" onClick={()=>{fijarAbierto(true);recargar();}}>Cobros · {datos ? estadoEconomico(operacion) : estado}</Button>
+    <Button variant="outline" size="sm" className="h-9 gap-2 rounded-xl px-3" onClick={()=>{fijarAbierto(true);recargar();}}><ReceiptText className="size-4 text-primary" aria-hidden="true"/><span>Cobros</span><InsigniaCobro estado={datos ? estadoEconomico(operacion) : estado} /><ChevronRight className="size-3.5 text-muted-foreground" aria-hidden="true"/></Button>
     <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
       <DialogHeader><DialogTitle>{operacion?`${operacion.paciente} · ${estadoEconomico(operacion)}`:'Configurar cobro'}</DialogTitle><DialogDescription>{operacion?`${operacion.servicio_nombre} · ${new Date(operacion.inicio).toLocaleString('es-AR',{timeZone:zona,hourCycle:'h23'})}`:'Asigná un servicio para definir el precio. Un turno sin configurar no se considera gratuito.'}</DialogDescription></DialogHeader>
       {cargando && <p role="status">Actualizando…</p>}

@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import CargandoSeccionPaciente from "../loading";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { TituloTarjeta } from "@/componentes/comunes/titulo-tarjeta";
 import { ChartNoAxesCombined, History } from "lucide-react";
@@ -20,7 +22,11 @@ const COLUMNAS_MEDICION = "sm:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,0.7fr
 
 export const metadata: Metadata = { title: "Mediciones" };
 
-export default async function PaginaMediciones({ params }: PageProps<"/panel/pacientes/[pacienteId]/mediciones">) {
+export default function PaginaMediciones({ params }: PageProps<"/panel/pacientes/[pacienteId]/mediciones">) {
+  return <Suspense fallback={<CargandoSeccionPaciente />}><ContenidoSeccion params={params} /></Suspense>;
+}
+
+async function ContenidoSeccion({ params }: Pick<PageProps<"/panel/pacientes/[pacienteId]/mediciones">, "params">) {
   const { pacienteId } = await params;
   const { paciente, contexto, cliente } = await requerirPacienteDelConsultorio(pacienteId);
   const [mediciones, objetivos] = await Promise.all([

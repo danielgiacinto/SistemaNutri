@@ -3,7 +3,7 @@ import { estadoEconomico } from "@/tipos/finanzas";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarPlus, Clock } from "lucide-react";
+import { CalendarPlus, Clock, Tags } from "lucide-react";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { esquemaFiltroAgenda } from "@/esquemas/turno";
@@ -26,7 +26,7 @@ export default function PaginaAgenda({ searchParams }: PageProps<"/panel/agenda"
         descripcion="Tu día, organizado. Consultá tus turnos y encontrá el próximo espacio disponible."
         acciones={
           <>
-            <Button asChild variant="outline"><Link href="/panel/configuracion/servicios">Servicios y precios</Link></Button>
+            <Button asChild variant="outline"><Link href="/panel/configuracion/servicios"><Tags aria-hidden="true" />Servicios y precios</Link></Button>
             <Button asChild variant="outline">
               <Link href="/panel/agenda/disponibilidad">
                 <Clock aria-hidden="true" />

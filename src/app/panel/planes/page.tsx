@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Salad, Search, X } from "lucide-react";
+import { Salad } from "lucide-react";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { esquemaUuid } from "@/esquemas/comunes";
@@ -14,7 +14,7 @@ import { FilaRecurso } from "@/componentes/comunes/fila-recurso";
 import { Badge } from "@/componentes/ui/badge";
 import { nombreNatural } from "@/lib/antropometria";
 import { Button } from "@/componentes/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/componentes/ui/select";
+import { FiltroPlanes } from "@/componentes/planes/filtro-planes";
 import { Skeleton } from "@/componentes/ui/skeleton";
 
 export const metadata: Metadata = { title: "Planes" };
@@ -47,37 +47,7 @@ async function Contenido({ parametros }: { parametros: PageProps<"/panel/planes"
 
   return (
     <div className="space-y-6">
-      <form className="flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-center">
-        <div className="min-w-0 flex-1 sm:max-w-md">
-          <Select name="paciente" defaultValue={pacienteId ?? "todos"}>
-            <SelectTrigger aria-label="Filtrar planes por paciente" className="w-full data-[size=default]:h-9">
-              <SelectValue>Paciente: {paciente ? nombreNatural(paciente) : "Todos"}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
-              {pacientes.map((item) => (
-                <SelectItem key={item.id} value={item.id}>
-                  {nombreNatural(item)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex gap-2">
-          <Button type="submit" variant="outline">
-            <Search aria-hidden="true" />
-            Filtrar
-          </Button>
-          {pacienteId && (
-            <Button asChild variant="ghost">
-              <Link href="/panel/planes">
-                <X aria-hidden="true" />
-                Quitar filtro
-              </Link>
-            </Button>
-          )}
-        </div>
-      </form>
+      <FiltroPlanes pacientes={pacientes} pacienteId={pacienteId} />
 
       {planes.length === 0 ? (
         <EstadoVacio

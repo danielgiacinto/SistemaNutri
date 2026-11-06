@@ -1,3 +1,4 @@
+import { InsigniaPago } from "@/componentes/comunes/insignia-estado";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ArrowDown, CalendarDays, Check, CircleCheck, Clock3, CreditCard, Gift, HeartHandshake, LockKeyhole, ReceiptText, Salad, ShieldCheck, Sparkles, Users } from "lucide-react";
@@ -210,7 +211,7 @@ async function ContenidoFacturacion() {
               {(pagos.data ?? []).map((pago) => (
                 <li key={pago.mp_pago_id} className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0">
                   <div><p className="text-sm font-medium">{Number(pago.monto) < Number(suscripcion.data?.precio) ? "Validación del medio de pago" : "Suscripción mensual"}</p><p className="mt-1 text-xs text-muted-foreground">{fecha.format(new Date(pago.cobrado_en ?? pago.creado_en))} · Operación {pago.mp_pago_id}</p></div>
-                  <div className="flex items-center gap-3"><span className="text-sm font-semibold">{formatearPesos(pago.monto)}</span><Badge variant={pago.estado === "rechazado" ? "destructive" : pago.estado === "aprobado" ? "default" : "secondary"}>{ETIQUETAS_PAGO[pago.estado] ?? "Por confirmar"}</Badge></div>
+                  <div className="flex items-center gap-3"><span className="text-sm font-semibold">{formatearPesos(pago.monto)}</span><InsigniaPago estado={pago.estado} etiqueta={ETIQUETAS_PAGO[pago.estado] ?? "Por confirmar"} /></div>
                 </li>
               ))}
             </ul>

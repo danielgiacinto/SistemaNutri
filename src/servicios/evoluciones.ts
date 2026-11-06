@@ -44,6 +44,18 @@ export async function listarEvoluciones(
   return data;
 }
 
+export async function listarEvolucionesDelTurno(cliente: ClienteSupabase, consultorioId: string, pacienteId: string, turnoId: string) {
+  const { data, error } = await cliente.from("evoluciones")
+    .select("id,titulo,es_borrador,creado_en")
+    .eq("consultorio_id", consultorioId).eq("paciente_id", pacienteId).eq("turno_id", turnoId)
+    .order("creado_en", { ascending: false });
+  if (error) {
+    registrarError("listar_evoluciones_turno", error);
+    throw new Error("No se pudieron cargar las evoluciones del turno.");
+  }
+  return data;
+}
+
 export async function listarEvolucionesRecientes(
   cliente: ClienteSupabase,
   consultorioId: string,

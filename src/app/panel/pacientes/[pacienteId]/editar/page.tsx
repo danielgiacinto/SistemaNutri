@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import CargandoSeccionPaciente from "../loading";
 import { TituloTarjeta } from "@/componentes/comunes/titulo-tarjeta";
 import { UserRound, UserCog } from "lucide-react";
 import type { Metadata } from "next";
@@ -9,7 +11,11 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/componentes/ui
 
 export const metadata: Metadata = { title: "Editar paciente" };
 
-export default async function PaginaEditarPaciente({ params }: PageProps<"/panel/pacientes/[pacienteId]/editar">) {
+export default function PaginaEditarPaciente({ params }: PageProps<"/panel/pacientes/[pacienteId]/editar">) {
+  return <Suspense fallback={<CargandoSeccionPaciente />}><ContenidoSeccion params={params} /></Suspense>;
+}
+
+async function ContenidoSeccion({ params }: Pick<PageProps<"/panel/pacientes/[pacienteId]/editar">, "params">) {
   const { pacienteId } = await params;
   const { paciente } = await requerirPacienteDelConsultorio(pacienteId);
 

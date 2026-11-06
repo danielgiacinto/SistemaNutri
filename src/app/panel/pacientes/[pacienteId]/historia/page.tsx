@@ -1,6 +1,9 @@
+import { InsigniaEvolucion } from "@/componentes/comunes/insignia-estado";
+import { Suspense } from "react";
+import CargandoSeccionPaciente from "../loading";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ClipboardList, ArrowUpRight, ClipboardPen, Scale, Target, CalendarDays, Salad } from "lucide-react";
+import { ClipboardList, ArrowUpRight, ClipboardPen } from "lucide-react";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
 import { obtenerLineaDeTiempo } from "@/servicios/linea-tiempo";
 import { listarTurnosDelPaciente } from "@/servicios/turnos";
@@ -11,31 +14,29 @@ import { FormularioEvolucion } from "@/componentes/clinica/formulario-evolucion"
 import { Badge } from "@/componentes/ui/badge";
 import { Button } from "@/componentes/ui/button";
 import { formatearFechaHora } from "@/lib/fechas";
-import { ETIQUETAS_ESTADO_OBJETIVO, ETIQUETAS_ESTADO_TURNO } from "@/configuracion/clinica";
 
 export const metadata: Metadata = { title: "Historia clínica" };
 
-const ETIQUETA_TIPO = {
-  evolucion: "Evolución",
-  medicion: "Medición",
-  objetivo: "Objetivo",
-  turno: "Turno",
-  plan: "Plan",
-};
+const ETIQUETA_TIPO = { evolucion: "Evolución" };
+const ICONOS_TIPO = { evolucion: ClipboardPen };
 
-const ICONOS_TIPO = { evolucion: ClipboardPen, medicion: Scale, objetivo: Target, turno: CalendarDays, plan: Salad };
+export default function PaginaHistoria({ params }: PageProps<"/panel/pacientes/[pacienteId]/historia">) {
+  return <Suspense fallback={<CargandoSeccionPaciente />}><ContenidoSeccion params={params} /></Suspense>;
+}
 
-export default async function PaginaHistoria({ params }: PageProps<"/panel/pacientes/[pacienteId]/historia">) {
+async function ContenidoSeccion({ params }: Pick<PageProps<"/panel/pacientes/[pacienteId]/historia">, "params">) {
   const { pacienteId } = await params;
   const { paciente, contexto, cliente } = await requerirPacienteDelConsultorio(pacienteId);
-  const eventos = await obtenerLineaDeTiempo(cliente, contexto.consultorio.id, paciente.id);
-  const turnos = await listarTurnosDelPaciente(cliente, contexto.consultorio.id, paciente.id);
+  const [eventos, turnos] = await Promise.all([
+    obtenerLineaDeTiempo(cliente, contexto.consultorio.id, paciente.id),
+    listarTurnosDelPaciente(cliente, contexto.consultorio.id, paciente.id),
+  ]);
 
   return (
     <div className="space-y-6">
       <EncabezadoPagina nivel={2}
         titulo="Historia clínica"
-        descripcion="Evoluciones, mediciones, objetivos y turnos."
+        descripcion="Notas y evoluciones clínicas del paciente."
         acciones={
           <VentanaFormulario icono={<ClipboardPen aria-hidden="true" />} etiqueta="Nueva evolución" titulo="Nueva evolución" descripcion="Nace como borrador y privada." className="max-w-2xl">
             <FormularioEvolucion
@@ -52,7 +53,7 @@ export default async function PaginaHistoria({ params }: PageProps<"/panel/pacie
         <EstadoVacio
           icono={ClipboardList}
           titulo="Todavía no hay eventos en la historia"
-          descripcion="Registrá una evolución, una medición o un turno para construir la línea de tiempo."
+          descripcion="Registrá la primera evolución para iniciar la historia clínica."
         />
       ) : (
         <ol className="relative space-y-4 border-l border-border pl-5 sm:pl-8">
@@ -69,13 +70,7 @@ export default async function PaginaHistoria({ params }: PageProps<"/panel/pacie
                 <h2 className="mt-1 font-semibold wrap-anywhere">{evento.titulo}</h2>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground wrap-anywhere">{evento.resumen}</p>
                 {evento.destacado && (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {evento.tipo === "turno"
-                      ? ETIQUETAS_ESTADO_TURNO[evento.destacado as keyof typeof ETIQUETAS_ESTADO_TURNO] ?? evento.destacado
-                      : evento.tipo === "objetivo"
-                        ? ETIQUETAS_ESTADO_OBJETIVO[evento.destacado as keyof typeof ETIQUETAS_ESTADO_OBJETIVO] ?? evento.destacado
-                        : evento.destacado}
-                  </p>
+                  <InsigniaEvolucion estado={evento.destacado} />
                 )}
                 {evento.href && (
                   <Button asChild variant="ghost" size="sm" className="mt-2 px-0">

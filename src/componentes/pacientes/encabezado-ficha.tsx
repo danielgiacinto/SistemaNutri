@@ -58,6 +58,7 @@ export function EncabezadoFicha({
         </div>
       </div>
       <Pestanas
+        precargar
         actual={rutaActual}
         items={[
           { href: base, etiqueta: "Resumen", exacta: true },

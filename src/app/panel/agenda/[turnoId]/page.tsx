@@ -1,4 +1,5 @@
 import { consultarEconomiaTurnos } from "@/servicios/finanzas";
+import { listarEvolucionesDelTurno } from "@/servicios/evoluciones";
 import { dineroFinanzas, estadoEconomico } from "@/tipos/finanzas";
 import { CobroRapido } from "@/componentes/finanzas/cobro-rapido";
 import { Suspense } from "react";
@@ -32,10 +33,11 @@ export default function PaginaTurno({ params }: PageProps<"/panel/agenda/[turnoI
 async function Contenido({ params }: { params: PageProps<"/panel/agenda/[turnoId]">["params"] }) {
   const { turnoId } = await params;
   const { turno, paciente, contexto, cliente } = await requerirTurnoDelConsultorio(turnoId);
-  const [pacientes, consultorio, operaciones] = await Promise.all([
+  const [pacientes, consultorio, operaciones, evoluciones] = await Promise.all([
     listarPacientesActivos(cliente, contexto.consultorio.id),
     obtenerDatosConsultorio(cliente, contexto.consultorio.id),
     consultarEconomiaTurnos(cliente,[turno.id]),
+    listarEvolucionesDelTurno(cliente, contexto.consultorio.id, paciente.id, turno.id),
   ]);
   const inicio = new Date(turno.inicio);
   const duracion = minutosEntre(inicio, new Date(turno.fin));
@@ -67,9 +69,15 @@ async function Contenido({ params }: { params: PageProps<"/panel/agenda/[turnoId
             </Link>
           </Button>
         )}
+        {turno.profesional_id===contexto.usuarioId && <CobroRapido estado={estadoEconomico(operaciones[0])} zona={contexto.consultorio.zonaHoraria} turnoId={turno.id}/>}
       </div>
+      {evoluciones.length > 0 && <section className="space-y-3" aria-label="Evoluciones del turno">
+        <h2 className="text-sm font-medium text-muted-foreground">Evoluciones de este turno</h2>
+        <div className="flex flex-wrap gap-2">{evoluciones.map(evolucion => <Button key={evolucion.id} asChild variant="outline" className="h-auto justify-start py-2">
+          <Link href={`/panel/pacientes/${paciente.id}/historia/${evolucion.id}`}><ClipboardPen aria-hidden="true" /><span>{evolucion.titulo || "Evolución clínica"}{evolucion.es_borrador && <span className="ml-2 text-xs text-muted-foreground">Borrador</span>}</span></Link>
+        </Button>)}</div>
+      </section>}
       <AccionesTurno turnoId={turno.id} estado={turno.estado} />
-      {turno.profesional_id===contexto.usuarioId && <CobroRapido estado={estadoEconomico(operaciones[0])} zona={contexto.consultorio.zonaHoraria} turnoId={turno.id}/>}
       <Card>
         <CardContent>
           <div className="mb-6 rounded-xl border bg-muted/30 p-4 text-sm">

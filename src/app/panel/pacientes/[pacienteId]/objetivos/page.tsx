@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import CargandoSeccionPaciente from "../loading";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { TituloTarjeta } from "@/componentes/comunes/titulo-tarjeta";
 import type { Metadata } from "next";
@@ -8,14 +10,18 @@ import { FormularioObjetivo } from "@/componentes/clinica/formulario-objetivo";
 import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { InsigniaObjetivo } from "@/componentes/comunes/insignia-estado";
 import { VentanaFormulario } from "@/componentes/comunes/ventana-formulario";
-import { Badge } from "@/componentes/ui/badge";
+import { InsigniaVisibilidad } from "@/componentes/comunes/insignia-estado";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentes/ui/card";
 import { ETIQUETAS_CATEGORIA_OBJETIVO } from "@/configuracion/clinica";
 import { formatearFechaIso } from "@/lib/fechas";
 
 export const metadata: Metadata = { title: "Objetivos" };
 
-export default async function PaginaObjetivos({ params }: PageProps<"/panel/pacientes/[pacienteId]/objetivos">) {
+export default function PaginaObjetivos({ params }: PageProps<"/panel/pacientes/[pacienteId]/objetivos">) {
+  return <Suspense fallback={<CargandoSeccionPaciente />}><ContenidoSeccion params={params} /></Suspense>;
+}
+
+async function ContenidoSeccion({ params }: Pick<PageProps<"/panel/pacientes/[pacienteId]/objetivos">, "params">) {
   const { pacienteId } = await params;
   const { paciente, contexto, cliente } = await requerirPacienteDelConsultorio(pacienteId);
   const objetivos = await listarObjetivos(cliente, contexto.consultorio.id, paciente.id);
@@ -49,9 +55,7 @@ export default async function PaginaObjetivos({ params }: PageProps<"/panel/paci
               <CardContent className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 space-y-2 text-sm text-muted-foreground wrap-anywhere">
                   {objetivo.descripcion ? <p>{objetivo.descripcion}</p> : null}
-                  <Badge variant={objetivo.visible_para_paciente ? "default" : "outline"}>
-                    {objetivo.visible_para_paciente ? "Visible en el portal" : "Privado"}
-                  </Badge>
+                  <InsigniaVisibilidad visible={objetivo.visible_para_paciente} />
                 </div>
                 <VentanaFormulario icono={<Pencil aria-hidden="true" />} etiqueta="Editar" titulo="Editar objetivo" variante="outline">
                   <FormularioObjetivo

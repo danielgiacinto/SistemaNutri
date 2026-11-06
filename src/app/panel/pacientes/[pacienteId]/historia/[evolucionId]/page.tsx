@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import CargandoSeccionPaciente from "../../loading";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requerirPacienteDelConsultorio } from "@/autorizacion/clinica";
@@ -11,7 +13,11 @@ import { esquemaUuid } from "@/esquemas/comunes";
 
 export const metadata: Metadata = { title: "Evolución" };
 
-export default async function PaginaEvolucion({
+export default function PaginaEvolucion(propiedades: PageProps<"/panel/pacientes/[pacienteId]/historia/[evolucionId]">) {
+  return <Suspense fallback={<CargandoSeccionPaciente />}><ContenidoEvolucion {...propiedades} /></Suspense>;
+}
+
+async function ContenidoEvolucion({
   params,
 }: PageProps<"/panel/pacientes/[pacienteId]/historia/[evolucionId]">) {
   const { pacienteId, evolucionId } = await params;
