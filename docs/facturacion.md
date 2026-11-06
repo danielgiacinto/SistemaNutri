@@ -281,6 +281,30 @@ ausencia de duplicados y cese de recurrencia al finalizar la prueba. La fecha pr
 no garantiza la hora exacta de procesamiento del proveedor. Hasta observar ese segundo
 cobro no se considera completada esta validación externa.
 
+#### Resultado del 6/11 y corrección del plazo de QA
+
+A las 11:13 de Argentina, la consulta autenticada de la autorización
+`660b18dbc035439080d7ba80d08a269e` solo devolvió el pago inicial: `summarized.quotas=1`,
+`charged_quantity=1` y ninguna `next_payment_date`. La API rechazó pausar/reactivar
+con `This subscription has already ended and cannot be modified`. El estado seguía
+figurando como `authorized`; no prueba que existan nuevos cobros programados.
+El límite inicial de 36 horas no sirvió para validar la recurrencia. No hubo segundo
+pago ni se acredita renovación a partir de la fecha que había figurado programada.
+
+El correo recibido por el usuario el 6/11 a las 03:59 corresponde al pago inicial
+`186838355547`, enviado por el cron a las 06:59:28 UTC. No fue un aviso de renovación
+ni un duplicado: existe un único registro de envío para esa clave de evento.
+
+Se preparó una nueva autorización diaria exclusivamente en Daniel:
+`d29dd7ef8ac44dc5ba419a958177800c`, inicio 6/11/2026 11:16:32 y fin 9/11/2026
+11:16:32 de Argentina. La respuesta del proveedor confirmó **tres cuotas**, con
+importe ficticio de ARS 15.999 por cuota. El ajuste quedó auditado como
+`qa.recurrencia_diaria_corregida`; se conservaron pagos y cobertura anteriores.
+Pendiente: autorización inicial del usuario, pago inicial y segundo cobro automático
+sobre ese mismo ID. Después de comprobar el segundo, cancelar la prueba para evitar
+otro ciclo innecesario. La fecha límite sigue existiendo aunque el usuario no vuelva
+a este chat. No se considera cerrada la validación externa de renovación.
+
 ### Diagnóstico del bloqueo observado
 
 El desajuste de cuentas descrito a continuación corresponde a la configuración
