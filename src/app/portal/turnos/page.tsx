@@ -1,3 +1,4 @@
+import { TiempoRestanteTurno } from "@/componentes/panel/tiempo-restante-turno";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { CalendarDays } from "lucide-react";
@@ -24,6 +25,7 @@ async function Listado() {
   await requerirPaciente();
   const cliente = await crearClienteServidor();
   const [ficha, turnos] = await Promise.all([obtenerFichaPortal(cliente), listarMisTurnos(cliente)]);
+  const ahora = new Date().toISOString();
   const zona = ficha?.zonaHoraria ?? "America/Argentina/Cordoba";
 
   return (
@@ -39,6 +41,9 @@ async function Listado() {
                 <p className="font-medium">{formatearFechaHora(new Date(turno.inicio), zona)}</p>
                 <InsigniaTurno estado={turno.estado} />
               </div>
+              {["programado", "confirmado"].includes(turno.estado) && new Date(turno.inicio).getTime() >= new Date(ahora).getTime() && (
+                <TiempoRestanteTurno inicio={turno.inicio} ahoraInicial={ahora} />
+              )}
               <p className="mt-1 text-sm text-muted-foreground">
                 {ETIQUETAS_TIPO_CONSULTA[turno.tipo]}
                 {turno.motivo ? ` · ${turno.motivo}` : ""}

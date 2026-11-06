@@ -1,3 +1,4 @@
+import { ReaccionesComentario } from "@/componentes/comunidad/reacciones-comentario";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { MessageSquare, Trophy } from "lucide-react";
@@ -24,7 +25,7 @@ export default function PaginaComunidadPortal() {
 }
 
 async function Contenido() {
-  await requerirPaciente();
+  const contexto = await requerirPaciente();
   const cliente = await crearClienteServidor();
   const [ficha, desafios] = await Promise.all([obtenerFichaPortal(cliente), listarDesafios(cliente)]);
   const zona = ficha?.zonaHoraria ?? "America/Argentina/Cordoba";
@@ -62,7 +63,7 @@ async function Contenido() {
                 <ul className="space-y-3 border-t pt-4">
                   {desafio.actividades_comunidad.map((actividad) => (
                     <li key={actividad.id} className="flex items-start justify-between gap-3">
-                      <div>
+                      <div className="min-w-0 wrap-anywhere">
                         <p className="text-sm font-medium">
                           {actividad.autor_visible}{" "}
                           <span className="font-normal text-muted-foreground">
@@ -70,6 +71,7 @@ async function Contenido() {
                           </span>
                         </p>
                         <p className="whitespace-pre-wrap text-sm">{actividad.texto}</p>
+                        {actividad.reacciones && <ReaccionesComentario actividadId={actividad.id} reacciones={actividad.reacciones} usuarioId={contexto.usuarioId} abierto={abierto} />}
                       </div>
                       {pacienteId === actividad.paciente_id && abierto && <BotonBorrarActividad actividadId={actividad.id} />}
                     </li>
@@ -78,7 +80,7 @@ async function Contenido() {
               )}
               {abierto && !sumado && <BotonSumarse desafioId={desafio.id} />}
               {abierto && sumado && (
-                <VentanaFormulario icono={<MessageSquare aria-hidden="true" />} etiqueta="Contar cómo me fue" titulo="Tu actividad" descripcion="Lo leen las otras personas del grupo." variante="outline">
+                <VentanaFormulario icono={<MessageSquare aria-hidden="true" />} etiqueta="Comentar" titulo="Tu comentario" descripcion="Lo leen las otras personas del grupo." variante="outline">
                   <FormularioActividad desafioId={desafio.id} />
                 </VentanaFormulario>
               )}

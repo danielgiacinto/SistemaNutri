@@ -1,197 +1,407 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import {
-  ArrowRight,
-  CalendarDays,
-  ClipboardList,
-  HeartHandshake,
-  LineChart,
-  Lock,
-  LogIn,
-  Salad,
-  Smartphone,
-  Tag,
-  Target,
+  ArrowDown, ArrowUpRight, CalendarDays, Check, CheckCheck, ClipboardList,
+  Heart, HeartHandshake, Leaf, LockKeyhole, MessageCircle, Plus, Salad,
+  ShieldCheck, Smartphone, Sparkles, Sprout, Target, TrendingUp, Users, Wallet,
 } from "lucide-react";
-import { SeccionPlan } from "@/componentes/inicio/seccion-plan";
-import { Logo } from "@/componentes/marca/logo";
-import { Button } from "@/componentes/ui/button";
-import { Skeleton } from "@/componentes/ui/skeleton";
 import { RUTAS } from "@/autorizacion/rutas";
+import { EscenaPalta } from "@/componentes/inicio/escena-palta";
+import { MovimientoInicio } from "@/componentes/inicio/movimiento-inicio";
+import { NavegacionInicio } from "@/componentes/inicio/navegacion-inicio";
+import { SeccionPlan } from "@/componentes/inicio/seccion-plan";
+import { VistaConsultorio } from "@/componentes/inicio/vista-consultorio";
+import { Logo } from "@/componentes/marca/logo";
+import { Palta } from "@/componentes/marca/palta";
 import { NOMBRE_PRODUCTO } from "@/configuracion/producto";
 
-const FUNCIONALIDADES = [
-  {
-    icono: ClipboardList,
-    titulo: "Historia clínica en línea de tiempo",
-    texto: "Cada consulta con sus notas, mediciones, objetivos y planes, ordenada cronológicamente.",
+const DESCRIPCION = "Menos gestión. Más nutrición. Organizá pacientes, agenda, historias clínicas, planes alimentarios y cobros, y acompañá cada avance con el portal del paciente de Nutrisfera.";
+
+export const metadata: Metadata = {
+  title: { absolute: `${NOMBRE_PRODUCTO} · Menos gestión. Más nutrición.` },
+  description: DESCRIPCION,
+  alternates: { canonical: "https://nutrisfera.vercel.app/" },
+  openGraph: {
+    type: "website", locale: "es_AR", url: "https://nutrisfera.vercel.app/",
+    siteName: NOMBRE_PRODUCTO, title: `${NOMBRE_PRODUCTO} · Tu consultorio, en sintonía`, description: DESCRIPCION,
   },
-  {
-    icono: CalendarDays,
-    titulo: "Agenda sin superposiciones",
-    texto: "Vistas por día, semana y mes, estados de turno y horarios de atención.",
-  },
-  {
-    icono: LineChart,
-    titulo: "Evolución visual",
-    texto: "Gráficos de peso y mediciones construidos solo con registros reales.",
-  },
-  {
-    icono: Target,
-    titulo: "Objetivos flexibles",
-    texto: "Hábitos, composición corporal o peso: vos decidís qué compartir con cada paciente.",
-  },
-  {
-    icono: Salad,
-    titulo: "Planes con publicación controlada",
-    texto: "Trabajá borradores tranquilo: el paciente ve solo la versión que publicás.",
-  },
-  {
-    icono: HeartHandshake,
-    titulo: "Cada paciente, con lo suyo",
-    texto: "Ficha, turnos, mediciones y el plan publicado quedan juntos. El paciente solo ve lo que decidís compartir.",
-  },
+  twitter: { card: "summary", title: `${NOMBRE_PRODUCTO} · Menos gestión. Más nutrición.`, description: DESCRIPCION },
+};
+
+const HERRAMIENTAS = [
+  { icono: Users, texto: "Pacientes" }, { icono: CalendarDays, texto: "Agenda" },
+  { icono: ClipboardList, texto: "Historia clínica" }, { icono: Salad, texto: "Planes" },
+  { icono: Wallet, texto: "Finanzas" }, { icono: HeartHandshake, texto: "Comunidad" },
+];
+
+const PASOS = [
+  { numero: "01", icono: Sprout, titulo: "Dale un lugar a tu consultorio", texto: "Creá tu cuenta y configurá tus horarios, servicios y precios. Tu espacio, a tu manera." },
+  { numero: "02", icono: Users, titulo: "Conectá todas las piezas", texto: "Sumá pacientes, organizá tus turnos y empezá a registrar consultas, mediciones y planes." },
+  { numero: "03", icono: Heart, titulo: "Acompañá cada avance", texto: "Invitá a tus pacientes al portal y compartí lo que necesitan para seguir adelante." },
+];
+
+const PREGUNTAS = [
+  { pregunta: "¿Para quién está pensado Nutrisfera?", respuesta: "Para profesionales de la nutrición que quieren organizar su consultorio y acompañar a sus pacientes desde un mismo lugar. Reúne el trabajo clínico, la agenda y las finanzas, con un portal para que cada paciente consulte lo que compartís." },
+  { pregunta: "¿Qué pueden ver mis pacientes?", respuesta: "Acceden por invitación a su propio portal: próximos turnos, planes publicados, objetivos y mediciones que decidas compartir. También pueden participar en los desafíos de tu comunidad. Tus notas clínicas y los borradores de planes se mantienen privados." },
+  { pregunta: "¿Necesito instalar alguna aplicación?", respuesta: "No. Nutrisfera funciona desde el navegador en computadora, tablet y celular. Tus pacientes también pueden entrar al portal desde el navegador de su teléfono, sin descargar una aplicación." },
+  { pregunta: "¿Puedo registrar los cobros de mis consultas?", respuesta: "Sí. Podés configurar servicios y precios, registrar pagos totales, parciales o anticipados, aplicar descuentos y consultar deudas, movimientos de caja y estadísticas de ingresos. Los cobros a pacientes se registran en el sistema; son independientes de tu suscripción a Nutrisfera." },
+  { pregunta: "¿Cómo se protege la información del consultorio?", respuesta: "Cada consultorio tiene su información separada y el acceso se verifica según el rol de cada cuenta. Las notas clínicas son privadas y vos controlás qué objetivos, mediciones y versiones de los planes llegan al portal del paciente." },
+  { pregunta: "¿Cómo funciona la suscripción?", respuesta: "El plan mensual incluye todas las herramientas que se muestran en esta página. El precio vigente y la disponibilidad de prueba están en la sección El plan. La renovación se gestiona con Mercado Pago y podés solicitar su cancelación desde Plan y facturación. Si vence la cobertura, se pausa el acceso clínico y se conservan los registros." },
 ];
 
 export default function PaginaInicio() {
   return (
-    <div className="inicio-marca-palta flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
-          <Logo />
-          <nav aria-label="Acceso" className="flex items-center gap-2">
-            <Button asChild variant="ghost">
-              <Link href={RUTAS.ingresar}>
-                <LogIn aria-hidden="true" />
-                Ingresar
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" className="hidden sm:inline-flex">
-              <Link href="#plan">
-                <Tag aria-hidden="true" />
-                El plan
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href={RUTAS.registro}>
-                <ArrowRight aria-hidden="true" />
-                Crear cuenta
-              </Link>
-            </Button>
-          </nav>
+    <MovimientoInicio>
+      <a className="inicio-saltar" href="#contenido">Ir al contenido</a>
+      <header className="inicio-cabecera">
+        <div className="inicio-contenedor inicio-barra">
+          <Logo href="#contenido" className="inicio-logo" />
+          <NavegacionInicio />
         </div>
       </header>
-
-      <main className="flex-1">
-        <section className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:py-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center">
-          <div className="space-y-6">
-            <p className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-              Software para nutricionistas
-            </p>
-            <h1 className="text-4xl leading-tight font-bold tracking-tight text-balance sm:text-5xl">
-              Tu consultorio, tus pacientes y su evolución,{" "}
-              <span className="text-primary">en un solo lugar.</span>
-            </h1>
-            <p className="max-w-xl text-lg text-muted-foreground">
-              {NOMBRE_PRODUCTO} reúne agenda, historias clínicas, mediciones, objetivos y planes alimentarios para que
-              dediques menos tiempo a buscar información y más a tus pacientes.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="h-11 px-5">
-                <Link href={RUTAS.registro}>
-                  Crear mi consultorio
-                  <ArrowRight aria-hidden="true" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-11 px-5">
-                <Link href="#plan">
-                  <Tag aria-hidden="true" />
-                  Ver precio y qué incluye
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="relative rounded-3xl border bg-card p-6 shadow-sm">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="font-semibold">Seguimiento del paciente</p>
-                <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
-                  Vista ilustrativa
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {["Consultas", "Mediciones", "Objetivos"].map((rotulo) => (
-                  <div key={rotulo} className="rounded-2xl bg-muted p-3">
-                    <div className="mb-2 h-2 w-8 rounded-full bg-primary/60" />
-                    <p className="text-xs text-muted-foreground">{rotulo}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="flex h-36 items-end gap-2 rounded-2xl bg-muted p-4" aria-hidden="true">
-                {[45, 60, 52, 70, 64, 82, 76].map((altura, indice) => (
-                  <div key={indice} className="flex-1 rounded-t-lg bg-primary/70" style={{ height: `${altura}%` }} />
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Ilustración de la interfaz. No representa datos de pacientes reales.
+      <main id="contenido">
+        <section className="inicio-hero" aria-labelledby="titulo-inicio">
+          <div className="inicio-contenedor inicio-hero-rejilla">
+            <div className="inicio-hero-texto">
+              <p className="inicio-antetitulo">
+                <span className="inicio-punto" /> TU CONSULTORIO, EN SINTONÍA</p>
+              <h1 id="titulo-inicio">Menos gestión.<br />Más <em>nutrición.</em>
+              </h1>
+              <p className="inicio-bajada">Tu agenda, tus pacientes y cada avance, conectados. Un espacio para ordenar tu día y dedicarle más tiempo a lo que te mueve: <strong>acompañar.</strong>
               </p>
+              <div className="inicio-acciones">
+                <Link className="inicio-boton" href={RUTAS.registro}>Crear mi consultorio <ArrowUpRight aria-hidden="true" />
+                </Link>
+                <a className="inicio-enlace" href="#funcionalidades">Explorar Nutrisfera <ArrowDown aria-hidden="true" />
+                </a>
+              </div>
+              <div className="inicio-hero-notas">
+                <span>
+                  <Check aria-hidden="true" /> Todo tu consultorio, conectado</span>
+                <span>
+                  <Smartphone aria-hidden="true" /> Sin instalar nada</span>
+              </div>
             </div>
+            <VistaConsultorio />
+          </div>
+          <div className="inicio-contenedor inicio-herramientas">
+            <p>Una sola plataforma.<br />
+              <strong>Todo cobra sentido.</strong>
+            </p>
+            <ul>{HERRAMIENTAS.map(({ icono: Icono, texto }) => <li key={texto}>
+              <Icono aria-hidden="true" />
+              <span>{texto}</span>
+            </li>)}</ul>
           </div>
         </section>
 
-        <Suspense fallback={<Skeleton className="mx-auto h-96 max-w-6xl" />}>
-          <SeccionPlan />
-        </Suspense>
+        <EscenaPalta />
 
-        <section aria-labelledby="titulo-funcionalidades" className="border-t bg-card/50">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-            <h2 id="titulo-funcionalidades" className="max-w-2xl text-3xl font-bold tracking-tight text-balance">
-              Pensado para el trabajo diario de un consultorio de nutrición
-            </h2>
-            <ul className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-              {FUNCIONALIDADES.map(({ icono: Icono, titulo, texto }) => (
-                <li key={titulo} className="space-y-2">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                    <Icono className="size-5" aria-hidden="true" />
+        <section id="funcionalidades" className="inicio-seccion inicio-contenedor" aria-labelledby="titulo-funcionalidades">
+          <div className="inicio-encabezado-seccion" data-revelar>
+            <div>
+              <p className="inicio-antetitulo">MENOS PESTAÑAS ABIERTAS. MÁS CLARIDAD.</p>
+              <h2 id="titulo-funcionalidades">Cada parte de tu trabajo.<br />
+                <em>En el mismo lugar.</em>
+              </h2>
+            </div>
+            <p>De la primera consulta al próximo gran avance. Todo lo que necesitás para una práctica más organizada y un acompañamiento más cercano.</p>
+          </div>
+          <div className="inicio-bento">
+            <article className="inicio-tarjeta inicio-tarjeta-historia" data-revelar>
+              <span className="inicio-icono">
+                <ClipboardList aria-hidden="true" />
+              </span>
+              <h3>La historia completa.<br />No solo la última consulta.</h3>
+              <p>Notas, mediciones y objetivos en una línea de tiempo. Retomá cada encuentro con todo el contexto.</p>
+              <div className="inicio-linea-tiempo" aria-label="Ejemplo ilustrativo de una historia clínica">
+                <div>
+                  <span className="inicio-marca-tiempo">
+                    <CheckCheck aria-hidden="true" />
                   </span>
-                  <h3 className="font-semibold">{titulo}</h3>
-                  <p className="text-sm text-muted-foreground">{texto}</p>
-                </li>
-              ))}
-            </ul>
+                  <div>
+                    <span className="inicio-mini-etiqueta">HOY · CONSULTA DE CONTROL</span>
+                    <strong>Pequeños cambios, grandes avances</strong>
+                    <p>Revisión de hábitos y objetivos del próximo mes.</p>
+                    <div className="inicio-mini-chips">
+                      <span>
+                        <Target aria-hidden="true" /> Objetivos</span>
+                      <span>
+                        <TrendingUp aria-hidden="true" /> Mediciones</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span className="inicio-marca-tiempo inicio-marca-tenue">
+                    <ClipboardList aria-hidden="true" />
+                  </span>
+                  <div>
+                    <span className="inicio-mini-etiqueta">PRIMER ENCUENTRO</span>
+                    <strong>El comienzo de una nueva historia</strong>
+                    <p>Evaluación inicial y plan de acompañamiento.</p>
+                  </div>
+                </div>
+              </div>
+              <span className="inicio-nota-ejemplo">Contenido ilustrativo</span>
+            </article>
+            <article className="inicio-tarjeta inicio-tarjeta-agenda" data-revelar>
+              <span className="inicio-icono">
+                <CalendarDays aria-hidden="true" />
+              </span>
+              <h3>Un día organizado.<br />Una cabeza más libre.</h3>
+              <p>Agenda por día, semana o mes. Tus horarios de atención y cada turno, sin superposiciones.</p>
+              <div className="inicio-mini-semana" aria-hidden="true">{["L", "M", "M", "J", "V"].map((dia, indice) => <div key={indice} className={indice === 2 ? "inicio-dia-activo" : ""}>
+                <span>{dia}</span>
+                <strong>{16 + indice}</strong>{indice === 2 && <i />}</div>)}</div>
+              <div className="inicio-mini-turno">
+                <span>10:30</span>
+                <span>
+                  <strong>Consulta de control</strong>
+                  <small>45 min · Consultorio</small>
+                </span>
+                <Check aria-hidden="true" />
+              </div>
+            </article>
+            <article className="inicio-tarjeta inicio-tarjeta-plan" data-revelar>
+              <span className="inicio-icono">
+                <Salad aria-hidden="true" />
+              </span>
+              <h3>Tu criterio, en cada plan.</h3>
+              <p>Prepará planes alimentarios, ajustá sus versiones y publicalos cuando estén listos. Tu paciente recibe solo lo que vos elegís.</p>
+              <div className="inicio-plan-visual">
+                <span className="inicio-plan-hoja">
+                  <Leaf aria-hidden="true" />
+                </span>
+                <div>
+                  <strong>Plan alimentario</strong>
+                  <span>Una nueva versión para seguir avanzando</span>
+                </div>
+                <span className="inicio-insignia">
+                  <Check aria-hidden="true" /> Publicado</span>
+              </div>
+            </article>
+            <article className="inicio-tarjeta inicio-tarjeta-finanzas" data-revelar>
+              <span className="inicio-icono">
+                <Wallet aria-hidden="true" />
+              </span>
+              <h3>Los números, más claros.</h3>
+              <p>Servicios, precios, cobros y deudas. Registrá pagos parciales o anticipados y conocé los ingresos de tu consultorio.</p>
+              <div className="inicio-finanzas-visual" aria-hidden="true">
+                <span>Una vista más clara de tu caja</span>
+                <div>{[35, 52, 43, 68, 58, 82, 94].map((altura, indice) => <i key={indice} style={{ height: `${altura}%` }} />)}</div>
+                <TrendingUp />
+              </div>
+            </article>
           </div>
         </section>
 
-        <section className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:grid-cols-2 sm:py-20">
-          <div className="flex gap-4">
-            <Lock className="mt-1 size-6 shrink-0 text-primary" aria-hidden="true" />
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">Privacidad desde el diseño</h2>
-              <p className="text-sm text-muted-foreground">
-                Cada consultorio está aislado a nivel de base de datos. Las notas clínicas son privadas por defecto y
-                solo se comparte lo que el profesional decide publicar.
-              </p>
+        <section id="pacientes" className="inicio-portal-seccion" aria-labelledby="titulo-portal">
+          <div className="inicio-contenedor inicio-portal-rejilla">
+            <div className="inicio-portal-texto" data-revelar>
+              <p className="inicio-antetitulo">
+                <HeartHandshake aria-hidden="true" /> CERCA, TAMBIÉN ENTRE CONSULTAS</p>
+              <h2 id="titulo-portal">El acompañamiento<br />no termina<br />
+                <em>en el consultorio.</em>
+              </h2>
+              <p>Un portal propio para que cada paciente tenga su plan a mano, vea sus próximos turnos y siga sus objetivos. Desde el celular, sin vueltas.</p>
+              <ul className="inicio-lista-portal">
+                <li>
+                  <Check aria-hidden="true" /> Planes publicados, siempre a mano</li>
+                <li>
+                  <Check aria-hidden="true" /> Mediciones y objetivos que decidís compartir</li>
+                <li>
+                  <Check aria-hidden="true" /> Sus próximos encuentros, en un lugar</li>
+              </ul>
+              <div className="inicio-comunidad">
+                <span>
+                  <MessageCircle aria-hidden="true" />
+                </span>
+                <div>
+                  <h3>Los hábitos también crecen en comunidad.</h3>
+                  <p>Creá desafíos y un espacio donde tus pacientes puedan sumarse, compartir experiencias y acompañarse.</p>
+                </div>
+              </div>
+            </div>
+            <div className="inicio-portal-visual" data-revelar>
+              <span className="inicio-orbita inicio-orbita-uno" aria-hidden="true" />
+              <span className="inicio-orbita inicio-orbita-dos" aria-hidden="true" />
+              <div className="inicio-telefono" role="img" aria-label="Vista ilustrativa del portal de una paciente ficticia: plan publicado, próximo turno y objetivos compartidos">
+                <div className="inicio-telefono-hora">
+                  <span>9:41</span>
+                  <span>••• ▰</span>
+                </div>
+                <div className="inicio-telefono-marca">
+                  <Palta className="size-7" />
+                  <strong>{NOMBRE_PRODUCTO}</strong>
+                  <span className="inicio-avatar">JL</span>
+                </div>
+                <div className="inicio-telefono-saludo">
+                  <span>TU ESPACIO PARA SEGUIR CRECIENDO</span>
+                  <strong>Hola, Julieta <Sprout aria-hidden="true" />
+                  </strong>
+                  <p>Cada pequeño paso cuenta.</p>
+                </div>
+                <div className="inicio-telefono-plan">
+                  <span className="inicio-icono">
+                    <Salad aria-hidden="true" />
+                  </span>
+                  <span className="inicio-insignia">Publicado</span>
+                  <strong>Tu plan alimentario</strong>
+                  <p>Pensado para vos y tu día a día.</p>
+                  <span className="inicio-telefono-enlace">Ver mi plan <ArrowUpRight aria-hidden="true" />
+                  </span>
+                </div>
+                <div className="inicio-telefono-turno">
+                  <CalendarDays aria-hidden="true" />
+                  <div>
+                    <small>TU PRÓXIMO ENCUENTRO</small>
+                    <strong>Miércoles 18 · 10:30</strong>
+                    <span>Consulta de control</span>
+                  </div>
+                </div>
+                <div className="inicio-telefono-objetivos">
+                  <strong>Un hábito a la vez <Target aria-hidden="true" />
+                  </strong>
+                  <span>
+                    <Check aria-hidden="true" /> Sumar variedad a las comidas</span>
+                  <span>
+                    <Check aria-hidden="true" /> Encontrar tiempo para moverte</span>
+                </div>
+                <div className="inicio-telefono-pie">
+                  <span>
+                    <Heart aria-hidden="true" /> Mi espacio</span>
+                  <span>
+                    <Salad aria-hidden="true" /> Mi plan</span>
+                  <span>
+                    <Users aria-hidden="true" /> Comunidad</span>
+                </div>
+              </div>
+              <div className="inicio-tarjeta-flotante inicio-flotante-portal">
+                <span>
+                  <Heart aria-hidden="true" />
+                </span>
+                <div>
+                  <strong>Más conexión.</strong>
+                  <small>Un proceso compartido.</small>
+                </div>
+              </div>
+              <p className="inicio-portal-aclaracion">Vista ilustrativa · Datos ficticios</p>
             </div>
           </div>
-          <div className="flex gap-4">
-            <Smartphone className="mt-1 size-6 shrink-0 text-primary" aria-hidden="true" />
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">Portal del paciente</h2>
-              <p className="text-sm text-muted-foreground">
-                Tus pacientes consultan turnos, objetivos y planes publicados desde el celular, sin descargar archivos.
-              </p>
+        </section>
+
+        <section id="como-funciona" className="inicio-seccion inicio-contenedor" aria-labelledby="titulo-pasos">
+          <div className="inicio-centrado" data-revelar>
+            <p className="inicio-antetitulo">HACÉ ESPACIO PARA LO QUE IMPORTA</p>
+            <h2 id="titulo-pasos">Un nuevo orden.<br />
+              <em>Un comienzo simple.</em>
+            </h2>
+          </div>
+          <ol className="inicio-pasos">{PASOS.map(({ numero, icono: Icono, titulo, texto }) => <li key={numero} data-revelar>
+            <div className="inicio-paso-superior">
+              <span>{numero}</span>
+              <Icono aria-hidden="true" />
             </div>
+            <h3>{titulo}</h3>
+            <p>{texto}</p>
+          </li>)}</ol>
+          <div id="privacidad" className="inicio-privacidad" data-revelar>
+            <span className="inicio-privacidad-icono">
+              <ShieldCheck aria-hidden="true" />
+            </span>
+            <div>
+              <h3>Tu consultorio es tuyo. La información, también.</h3>
+              <p>Datos separados por consultorio, notas clínicas privadas y control sobre lo que compartís. La confianza se cuida desde el primer encuentro.</p>
+            </div>
+            <LockKeyhole className="inicio-privacidad-candado" aria-hidden="true" />
+          </div>
+        </section>
+
+        <div className="inicio-precio-fondo" data-revelar>
+          <Suspense fallback={<section id="plan" className="inicio-contenedor inicio-plan-cargando" aria-label="Cargando el plan">
+            <span className="inicio-antetitulo">UN PLAN. TODO TU CONSULTORIO.</span>
+            <h2>Una inversión en<br />
+              <em>tu forma de trabajar.</em>
+            </h2>
+            <p role="status">Consultando precio y prueba disponibles…</p>
+          </section>}>
+            <SeccionPlan />
+          </Suspense>
+        </div>
+
+        <section id="preguntas" className="inicio-seccion inicio-contenedor inicio-preguntas" aria-labelledby="titulo-preguntas">
+          <div data-revelar>
+            <p className="inicio-antetitulo">CON TODO MÁS CLARO</p>
+            <h2 id="titulo-preguntas">Buenas preguntas.<br />
+              <em>Respuestas simples.</em>
+            </h2>
+            <p className="inicio-texto-secundario">Conocé un poco más antes de dar el primer paso.</p>
+            <span className="inicio-preguntas-adorno" aria-hidden="true">
+              <MessageCircle />
+              <Plus />
+            </span>
+          </div>
+          <div className="inicio-acordeon" data-revelar>{PREGUNTAS.map(({ pregunta, respuesta }) => <details key={pregunta} name="preguntas-nutrisfera">
+            <summary>{pregunta}<Plus aria-hidden="true" />
+            </summary>
+            <p>{respuesta}</p>
+          </details>)}</div>
+        </section>
+
+        <section className="inicio-cta-seccion inicio-contenedor" aria-labelledby="titulo-cta">
+          <div className="inicio-cta" data-revelar>
+            <span className="inicio-cta-sello" aria-hidden="true">
+              <Sprout />
+            </span>
+            <p className="inicio-antetitulo">EL PRÓXIMO PASO ES TUYO</p>
+            <h2 id="titulo-cta">Tu vocación, en el centro.<br />
+              <em>El resto, en Nutrisfera.</em>
+            </h2>
+            <p>Hacé lugar para una forma más simple de gestionar<br className="inicio-salto-escritorio" /> y una forma más cercana de acompañar.</p>
+            <Link className="inicio-boton" href={RUTAS.registro}>Crear mi consultorio <ArrowUpRight aria-hidden="true" />
+            </Link>
+            <span className="inicio-cta-detalle">
+              <Sparkles aria-hidden="true" /> Pensado para profesionales de la nutrición</span>
           </div>
         </section>
       </main>
-
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-sm text-muted-foreground sm:flex-row sm:justify-between">
-          <p>{NOMBRE_PRODUCTO}</p>
-          <p>Hecho para profesionales de la nutrición.</p>
+      <footer className="inicio-footer">
+        <div className="inicio-contenedor">
+          <div className="inicio-footer-superior">
+            <div>
+              <Logo href="#contenido" className="inicio-logo" />
+              <p>Tu consultorio, en sintonía.<br />Más espacio para acompañar.</p>
+            </div>
+            <nav aria-label="Producto">
+              <strong>Descubrí Nutrisfera</strong>
+              <a href="#funcionalidades">El producto</a>
+              <a href="#pacientes">Portal del paciente</a>
+              <a href="#como-funciona">Cómo funciona</a>
+            </nav>
+            <nav aria-label="Información">
+              <strong>Todo más claro</strong>
+              <a href="#plan">El plan</a>
+              <a href="#preguntas">Preguntas frecuentes</a>
+              <a href="#privacidad">Privacidad de tus datos</a>
+            </nav>
+            <div className="inicio-footer-acceso">
+              <strong>Tu próximo paso</strong>
+              <Link href={RUTAS.registro}>Crear mi consultorio <ArrowUpRight aria-hidden="true" />
+              </Link>
+              <Link href={RUTAS.ingresar}>Ya tengo una cuenta <ArrowUpRight aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+          <div className="inicio-footer-inferior">
+            <p>{NOMBRE_PRODUCTO} · Hecho para acompañar.</p>
+            <span>
+              <span className="inicio-punto" /> Nutrición con un lado más humano.</span>
+            <a href="#contenido">Volver arriba <ArrowUpRight aria-hidden="true" />
+            </a>
+          </div>
         </div>
       </footer>
-    </div>
+    </MovimientoInicio>
   );
 }

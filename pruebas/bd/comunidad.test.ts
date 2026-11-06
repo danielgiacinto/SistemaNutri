@@ -136,6 +136,22 @@ describe("comunidad del consultorio", () => {
     ).rejects.toThrow(/permission denied/);
   });
 
+  it("las reacciones respetan el grupo, la autoría y los emojis permitidos", async () => {
+    const actividad = (await bd.query<{id:string}>("select id from public.actividades_comunidad")).rows[0].id;
+    await comoUsuario(bd, leo, tx => tx.query("insert into public.reacciones_comunidad (actividad_id, emoji) values ($1, '👍')", [actividad]));
+    expect((await comoUsuario(bd, luz, tx => tx.query("select emoji from public.reacciones_comunidad"))).rows).toEqual([{emoji:"👍"}]);
+    expect((await comoUsuario(bd, ajeno, tx => tx.query("select * from public.reacciones_comunidad"))).rows).toHaveLength(0);
+    expect((await comoUsuario(bd, admin, tx => tx.query("select * from public.reacciones_comunidad"))).rows).toHaveLength(0);
+    await expect(comoAnonimo(bd, tx => tx.query("select * from public.reacciones_comunidad"))).rejects.toThrow(/permission denied/);
+    await expect(comoUsuario(bd, ajeno, tx => tx.query("insert into public.reacciones_comunidad (actividad_id, emoji) values ($1, '👍')", [actividad]))).rejects.toThrow(/row-level security/);
+    await expect(comoUsuario(bd, leo, tx => tx.query("insert into public.reacciones_comunidad (actividad_id, emoji) values ($1, 'x')", [actividad]))).rejects.toThrow(/check constraint/);
+    await expect(comoUsuario(bd, luz, tx => tx.query("insert into public.reacciones_comunidad (actividad_id, emoji, usuario_id) values ($1, '❤️', $2)", [actividad, leo]))).rejects.toThrow(/permission denied/);
+    await comoUsuario(bd, luz, tx => tx.query("delete from public.reacciones_comunidad where actividad_id = $1", [actividad]));
+    expect((await bd.query("select * from public.reacciones_comunidad")).rows).toHaveLength(1);
+    await comoUsuario(bd, leo, tx => tx.query("delete from public.reacciones_comunidad where actividad_id = $1", [actividad]));
+    expect((await bd.query("select * from public.reacciones_comunidad")).rows).toHaveLength(0);
+  });
+
   it("solo la autora o el consultorio borran una actividad", async () => {
     const actividad = await comoUsuario(bd, luz, async (tx) => {
       const r = await tx.query<{ id: string }>("select id from public.actividades_comunidad");

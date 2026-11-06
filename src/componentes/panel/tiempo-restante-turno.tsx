@@ -12,6 +12,7 @@ type TiempoRestante = {
 type Props = {
   inicio: string;
   ahoraInicial: string;
+  enLinea?: boolean;
 };
 
 function calcularTiempoRestante(inicio: string, referencia: string | number): TiempoRestante {
@@ -50,7 +51,7 @@ function calcularTiempoRestante(inicio: string, referencia: string | number): Ti
   };
 }
 
-export function TiempoRestanteTurno({ inicio, ahoraInicial }: Props) {
+export function TiempoRestanteTurno({ inicio, ahoraInicial, enLinea = false }: Props) {
   const [tiempo, setTiempo] = useState(() => calcularTiempoRestante(inicio, ahoraInicial));
 
   useEffect(() => {
@@ -64,7 +65,8 @@ export function TiempoRestanteTurno({ inicio, ahoraInicial }: Props) {
   return (
     <p
       className={cn(
-        "mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium lg:mt-0",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
+        enLinea ? "mt-0" : "mt-2 lg:mt-0",
         tiempo.cercano
           ? "border-advertencia/30 bg-advertencia/15 text-advertencia-foreground"
           : "border-primary/20 bg-primary/10 text-primary",

@@ -17,7 +17,7 @@ const MENSAJES: Record<string, string> = {
   restriccion: "Revisá el texto: tiene que tener entre 1 y 280 caracteres.",
 };
 
-export type ActividadVisible = Pick<ActividadComunidad, "id" | "texto" | "autor_visible" | "creado_en" | "paciente_id">;
+export type ActividadVisible = Pick<ActividadComunidad, "id" | "texto" | "autor_visible" | "creado_en" | "paciente_id"> & { reacciones?: { emoji: string; usuario_id: string }[] };
 
 export type DesafioConActividad = Desafio & {
   participaciones_desafio: { id: string }[];
@@ -41,9 +41,17 @@ export async function listarDesafios(
   }
 
   const filas = (data ?? []) as DesafioConActividad[];
+  const ids = filas.flatMap(fila => fila.actividades_comunidad.map(actividad => actividad.id));
+  const { data: reacciones, error: errorReacciones } = ids.length
+    ? await cliente.from("reacciones_comunidad").select("actividad_id, emoji, usuario_id").in("actividad_id", ids)
+    : { data: [], error: null };
+  if (errorReacciones) {
+    registrarError("listar_reacciones", errorReacciones);
+    if (!["42P01", "PGRST205"].includes(errorReacciones.code)) throw new Error("No se pudieron cargar las reacciones.");
+  }
   return filas.map((fila) => ({
     ...fila,
-    actividades_comunidad: [...fila.actividades_comunidad].sort((a, b) => b.creado_en.localeCompare(a.creado_en)),
+    actividades_comunidad: [...fila.actividades_comunidad].sort((a, b) => b.creado_en.localeCompare(a.creado_en)).map(actividad => ({ ...actividad, reacciones: errorReacciones ? undefined : (reacciones ?? []).filter(reaccion => reaccion.actividad_id === actividad.id) })),
   }));
 }
 

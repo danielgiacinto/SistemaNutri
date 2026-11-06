@@ -1,3 +1,4 @@
+import { TiempoRestanteTurno } from "@/componentes/panel/tiempo-restante-turno";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -62,7 +63,8 @@ async function InicioPaciente() {
         <Link href="/portal/turnos" className="block rounded-2xl border bg-card p-5">
           <p className="text-sm text-muted-foreground">Próximo turno</p>
           <p className="mt-1 text-lg font-semibold">{formatearFechaHora(new Date(proximo.inicio), ficha.zonaHoraria)}</p>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <TiempoRestanteTurno inicio={proximo.inicio} ahoraInicial={ahora.toISOString()} enLinea />
             <InsigniaTurno estado={proximo.estado} />
             <span className="text-sm text-muted-foreground">{ETIQUETAS_TIPO_CONSULTA[proximo.tipo]}</span>
           </div>

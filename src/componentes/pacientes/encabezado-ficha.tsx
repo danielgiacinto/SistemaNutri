@@ -58,6 +58,7 @@ export function EncabezadoFicha({
         </div>
       </div>
       <Pestanas
+        cuadriculaMovil
         precargar
         actual={rutaActual}
         items={[

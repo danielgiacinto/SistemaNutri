@@ -36,6 +36,7 @@ export default function LayoutRaiz({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es-AR"
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       className={`${fuenteSans.variable} ${fuenteMono.variable} h-full antialiased`}
     >

@@ -12,6 +12,12 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      reacciones_comunidad: {
+        Row: { actividad_id: string; usuario_id: string; emoji: string }
+        Insert: { actividad_id: string; emoji: string; usuario_id?: string }
+        Update: { actividad_id?: string; emoji?: string; usuario_id?: string }
+        Relationships: []
+      }
       servicios_consultorio: {
         Row: {
           id: string

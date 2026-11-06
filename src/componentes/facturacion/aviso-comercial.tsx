@@ -32,9 +32,6 @@ export async function AvisoComercial({ consultorioId, zona }: { consultorioId: s
     clave = `prueba-${prueba.data.vence_en}-${dias <= 7 ? "proxima" : "inicio"}-${s?.estado_mp ?? "sin_autorizar"}`;
     alerta = dias <= 7 && s?.estado_mp !== "authorized";
     texto = s?.estado_mp === "authorized" ? `Tu prueba termina el ${fin}. La renovación mensual ya está autorizada en Mercado Pago.` : `Disfrutá tu prueba gratis hasta el ${fin}. Autorizá tu plan antes de esa fecha para continuar con todas las funciones.`;
-  } else if (estado.data === "activo" && s) {
-    clave = `cobro-${s.id}-${s.cobertura_hasta}`;
-    texto = `Tu cobertura paga está confirmada hasta el ${fin}. Podés consultar los cobros y administrar tu renovación en Facturación.`;
   } else return null;
   return <AvisoComercialDescartable clave={`${consultorioId}-${clave}`} texto={texto} alerta={alerta} descartable={descartable} />;
 }

@@ -92,3 +92,19 @@ export async function quitarActividad(actividadId: string): Promise<ResultadoAcc
   if (resultado.ok) refresh();
   return resultado;
 }
+
+
+export async function cambiarReaccion(actividadId: string, emoji: string, agregar: boolean): Promise<ResultadoAccion> {
+  const contexto = await requerirPaciente();
+  if (!esquemaUuid.safeParse(actividadId).success || !["👍", "❤️", "🎉", "💪"].includes(emoji) || typeof agregar !== "boolean") {
+    return { ok: false, mensaje: "Reacción inválida." };
+  }
+  const cliente = await crearClienteServidor();
+  const consulta = agregar
+    ? cliente.from("reacciones_comunidad").insert({ actividad_id: actividadId, emoji })
+    : cliente.from("reacciones_comunidad").delete().eq("actividad_id", actividadId).eq("emoji", emoji).eq("usuario_id", contexto.usuarioId);
+  const { error } = await consulta;
+  if (error && error.code !== "23505") return { ok: false, mensaje: "No se pudo guardar la reacción. Intentá nuevamente." };
+  refresh();
+  return { ok: true };
+}
