@@ -305,6 +305,17 @@ sobre ese mismo ID. Después de comprobar el segundo, cancelar la prueba para ev
 otro ciclo innecesario. La fecha límite sigue existiendo aunque el usuario no vuelva
 a este chat. No se considera cerrada la validación externa de renovación.
 
+El usuario autorizó esta prueba corregida el 6/11/2026. Pago inicial `187048297859`
+aprobado por ARS 15.999, factura `7033691582`. El proveedor confirmó tres cuotas,
+una cobrada y dos pendientes, con próximo débito el **7/11/2026 11:18:33 de Argentina**
+(14:18:33 UTC). Nutrisfera registró el pago y cobertura hasta el 6/12/2026 11:18:33.
+Dos entregas de `subscription_authorized_payment` fallaron inicialmente con 404 de
+la API del proveedor a las 14:18:36 y 14:18:38 UTC; la factura sí estaba disponible
+en la consulta posterior. El evento de pago acreditó la mensualidad. Las entregas
+fallidas permanecen registradas para reintento, sin fingir que ya se procesaron.
+Revisar junto con el segundo ciclo: nuevo pago distinto sobre `d29dd7ef8ac44dc5ba419a958177800c`,
+factura distinta, cobertura, ausencia de duplicados y resultado de esos reintentos.
+
 ### Diagnóstico del bloqueo observado
 
 El desajuste de cuentas descrito a continuación corresponde a la configuración
