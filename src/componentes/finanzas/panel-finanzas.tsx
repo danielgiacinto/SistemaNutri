@@ -9,6 +9,8 @@ import { CampoFinanciero as Campo, estiloCampoFinanzas as estilo, FormularioFina
 import { CobroRapido } from './cobro-rapido';
 import { DialogoFinanciero } from './dialogo-financiero';
 import { DialogoServicios } from '@/componentes/configuracion/dialogo-servicios';
+import { GraficoMediosPago } from './grafico-medios-pago';
+import { IndicadoresFinanzas } from './indicadores-finanzas';
 const dinero=(valor:number)=>dineroFinanzas(valor,'ARS');
 
 export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{datos:DatosFinanzas;pacienteId?:string;vistaInicial?:string;zona:string}) {
@@ -32,9 +34,8 @@ export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{dat
   const movimientos=datos.movimientos.filter(m=>m.moneda==='ARS'&&(!desde||fecha(m.fecha)>=desde)&&(!hasta||fecha(m.fecha)<=hasta)&&(!tipo||m.tipo===tipo)&&(!categoria||m.categoria.toLowerCase().includes(categoria.toLowerCase()))&&(!medio||m.medio===medio));
   return <div className="@container/finanzas min-w-0 space-y-6">
     {!pacienteId&&<>
-      <div className="grid gap-5 rounded-2xl border bg-card p-5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:p-6">
-        {[["Ingresos del mes",total('ingreso')],["Deuda de consultas atendidas",saldoPendiente],["Egresos del mes",total('egreso')]].map(([nombre,importe])=><div key={nombre} className="sm:px-6 sm:first:pl-0 sm:last:pr-0"><p className="text-xs text-muted-foreground">{nombre}</p><p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">{dinero(Number(importe))}</p></div>)}
-      </div>
+      <IndicadoresFinanzas ingresos={total('ingreso')} deuda={saldoPendiente} egresos={total('egreso')} mes={mes}/>
+      <GraficoMediosPago datos={datos} zona={zona}/>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <nav className="flex gap-1" aria-label="Secciones de finanzas">{[['cobros','Cobros'],['movimientos','Caja']].map(([valor,etiqueta])=><button type="button" key={valor} aria-current={vista===valor?'page':undefined} onClick={()=>fijarVista(valor)} className={cn('border-b-2 px-3 py-2.5 text-sm font-medium transition-colors',vista===valor?'border-primary text-foreground':'border-transparent text-muted-foreground hover:text-foreground')}>{etiqueta}</button>)}</nav>
         <div className="flex flex-wrap gap-2"><DialogoServicios servicios={datos.servicios}/><ConfiguracionDialogo configuracion={configuracion}/></div>

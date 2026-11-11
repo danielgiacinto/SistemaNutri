@@ -6,10 +6,10 @@ import { SincronizarPreferencias } from "@/componentes/tema/sincronizar-preferen
 import { datosMenuUsuario, enlacesMenuUsuario } from "@/lib/presentacion-usuario";
 import { RUTAS } from "@/autorizacion/rutas";
 
-export default function LayoutPanel({ children }: LayoutProps<"/panel">) {
+export default function LayoutPanel({ children, dialogo }: LayoutProps<"/panel">) {
   return (
     <Suspense fallback={<EsqueletoMarco />}>
-      <MarcoPanel>{children}</MarcoPanel>
+      <MarcoPanel>{children}{dialogo}</MarcoPanel>
     </Suspense>
   );
 }

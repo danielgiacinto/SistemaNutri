@@ -5,7 +5,7 @@ import { DURACIONES_TURNO_MINUTOS, ESTADOS_TURNO, TIPOS_CONSULTA } from "@/confi
 const duraciones = DURACIONES_TURNO_MINUTOS as unknown as [number, ...number[]];
 
 export const esquemaAltaTurno = z.object({
-  pacienteId: esquemaUuid,
+  pacienteId: z.uuid({ error: "Elegí un paciente." }),
   servicioId: z.union([esquemaUuid, z.literal("")]).optional(),
   fecha: esquemaFechaIso,
   hora: esquemaHora,

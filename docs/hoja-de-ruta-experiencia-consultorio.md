@@ -57,6 +57,21 @@ lleva al listado con `crear=1`; al cerrar se limpia ese parámetro.
 
 ### Accesos simples de Agenda y Finanzas
 
+Ampliación implementada: **Nuevo turno** abre en diálogo mediante navegación
+interceptada, manteniendo debajo Inicio, Agenda o la ficha desde donde se abrió.
+El acceso desde una franja conserva fecha/hora y el acceso desde un paciente conserva
+su selección. Cancelar, X y Escape vuelven a la pantalla anterior; el fondo no
+descarta el formulario. Al entrar directamente por URL se muestra el mismo diálogo
+sobre la agenda y el cierre lleva al día correspondiente. El resumen lateral muestra
+paciente, fecha, hora, duración y precio mientras se completa. En celular queda una
+columna desplazable con pie de acciones visible. Los campos tienen identificadores
+únicos para no colisionar con formularios de la pantalla de fondo.
+
+Se mantienen servicio opcional, duración del consultorio, motivo y notas privadas,
+autorización en servidor, validaciones de solapamientos/bloqueos y la apertura del
+detalle después del alta. El precio informa la prestación; agendar no registra pagos.
+Sin pacientes activos, se ofrece registrar uno y se impide enviar el alta vacía.
+
 Implementado: selector con iconos Día/Semana/Mes/Caja. Las tres vistas temporales
 mantienen su comportamiento actual. Caja lleva a Finanzas con los movimientos
 seleccionados; todavía no es una cuarta vista integrada del calendario.
@@ -74,6 +89,12 @@ la propiedad de la ficha ni la historia clínica. La migración se incluye en la
 pruebas PostgreSQL aisladas; su aplicación hospedada no forma parte de esta entrega.
 
 ## Fase 9: Agenda, Caja y catálogo de servicios
+
+Avance implementado después del relevamiento: el desglose **Cómo te pagaron** ya
+está disponible en Finanzas, sobre Cobros y Caja, con barras, importes, porcentajes,
+conteo de ingresos y navegación mensual. Usa ingresos efectivos en ARS y conserva
+las devoluciones como egresos. Ver [reglas del bloque](finanzas-consultorio.md#cómo-te-pagaron).
+El resto de la integración de Agenda y Caja y los gráficos por servicio siguen pendientes.
 
 Prioridad alta. Reutilizar el sistema financiero de fase 7: operaciones por turno,
 pagos parciales/anticipados, movimientos, descuentos, bonificaciones, egresos y
@@ -416,8 +437,15 @@ También se comprobaron apertura desde Inicio, Escape con retorno del foco, la U
 anterior de alta y su limpieza al cerrar, el acceso de Agenda a Caja, el catálogo
 de servicios en diálogo a 390 px y su formulario anidado de alta, sin guardar datos.
 Resultado final del 11/11/2026: `npm run verificar` aprobado, con lint, TypeScript,
-265 pruebas en 37 archivos y compilación de producción. No se desplegó ni se aplicó
+271 pruebas en 38 archivos y compilación de producción. No se desplegó ni se aplicó
 la migración en la base hospedada.
+
+La ampliación de esta entrega verifica Nuevo turno sobre Inicio y sobre una franja
+de Agenda, valores precargados por URL, cambios de fecha/hora con teclado, validación
+de paciente con foco en el campo, cancelación y reapertura sin la carga descartada,
+entrada directa y diseño móvil a 390 px. El resumen económico y Cómo te pagaron se
+revisaron a 937 y 390 px, sin desbordes horizontales y con el gráfico visible en Caja.
+No se crearon turnos, pagos ni movimientos en la sesión hospedada para estas comprobaciones.
 
 Para cada fase futura: migración y pruebas cuando cambie el modelo, lectura de la
 guía Next.js instalada para la API afectada, revisión visual en ambos temas y a

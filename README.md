@@ -105,6 +105,12 @@ Implementación en el repositorio, inspirada en la revisión autenticada de
   tokens y el tema de Nutrisfera; en celular oculta el resumen lateral. Cancelar no
   guarda. Crear abre la ficha del paciente. El portal se habilita mediante invitación;
   cargar un teléfono no conecta WhatsApp ni envía mensajes.
+- **Nuevo turno** también abre un diálogo sobre Inicio, Agenda y las fichas de
+  pacientes. Conserva paciente/fecha/hora del acceso elegido y permite volver al
+  mismo lugar al cancelar. Incluye resumen lateral, selección de paciente y servicio,
+  fecha/hora/duración, motivo y notas privadas plegables, con acciones al pie.
+  Abrir la URL directamente muestra el diálogo sobre la agenda. Agendar conserva
+  las validaciones de solapamientos y abre el detalle del turno al guardar.
 - La edición conserva los nuevos campos y la ficha muestra la cobertura. El enlace
   antiguo `/panel/pacientes/nuevo` redirige al listado con el diálogo abierto.
 - Agenda agrupa **Día, Semana, Mes y Caja** con iconos. Caja abre la sección existente
@@ -115,10 +121,12 @@ Implementación en el repositorio, inspirada en la revisión autenticada de
   ojo de visibilidad y nota general de la referencia se planifican en fase 9.
 
 Validación del 11/11/2026: `npm run verificar` aprobado (lint, TypeScript,
-**265 pruebas en 37 archivos** y compilación de producción). Revisión visual en
+**271 pruebas en 38 archivos** y compilación de producción). Revisión visual en
 localhost en escritorio y a 390 px, validación del nombre, edad, resumen dinámico,
 Escape/retorno del foco, redirección del enlace anterior, acceso a Caja y catálogo
 de servicios con apertura de su formulario de alta, sin guardar datos de prueba.
+La ampliación de Nuevo turno también se comprobó desde Inicio y franjas de Agenda,
+con fecha/hora precargadas, descarte al cancelar y entrada directa por URL.
 
 **Requisito de activación:** aplicar primero
 `supabase/migrations/20261111180000_alta_paciente_contacto_cobertura.sql` al entorno
@@ -129,10 +137,18 @@ en Supabase hospedado ni publica en Vercel.
 
 ### Próximas fases — Experiencia del consultorio
 
+**Avance de fase 9:** Finanzas ya muestra **Cómo te pagaron**, con barras por medio
+de pago, importes, porcentajes, cantidad de ingresos y navegación mensual. Está
+visible sobre Cobros y Caja y usa ingresos efectivos en ARS, con correcciones por
+error excluidas y devoluciones registradas aparte como egresos. No requiere una nueva
+migración. Detalles en [Finanzas del consultorio](docs/finanzas-consultorio.md#cómo-te-pagaron).
+El resumen superior también usa tarjetas con iconos y fondos suaves para ingresos,
+deuda y egresos, coherentes con el gráfico y adaptadas al ancho disponible.
+
 El relevamiento funcional y estético completo, decisiones, dependencias, casos
 límite y criterios de aceptación están en
 [Hoja de ruta a partir de la referencia](docs/hoja-de-ruta-experiencia-consultorio.md).
-Estas fases están **planificadas**, no implementadas por esta entrega:
+Las fases siguientes siguen **planificadas**, salvo el avance de medios de pago indicado arriba:
 
 1. **Fase 9 — Agenda y Caja integradas.** Mantener fecha/período al cambiar entre
    Día/Semana/Mes/Caja; tira de días, tarjetas de consultas, resumen mensual con

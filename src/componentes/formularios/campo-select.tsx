@@ -14,6 +14,7 @@ type PropiedadesCampo = {
   error?: string;
   descripcion?: React.ReactNode;
   placeholder?: string;
+  referencia?: React.Ref<HTMLButtonElement>;
 };
 
 export function CampoSelect({
@@ -25,12 +26,13 @@ export function CampoSelect({
   error,
   descripcion,
   placeholder,
+  referencia,
 }: PropiedadesCampo) {
   return (
     <Field data-invalid={error ? true : undefined}>
       <FieldLabel htmlFor={id}>{etiqueta}</FieldLabel>
       <Select value={valor} onValueChange={alCambiar}>
-        <SelectTrigger id={id} className="w-full" aria-invalid={error ? true : undefined}>
+        <SelectTrigger ref={referencia} id={id} className="w-full" aria-invalid={error ? true : undefined} aria-describedby={[descripcion ? `${id}-descripcion` : null, error ? `${id}-error` : null].filter(Boolean).join(" ") || undefined}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
@@ -41,8 +43,8 @@ export function CampoSelect({
           ))}
         </SelectContent>
       </Select>
-      {descripcion && <FieldDescription>{descripcion}</FieldDescription>}
-      {error && <FieldError>{error}</FieldError>}
+      {descripcion && <FieldDescription id={`${id}-descripcion`}>{descripcion}</FieldDescription>}
+      {error && <FieldError id={`${id}-error`}>{error}</FieldError>}
     </Field>
   );
 }

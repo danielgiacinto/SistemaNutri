@@ -17,6 +17,37 @@ y configuración se abren en diálogos. Los filtros adicionales quedan plegados.
 Estos registros son internos: no emiten facturas fiscales ni cobran con una pasarela.
 La suscripción a Nutrisfera conserva sus tablas, pantallas y procesos anteriores.
 
+### Cómo te pagaron
+
+El resumen superior mantiene los tres indicadores económicos dentro de una tarjeta
+con cabecera y mes actual. Cada indicador tiene icono, fondo suave, importe destacado
+y aclaración del alcance: ingresos y egresos del mes; deuda pendiente acumulada de
+consultas atendidas. Se organiza en tres columnas con espacio suficiente y se apila
+en celular, usando únicamente los tokens de tema de Nutrisfera.
+
+Finanzas incorpora un bloque destacado sobre las pestañas Cobros y Caja, visible en
+ambas secciones. Muestra barras horizontales por medio, importe y porcentaje del
+total, cantidad de ingresos y medio principal. Abre en el mes actual y permite
+recorrer meses anteriores, desde el primer ingreso registrado hasta el mes actual.
+Sin ingresos muestra un estado vacío; la información se adapta a celular y los
+valores también se leen como texto, sin depender del color o de pasar el puntero.
+
+El desglose usa los ingresos efectivos en ARS, incluidos los movimientos manuales,
+según la fecha de cobro en la zona horaria del consultorio. Las cantidades representan
+ingresos, no consultas: dos abonos parciales son dos ingresos. Las correcciones por
+error se excluyen incluso si se efectuaron en otro mes. Las devoluciones conservan
+el ingreso original y figuran como egreso, por lo que el gráfico expresa ingresos
+brutos recibidos. No es el saldo neto. Los importes se suman en centavos y los nombres
+de medios se agrupan sin diferencias de mayúsculas o espacios sobrantes. Los filtros
+del listado no cambian este resumen mensual. No requiere una nueva migración.
+
+Verificación del 11/11/2026: revisión visual a 937 y 390 px, valores conciliados con
+los movimientos existentes y visibilidad del gráfico en Cobros y Caja. Pruebas
+unitarias de importes, porcentajes, pagos parciales, correcciones entre meses,
+devoluciones, monedas, nombres personalizados y límites de mes según zona horaria.
+`npm run verificar` completo aprobado: lint, tipos, 271 pruebas en 38 archivos y build.
+Sin registrar cobros ni movimientos durante la revisión visual; sin despliegue.
+
 ## Entidades y permisos
 
 Migración: `supabase/migrations/20261106000000_finanzas_consultorio.sql`.
