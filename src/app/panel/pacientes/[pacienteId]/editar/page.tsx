@@ -34,6 +34,9 @@ async function ContenidoSeccion({ params }: Pick<PageProps<"/panel/pacientes/[pa
             inicial={{
               nombre: paciente.nombre,
               apellido: paciente.apellido,
+              sexo: paciente.sexo === "femenino" || paciente.sexo === "masculino" || paciente.sexo === "x" ? paciente.sexo : "",
+              obraSocial: paciente.obra_social ?? "",
+              numeroAfiliado: paciente.numero_afiliado ?? "",
               correo: paciente.correo ?? "",
               telefono: paciente.telefono ?? "",
               documento: paciente.documento ?? "",

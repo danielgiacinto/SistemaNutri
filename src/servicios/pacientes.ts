@@ -140,6 +140,9 @@ function camposPaciente(datos: DatosAltaPacienteValidados) {
   return {
     nombre: datos.nombre,
     apellido: datos.apellido,
+    sexo: datos.sexo,
+    obra_social: datos.obraSocial,
+    numero_afiliado: datos.numeroAfiliado,
     correo: datos.correo,
     telefono: datos.telefono,
     documento: datos.documento,

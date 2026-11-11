@@ -6,7 +6,7 @@ export function calcularImc(pesoKg: number | null, tallaCm: number | null): numb
 }
 
 export function nombreCompleto(persona: { nombre: string; apellido: string }): string {
-  return `${persona.apellido}, ${persona.nombre}`.trim();
+  return persona.apellido ? `${persona.apellido}, ${persona.nombre}`.trim() : persona.nombre.trim();
 }
 
 export function nombreNatural(persona: { nombre: string; apellido: string }): string {

@@ -91,6 +91,76 @@ no hace falta lanzar comercialmente la app:
 Hasta ese momento, autorizar la tarjeta en local no acredita un mes. El detalle está
 en [`docs/facturacion.md`](docs/facturacion.md).
 
+### Fase 8 — Alta rápida y accesos del consultorio (11/11/2026)
+
+Implementación en el repositorio, inspirada en la revisión autenticada de
+[SoloNutris](https://www.solonutris.com.ar/app) y comparada con Nutrisfera:
+
+- **Nuevo paciente** abre un diálogo desde Inicio, Pacientes y el listado vacío.
+  Solo el nombre es obligatorio. Apellido, DNI, nacimiento, sexo (Femenino/Masculino/X),
+  teléfono, correo, obra social y número de afiliado son opcionales. La edad se calcula;
+  las notas administrativas siguen disponibles en un desplegable.
+- El diálogo tiene resumen lateral que se actualiza al escribir, secciones Identidad
+  y Contacto y cobertura, formulario desplazable y acciones visibles al pie. Usa los
+  tokens y el tema de Nutrisfera; en celular oculta el resumen lateral. Cancelar no
+  guarda. Crear abre la ficha del paciente. El portal se habilita mediante invitación;
+  cargar un teléfono no conecta WhatsApp ni envía mensajes.
+- La edición conserva los nuevos campos y la ficha muestra la cobertura. El enlace
+  antiguo `/panel/pacientes/nuevo` redirige al listado con el diálogo abierto.
+- Agenda agrupa **Día, Semana, Mes y Caja** con iconos. Caja abre la sección existente
+  de movimientos de Finanzas. El tablero económico integrado queda para la fase 9.
+- Finanzas incorpora el diálogo **Servicios y precios** con el catálogo existente,
+  alta y edición de nombre, descripción, precio, duración y estado. Los precios
+  históricos de los turnos se conservan. La edición en filas, aclaraciones públicas,
+  ojo de visibilidad y nota general de la referencia se planifican en fase 9.
+
+Validación del 11/11/2026: `npm run verificar` aprobado (lint, TypeScript,
+**265 pruebas en 37 archivos** y compilación de producción). Revisión visual en
+localhost en escritorio y a 390 px, validación del nombre, edad, resumen dinámico,
+Escape/retorno del foco, redirección del enlace anterior, acceso a Caja y catálogo
+de servicios con apertura de su formulario de alta, sin guardar datos de prueba.
+
+**Requisito de activación:** aplicar primero
+`supabase/migrations/20261111180000_alta_paciente_contacto_cobertura.sql` al entorno
+que se vaya a usar y después desplegar el código. La migración permite apellido
+vacío y añade sexo/cobertura, con permisos por columna y las RLS existentes.
+La verificación aislada usa todas las migraciones; esta entrega no aplica cambios
+en Supabase hospedado ni publica en Vercel.
+
+### Próximas fases — Experiencia del consultorio
+
+El relevamiento funcional y estético completo, decisiones, dependencias, casos
+límite y criterios de aceptación están en
+[Hoja de ruta a partir de la referencia](docs/hoja-de-ruta-experiencia-consultorio.md).
+Estas fases están **planificadas**, no implementadas por esta entrega:
+
+1. **Fase 9 — Agenda y Caja integradas.** Mantener fecha/período al cambiar entre
+   Día/Semana/Mes/Caja; tira de días, tarjetas de consultas, resumen mensual con
+   cobrado, consultas cobradas, saldo pendiente y promedio; gráficos por medio de
+   pago y servicio, pendientes accionables y movimientos. Ampliar Servicios y precios
+   con edición compacta, aclaraciones, atajos, visibilidad para reservas y nota general,
+   conservando pagos parciales, anticipos, egresos, reversiones e importes históricos.
+2. **Fase 10 — Inicio operativo.** Primeros pasos basados en datos reales; agenda
+   de hoy y tareas pendientes; balance mensual y comparación a igual altura del mes
+   anterior; panel de números con pacientes nuevos/recurrentes, ausentismo, planes
+   publicados, consultas por mes y mapa de horarios. Reutilizar el gráfico de ingresos.
+3. **Fase 11 — Biblioteca reutilizable.** Platos, platos por grupos, suplementos,
+   composición química, preparaciones y grupos de alimentos; buscadores, categorías,
+   procedencia, porciones, macros e ingredientes. Contenido propio editable y recursos
+   base duplicables; datos con fuente y licencia verificadas, sin copiar el catálogo ajeno.
+4. **Fase 12 — Planes visuales.** Catálogo de plantillas separado de las entregas
+   por paciente; filtros y etiquetas; grillas semanales, opciones por comida, bloques
+   de texto e indicaciones; guardar grillas, copiar sin alterar originales, vista
+   previa y publicación versionada en el portal. PDF/correo como subfase posterior.
+5. **Fase 13 — Integraciones opcionales.** Reservas online, Google Calendar,
+   importación asistida e IA con revisión profesional. WhatsApp queda pendiente de
+   definición de proveedor, consentimiento y funcionamiento; no bloquear las fases
+   anteriores ni mostrar conexiones inexistentes.
+
+Orden recomendado: completar la activación de 8; implementar 9 y 10 sobre los datos
+existentes; construir 11 antes de la integración completa de 12. Reservas y visibilidad
+pública dependen de 13. Ver los criterios de cierre de cada fase en la hoja de ruta.
+
 ### Entorno
 
 | Pieza | Estado |
@@ -169,4 +239,5 @@ Guía completa (Supabase, Google OAuth, Vercel, primer superadministrador) en
 - [Facturación y Mercado Pago](docs/facturacion.md)
 - [Finanzas del consultorio — Fase 7](docs/finanzas-consultorio.md)
 - [Avances y criterios de cierre del MVP](docs/avances.md)
+- [Hoja de ruta de experiencia — Fases 8 a 13](docs/hoja-de-ruta-experiencia-consultorio.md)
 - [Seguridad y privacidad](docs/seguridad-y-privacidad.md)

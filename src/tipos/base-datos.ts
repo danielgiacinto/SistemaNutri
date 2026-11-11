@@ -546,10 +546,13 @@ export type Database = {
           notas_administrativas: string | null
           telefono: string | null
           usuario_id: string | null
+          sexo: string | null
+          obra_social: string | null
+          numero_afiliado: string | null
         }
         Insert: {
           actualizado_en?: string
-          apellido: string
+          apellido?: string
           consultorio_id: string
           correo?: string | null
           creado_en?: string
@@ -562,6 +565,9 @@ export type Database = {
           notas_administrativas?: string | null
           telefono?: string | null
           usuario_id?: string | null
+          sexo?: string | null
+          obra_social?: string | null
+          numero_afiliado?: string | null
         }
         Update: {
           actualizado_en?: string
@@ -578,6 +584,9 @@ export type Database = {
           notas_administrativas?: string | null
           telefono?: string | null
           usuario_id?: string | null
+          sexo?: string | null
+          obra_social?: string | null
+          numero_afiliado?: string | null
         }
         Relationships: [
           {

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { UserPlus, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { esquemaFiltroPacientes } from "@/esquemas/paciente";
@@ -12,7 +12,7 @@ import { EstadoVacio } from "@/componentes/comunes/estado-vacio";
 import { InsigniaPaciente } from "@/componentes/comunes/insignia-estado";
 import { hrefListadoPacientes } from "@/componentes/pacientes/consulta-pacientes";
 import { FiltroPacientes } from "@/componentes/pacientes/filtro-pacientes";
-import { Button } from "@/componentes/ui/button";
+import { DialogoNuevoPaciente } from "@/componentes/pacientes/dialogo-nuevo-paciente";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { nombreNatural } from "@/lib/antropometria";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -24,18 +24,19 @@ const COLUMNAS_PACIENTE =
 export const metadata: Metadata = { title: "Pacientes" };
 
 export default function PaginaPacientes({ searchParams }: PageProps<"/panel/pacientes">) {
+  return <Suspense fallback={<Skeleton className="h-72 rounded-2xl" />}><ContenidoPacientes searchParams={searchParams} /></Suspense>;
+}
+
+async function ContenidoPacientes({ searchParams }: Pick<PageProps<"/panel/pacientes">, "searchParams">) {
+  await requerirProfesional();
+  const parametros = await searchParams;
   return (
     <div className="space-y-8">
       <EncabezadoPagina
         titulo="Pacientes"
         descripcion="Buscá, filtrá y abrí la ficha de cada persona de tu consultorio."
         acciones={
-          <Button asChild>
-            <Link href="/panel/pacientes/nuevo">
-              <UserPlus aria-hidden="true" />
-              Nuevo paciente
-            </Link>
-          </Button>
+          <DialogoNuevoPaciente abrirInicial={parametros.crear === "1"} />
         }
       />
       <div className="space-y-6">
@@ -77,12 +78,7 @@ async function ListadoPacientes({ searchParams }: { searchParams: PageProps<"/pa
           }
           accion={
             !filtro.q && filtro.estado === "activo" ? (
-              <Button asChild>
-                <Link href="/panel/pacientes/nuevo">
-                  <UserPlus aria-hidden="true" />
-                  Registrar paciente
-                </Link>
-              </Button>
+              <DialogoNuevoPaciente etiqueta="Registrar paciente" />
             ) : undefined
           }
         />

@@ -2,7 +2,8 @@ import { ResumenFinanciero } from "@/componentes/finanzas/resumen-financiero";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, CalendarClock, CalendarDays, CalendarPlus, CheckCircle2, ClipboardList, ClipboardPen, UserPlus, Users } from "lucide-react";
+import { ArrowUpRight, CalendarClock, CalendarDays, CalendarPlus, CheckCircle2, ClipboardList, ClipboardPen, Users } from "lucide-react";
+import { DialogoNuevoPaciente } from "@/componentes/pacientes/dialogo-nuevo-paciente";
 import { requerirProfesional } from "@/autorizacion/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { obtenerDatosTablero } from "@/servicios/tablero";
@@ -71,12 +72,7 @@ async function ContenidoInicio() {
         descripcion={<span className="first-letter:uppercase">{fechaHoy}</span>}
         acciones={
           <>
-            <Button asChild variant="outline">
-              <Link href="/panel/pacientes/nuevo">
-                <UserPlus aria-hidden="true" />
-                Nuevo paciente
-              </Link>
-            </Button>
+            <DialogoNuevoPaciente variante="outline" />
             <Button asChild>
               <Link href="/panel/agenda/nuevo">
                 <CalendarDays aria-hidden="true" />

@@ -43,6 +43,7 @@ export function EncabezadoFicha({
               .filter(Boolean)
               .join(" · ") || "Sin datos de contacto adicionales"}
           </p>
+          {(paciente.obra_social || paciente.numero_afiliado) && <p className="text-sm text-muted-foreground wrap-anywhere">{[paciente.obra_social, paciente.numero_afiliado ? `Afiliado: ${paciente.numero_afiliado}` : null].filter(Boolean).join(" · ")}</p>}
         </div>
         </div>
         <div className="grid gap-3 rounded-xl border bg-muted/20 p-4 text-sm">

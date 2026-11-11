@@ -4,7 +4,10 @@ import { ESTADOS_PACIENTE } from "@/configuracion/clinica";
 
 export const esquemaAltaPaciente = z.object({
   nombre: textoObligatorio("el nombre", 80),
-  apellido: textoObligatorio("el apellido", 80),
+  apellido: z.string().trim().max(80, "El apellido debe tener como máximo 80 caracteres.").nullish().transform((valor) => valor || ""),
+  sexo: z.enum(["", "femenino", "masculino", "x"], { error: "Elegí una opción válida." }).nullish().transform((valor) => valor || null),
+  obraSocial: textoOpcional("la obra social", 120),
+  numeroAfiliado: textoOpcional("el número de afiliado", 80),
   correo: z
     .union([z.literal(""), esquemaCorreo])
     .nullish()
@@ -23,6 +26,7 @@ export const esquemaAltaPaciente = z.object({
     .union([z.literal(""), esquemaFechaIso])
     .nullish()
     .transform((valor) => valor || null)
+    .refine((valor) => !valor || (valor >= "1900-01-01" && !Number.isNaN(Date.parse(valor)) && new Date(valor).toISOString().slice(0, 10) === valor), "Ingresá una fecha válida a partir de 1900.")
     .refine((valor) => {
       if (!valor) return true;
       return valor <= new Date().toISOString().slice(0, 10);

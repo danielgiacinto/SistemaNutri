@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
+import { CalendarDays, CalendarRange, CalendarClock, Wallet, ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import { cn } from "@/lib/utilidades";
 import { DIAS_SEMANA, ETIQUETAS_ESTADO_TURNO, type VistaAgenda } from "@/configuracion/clinica";
 import { agregarDias, fechaEnZona, formatearFechaIso, grillaMes, horaCortaEnZona, inicioDeMes, inicioDeSemana, instanteDesdeLocal, isoDiaSemana, minutosDesdeMedianoche, nombreMes } from "@/lib/fechas";
@@ -34,8 +34,12 @@ export function CalendarioAgenda(propiedades: Propiedades) {
     <section className="min-w-0 space-y-5" aria-label="Calendario de turnos">
       <div className="space-y-4 rounded-2xl border bg-card p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <nav aria-label="Vista de la agenda" className="grid grid-cols-3 gap-1 rounded-xl bg-muted/60 p-1 sm:w-64">
-            {(["dia", "semana", "mes"] as const).map((opcion) => <Link key={opcion} href={hrefAgenda(opcion, fecha)} prefetch={false} onNavigate={propiedades.alCambiarVista ? (evento) => { evento.preventDefault(); propiedades.alCambiarVista?.(opcion); } : undefined} aria-current={vista === opcion ? "page" : undefined} className={cn("rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors", vista === opcion ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>{opcion === "dia" ? "Día" : opcion === "semana" ? "Semana" : "Mes"}</Link>)}
+          <nav aria-label="Vista de la agenda" className="grid grid-cols-4 gap-1 rounded-xl bg-muted/60 p-1 sm:w-fit">
+            {(["dia", "semana", "mes"] as const).map((opcion) => {
+              const Icono = opcion === "dia" ? CalendarClock : opcion === "semana" ? CalendarRange : CalendarDays;
+              return <Link key={opcion} href={hrefAgenda(opcion, fecha)} prefetch={false} onNavigate={propiedades.alCambiarVista ? (evento) => { evento.preventDefault(); propiedades.alCambiarVista?.(opcion); } : undefined} aria-current={vista === opcion ? "page" : undefined} className={cn("flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium transition-colors sm:px-3 sm:text-sm", vista === opcion ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}><Icono className="size-3.5" aria-hidden="true" />{opcion === "dia" ? "Día" : opcion === "semana" ? "Semana" : "Mes"}</Link>;
+            })}
+            <Link href="/panel/finanzas?vista=movimientos" className="flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground sm:px-3 sm:text-sm"><Wallet className="size-3.5" aria-hidden="true" />Caja</Link>
           </nav>
           <div className="flex items-center justify-between gap-2 sm:justify-end">
             <Link href={hrefAgenda(vista, fechaHoy)} className="rounded-lg border px-3 py-2 text-xs font-semibold transition-colors hover:bg-accent">Hoy</Link>
