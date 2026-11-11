@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { ClienteSupabase } from "@/lib/supabase/servidor";
 import { registrarError } from "@/lib/errores";
 import type { Evolucion, Medicion, Objetivo, Turno } from "@/tipos/entidades";
@@ -44,8 +45,10 @@ export async function obtenerFichaPortal(cliente: ClienteSupabase): Promise<Fich
   };
 }
 
-export async function listarMisTurnos(cliente: ClienteSupabase): Promise<Turno[]> {
-  const { data, error } = await cliente.from("turnos").select("*").order("inicio", { ascending: false }).limit(40);
+export async function listarMisTurnos(cliente: ClienteSupabase, turnoId?: string): Promise<Turno[]> {
+  let consulta=cliente.from("turnos").select("*").order("inicio", { ascending: false }).limit(40);
+  if(turnoId)consulta=consulta.eq("id",turnoId);
+  const {data,error}=await consulta;
   if (error) {
     registrarError("portal_turnos", error);
     throw new Error("No se pudieron cargar tus turnos.");
@@ -78,4 +81,11 @@ export async function listarMisMediciones(cliente: ClienteSupabase): Promise<Med
     throw new Error("No se pudieron cargar tus mediciones.");
   }
   return data;
+}
+
+const esquemaCobroPortal=z.object({turno_id:z.uuid(),original:z.number(),descuento:z.number(),abonado:z.number(),moneda:z.string(),bonificado:z.boolean()});
+export async function listarMisCobros(cliente:ClienteSupabase){
+  const {data,error}=await cliente.rpc('consultar_mis_cobros');
+  if(error)throw new Error('No se pudo consultar el estado de tus pagos.');
+  return z.array(esquemaCobroPortal).parse(data);
 }

@@ -6,11 +6,12 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
-Última actualización: 5 de noviembre de 2026. Las fases **1 a 4 y 6** están
+Última actualización: 11 de noviembre de 2026. Las fases **1 a 4 y 6** están
 implementadas para probar en desarrollo: registro, clínica, portal, planes alimentarios
 y desafíos de Comunidad. La aplicación corre en **localhost** y en el despliegue
 público de pruebas **https://nutrisfera.vercel.app**, con Supabase hospedado de desarrollo.
-El despliegue todavía no habilita cobros reales ni acredita el cierre de la fase 5.
+La fase **5** tiene su validación funcional cerrada con cuentas ficticias; el despliegue
+todavía no habilita cobros reales ni acredita preparación para lanzamiento comercial.
 
 La fase 5 abre el checkout de Mercado Pago desde **Plan y facturación** y controla la prueba y el acceso.
 La autorización con el comprador de prueba ya se completó: aparece en **Tus suscripciones**
@@ -21,7 +22,11 @@ clínico desde la base. El 4/11/2026 se validaron cancelación, nuevo cobro de p
 aprobado por ARS 15.999, cobertura hasta el 4/12/2026 y recuperación del acceso.
 El 5/11/2026 también se verificaron un cobro rechazado, su correo comercial y un nuevo
 cobro aprobado que recuperó el acceso tras un vencimiento simulado y auditado.
-La renovación periódica de una misma autorización todavía no se observó externamente.
+El 11/11/2026 se verificaron por API las renovaciones automáticas del 7 y 8 de noviembre
+sobre la misma autorización de prueba del 6, con tres facturas/pagos distintos, sin
+duplicados y cobertura hasta el 8/12/2026. La prueba diaria terminó tras sus tres cuotas.
+El correo del 9 corresponde al cobro del 8, enviado por la conciliación del día siguiente;
+no falta un pago del 9. Ver la evidencia y las limitaciones en `docs/facturacion.md`.
 
 La fase 7 incorpora la administración económica del consultorio: servicios pagos y
 gratuitos, precios históricos por turno, pagos parciales y anticipados, descuentos,
@@ -39,7 +44,7 @@ entrega real de recordatorios. Ver [Finanzas del consultorio](docs/finanzas-cons
 | 2 | Pacientes, agenda, historia clínica, objetivos, mediciones y gráficos | ✅ Listo para probar |
 | 3 | Portal del paciente e invitaciones | ✅ Listo para probar |
 | 4 | Planes alimentarios con versiones | ✅ Listo para probar |
-| 5 | Suscripciones, pagos y administración | Cobros aprobados/rechazados, webhooks, correos, cancelación y recuperación de acceso validados con cuentas ficticias. Queda observar la renovación periódica de una misma autorización. |
+| 5 | Suscripciones, pagos y administración | ✅ Validación funcional cerrada con cuentas ficticias: cobros, renovación automática de la misma autorización, webhooks/reintentos, correos, cancelación y recuperación. Prueba acelerada diaria; sin cobros reales. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 | 7 | Servicios, cobros a pacientes, caja, estadísticas y recordatorios | Migración aplicada; formularios, persistencia, panel y diseño móvil verificados en localhost. Lint, tipos, 230 pruebas y build aprobados. Pendientes scheduler desplegado y entrega real de correo. |
 
@@ -72,8 +77,9 @@ está habilitado en el proyecto hospedado (alta e ingreso, ver `docs/autenticaci
 
 ### Qué se prueba al final
 
-Para cerrar la fase 5 se necesita un despliegue de pruebas con URL pública HTTPS
-(por ejemplo, en Vercel); no hace falta lanzar comercialmente la app:
+La validación funcional de fase 5 se completó en el despliegue público de pruebas.
+Para repetirla se necesita una URL pública HTTPS (por ejemplo, en Vercel);
+no hace falta lanzar comercialmente la app:
 
 1. Dejar `NEXT_PUBLIC_SITIO_URL` en `https://` del dominio de producción.
 2. Cargar `MERCADOPAGO_WEBHOOK_SECRETO` y `SUPABASE_SECRET_KEY`.
@@ -96,7 +102,7 @@ en [`docs/facturacion.md`](docs/facturacion.md).
 | Redirect URLs / Google OAuth | Habilitado en el proyecto hospedado (local + callback de Supabase) |
 | Mercado Pago | Vendedor y comprador de prueba distintos configurados. Autorización alojada completada y visible como Autorizada en la app, según prueba manual del usuario. |
 | Migración de checkout | `20261103220000_checkout_suscripciones.sql` aplicada y registrada en Supabase hospedado el 4/11/2026; trigger, función idempotente y permisos verificados. Persisten diferencias históricas de otras versiones; ver `docs/despliegue.md`. |
-| `SUPABASE_SECRET_KEY` y secreto del webhook | Configurados en Vercel el 4/11/2026. Solicitud sin firma: 401. Simulación firmada de `subscription_preapproval`: 200, evento procesado sin error y autorización guardada. Falta validar un cobro mensual. |
+| `SUPABASE_SECRET_KEY` y secreto del webhook | Configurados en Vercel. Firma y entregas externas de autorización, pago y factura verificadas; cobros y renovaciones acreditados con cuentas ficticias. |
 | Vercel y secretos de CI | Web pública de pruebas disponible en `https://nutrisfera.vercel.app`. CI de migraciones sigue pendiente de conciliar el historial. |
 
 Detalle de Auth y SMTP: [`docs/autenticacion.md`](docs/autenticacion.md).
@@ -115,8 +121,8 @@ Decisiones de arquitectura: [`docs/arquitectura.md`](docs/arquitectura.md).
 - Fase 7: cobros manuales a pacientes separados de la suscripción a Nutrisfera; operaciones transaccionales, historial de ajustes y reversiones, aislamiento por profesional y recordatorios con consentimiento. Configuración y límites en [`docs/finanzas-consultorio.md`](docs/finanzas-consultorio.md).
 - Última verificación técnica (5/11/2026): `npm run verificar` completo, con lint, TypeScript, **230 pruebas en 31 archivos** y compilación. Migración financiera aplicada y registrada; formularios comprobados en localhost contra Supabase de desarrollo. No se enviaron correos reales.
 
-El núcleo funcional del MVP está implementado para desarrollo. Cerrar fase 5 exige
-demostrar la acreditación automática de cobros, además de la autorización ya conseguida.
+El núcleo funcional del MVP está implementado para desarrollo. La fase 5 demostró
+autorización, acreditación automática y renovación con cuentas ficticias.
 La preparación para producción incluye despliegue, migraciones verificadas, secretos/CI,
 correo transaccional, respaldo/restauración y revisión de los pendientes de seguridad y privacidad.
 Ver [avance y criterios de cierre](docs/avances.md).

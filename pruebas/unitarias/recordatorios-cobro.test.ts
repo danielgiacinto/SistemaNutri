@@ -45,3 +45,5 @@ describe('despacho de recordatorios de pacientes',()=>{
   expect(enviar).toHaveBeenCalledWith(expect.objectContaining({from:{name:'Consultorio',address:'consultorio@prueba.test'}}));
  });
 });
+
+it('el despacho inmediato no prepara ni reclama la cola global',async()=>{await despacharRecordatoriosCobro({rpc} as unknown as ClienteSupabase,{id,reclamado_en:'2026-11-05T12:00:00Z'});expect(rpc).not.toHaveBeenCalledWith('preparar_recordatorios_cobro');expect(rpc).not.toHaveBeenCalledWith('reclamar_recordatorios_cobro');expect(enviar).toHaveBeenCalledTimes(1);});

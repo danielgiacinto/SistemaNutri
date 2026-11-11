@@ -6,7 +6,7 @@ import { Button } from '@/componentes/ui/button';
 
 export const estiloCampoFinanzas='w-full min-w-0 rounded-lg border bg-background px-3 py-2 text-sm';
 export function CampoFinanciero({etiqueta,children}:{etiqueta:string;children:ReactNode}) { return <label className="grid gap-1.5 text-sm"><span className="font-medium">{etiqueta}</span>{children}</label>; }
-export function FormularioFinanzas({accion,fijos={},children,boton='Guardar',alGuardar}:{accion:string;fijos?:Record<string,unknown>;children:ReactNode;boton?:string;alGuardar?:()=>void}) {
+export function FormularioFinanzas({accion,fijos={},children,boton='Guardar',alGuardar,deshabilitado=false}:{accion:string;fijos?:Record<string,unknown>;children:ReactNode;boton?:string;alGuardar?:()=>void;deshabilitado?:boolean}) {
   const [pendiente,iniciar]=useTransition();
   const clave=useRef<string|null>(null);
   return <form className="grid gap-4" onSubmit={evento=>{
@@ -27,7 +27,7 @@ export function FormularioFinanzas({accion,fijos={},children,boton='Guardar',alG
       } catch {toast.error('No se pudo confirmar la operación. Podés reintentar sin duplicarla.');}
     });
   }}>
-    <fieldset disabled={pendiente} className="grid min-w-0 gap-4">{children}</fieldset>
-    <Button type="submit" disabled={pendiente} className="w-fit">{pendiente?'Guardando…':boton}</Button>
+    <fieldset disabled={pendiente||deshabilitado} className="grid min-w-0 gap-4">{children}</fieldset>
+    <Button type="submit" disabled={pendiente} className="w-fit">{pendiente?(accion==='enviar_recordatorio'?'Enviando…':'Guardando…'):boton}</Button>
   </form>;
 }

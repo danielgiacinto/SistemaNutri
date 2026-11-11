@@ -162,12 +162,141 @@ ejecutó un envío real de recordatorios ni se desplegaron cambios en Vercel.
 - La pantalla financiera calcula indicadores sobre el historial propio del profesional.
   Para historiales grandes convendrá agregar paginación y agregaciones dedicadas en SQL.
   Los diálogos y las consultas de agenda ya solicitan únicamente sus operaciones.
-- Quedan por comprobar la entrega SMTP real y el scheduler desplegado. La revisión
-  automática bloqueó disparar el cron completo durante la prueba porque esa acción
-  podría enviar correos a pacientes; se verificaron conexión SMTP, autorización y
-  permisos sin ejecutar envíos.
+- La ejecución espontánea del scheduler desplegado sigue pendiente de observación.
+  Su endpoint publicado se verificó manualmente el 11/11 con un envío real y una
+  repetición sin duplicados. El 11/11 también se verificó
+  el envío individual autorizado: la primera prueba llegó a Correo no deseado y
+  las dos muestras posteriores con diseño llegaron a Recibidos, según confirmó el usuario.
+  Este resultado corresponde a esa casilla y esos mensajes.
+
+## Prueba de correo autorizada (11/11/2026)
+
+Se creó una consulta identificada como «PRUEBA de correo — sin cobro real», con
+importe ficticio de ARS 1, para el paciente indicado por el usuario. Se registró
+la autorización temporal y se programó un solo recordatorio desde el navegador.
+El trabajador real de `recordatorios-cobro.ts` envió ese aviso usando un adaptador
+de ensayo que reclama únicamente el identificador autorizado: no ejecuta la
+preparación ni el reclamo global del cron. La validación de saldo y consentimiento
+y la confirmación del intento usaron las funciones reales de PostgreSQL.
+
+SMTP aceptó el mensaje el **11/11/2026 a las 11:39 (Argentina)**: un enviado, cero
+fallos y un único intento registrado. El usuario confirmó su recepción en **Correo
+no deseado** de Outlook. El texto aclaraba que era una prueba y que no correspondía
+pagar. La operación se bonificó al finalizar, se canceló el turno ficticio y se
+retiró la autorización temporal. El servicio de prueba quedó desactivado.
+Esto comprueba despacho, recepción y registro del aviso individual; no demuestra
+la ejecución futura del scheduler ni la llegada a la bandeja de entrada.
+
+Verificación técnica: `npm run verificar` aprobado, con lint, tipos, **238 pruebas
+en 34 archivos** y compilación de producción. El primer intento no pudo descargar
+las fuentes de Google dentro del sandbox; la ejecución con acceso de red completó
+todos los pasos.
+
+## Diseño compartido y nuevas muestras (11/11/2026)
+
+El recordatorio incorpora HTML con la misma presentación profesional que los avisos
+de suscripción: identidad de Nutrisfera, consultorio remitente, saldo destacado,
+fecha de consulta, importes y orientación para coordinar el pago. Conserva la
+alternativa de texto y no dirige al paciente a la facturación del profesional.
+Los nombres, instrucciones y textos configurables se escapan antes de incluirlos
+en el HTML. `src/servicios/correos/presentacion.ts` centraliza el marco visual y
+`recordatorio-cobro.ts` compone el mismo mensaje utilizado por el trabajador.
+
+Por pedido del usuario se eliminó el servicio «PRUEBA de correo — sin cobro real»,
+junto con el turno ficticio cancelado de ARS 1 y sus registros dependientes sin
+pagos. Esa limpieza reemplaza el estado de desactivación descrito en la primera
+prueba. El usuario confirmó que el consultorio de Daniel y sus pacientes contienen
+datos de prueba. No se crearon servicios nuevos para las muestras posteriores.
+
+A las **11:53 (Argentina)** se enviaron dos muestras a la casilla indicada por el
+usuario: confirmación de suscripción y recordatorio basado en la consulta existente
+de «Consulta Rutinaria», con saldo de ARS 35.000. Ambas incluyen `[PRUEBA]` en el
+asunto y una aclaración visible de que no existe un cobro real. SMTP aceptó las dos.
+Estos envíos de diseño no registraron pagos ni ejecutaron la cola global.
+El usuario confirmó que **ambas muestras llegaron a Recibidos y se ven bien al
+abrirlas**. Quedan comprobadas la recepción y la presentación en esa casilla;
+no se atribuye el cambio de carpeta únicamente al HTML.
+
+La revisión visual cubrió la vista de escritorio y el recordatorio a 390 px.
+`npm run verificar` aprobado: lint, tipos, **242 pruebas en 35 archivos** y
+compilación de producción. El scheduler desplegado conserva su validación pendiente.
+
+## Cron publicado y prueba automática preparada (11/11/2026)
+
+Con autorización del usuario se publicó el commit `978b7c8` de los correos en
+`https://nutrisfera.vercel.app`. Vercel completó el despliegue
+`dpl_7yAFGFCGjrTozjCrhZhZ19pF2cTf` en estado `READY`, en Production.
+No se modificaron migraciones ni secretos para esta publicación.
+
+Se usó el turno existente de Alberto del **11/11 a las 08:00**, servicio
+«Consulta Rutinaria», saldo ARS 35.000. Se marcó atendido y se registró la
+autorización de recordatorios. El usuario confirmó que este consultorio y sus
+pacientes son datos de prueba, por lo que el turno se conserva.
+
+- Sin credenciales, el endpoint publicado respondió **401**.
+- Ejecución manual del endpoint publicado a las **12:22**: **200**, un enviado,
+  cero fallos. El aviso `b6ceb5e5-0d9f-48cc-b6a7-269e6764ebaa` quedó enviado con
+  un intento. Se utilizó el trabajador completo, sin adaptadores de ensayo.
+- Repetición inmediata: **200**, cero envíos y cero fallos, sin duplicar el aviso.
+- El usuario confirmó recepción en **Recibidos** y presentación correcta.
+
+Antes de ejecutar se comprobó, con conteos sin leer los registros de terceros,
+que no había colas activas ni automatizaciones de otros profesionales. La cola
+propia contenía únicamente el aviso autorizado de esta consulta.
+
+Para observar la siguiente ejecución natural se dejaron recordatorios automáticos
+habilitados en el consultorio de Daniel, con **un único plazo de 1 hora**, autorización
+de Alberto y texto explícito de prueba: no corresponde realizar ningún pago real.
+Una tercera llamada publicada respondió **200**, cero envíos y cero fallos, y generó
+el aviso `98d794a1-3e37-4f20-9204-15c32e040ced`, clave `automatico-1`, pendiente,
+cero intentos y fecha de elegibilidad **11/11/2026 a las 13:20 (Argentina)**.
+
+El cron diario sigue configurado a las 12:00 UTC: su próximo despacho esperado es
+el **12/11/2026 entre las 09:00 y las 09:59 de Argentina**, si continúa el saldo,
+la autorización y la automatización habilitada. La hora de elegibilidad mostrada
+en la interfaz no es una promesa de entrega inmediata: el cron lo procesa en su
+siguiente ejecución. No se programó una automatización adicional de Codex.
+
+**Pendiente de cierre:** observar ese disparo espontáneo de Vercel y confirmar su
+recepción. Las llamadas manuales anteriores verifican el endpoint y el trabajador
+publicados, pero no prueban por sí mismas que el scheduler haya disparado un evento.
+La consulta de logs de la mañana no pudo recuperarse: la API informó que el plan
+Hobby no retiene ese rango histórico; no se interpretó como ausencia de ejecuciones.
 
 ## Revisión de diseño en localhost
+
+### Envío inmediato y portal del paciente (11/11/2026)
+
+- «Enviar recordatorio ahora» reclama únicamente el aviso del turno del profesional
+  autenticado y lo despacha dentro de la Server Action. No prepara ni ejecuta la cola
+  global. Conserva la clave idempotente, evita reclamar dos veces el mismo intento y
+  limita a un minuto los nuevos avisos manuales de una consulta.
+- El envío automático mantiene su configuración independiente y el cron diario.
+  Ambos modos requieren consulta completada y finalizada, saldo y consentimiento.
+- El diálogo separa Cobro, Recordatorios e Historial. El saldo y su estado aparecen
+  una sola vez. La lista financiera usa un botón «Cobros» sin repetir la insignia y
+  pasa a tarjetas en pantallas medianas para evitar desplazamiento horizontal.
+- La configuración agrupa la automatización y pliega la personalización de correos.
+- El correo enlaza a `/portal/turnos?turno=…`, tanto en HTML como en texto. El portal
+  conserva el destino al iniciar sesión y consulta el turno mediante RLS. El resumen
+  económico procede de `consultar_mis_cobros()`, limitado a la ficha activa vinculada
+  a `auth.uid()`, con columnas mínimas y únicamente después de finalizar la consulta.
+  No se concedió acceso de pacientes a las tablas financieras del profesional.
+
+Migración `20261111170000_envio_inmediato_y_cobros_portal.sql`: aplicada y registrada
+en una transacción en Supabase de desarrollo. Se conservó el historial anterior;
+`db push --dry-run` detectó versiones remotas antiguas ausentes localmente, por lo
+que se aplicó exclusivamente esta migración mediante `db query --linked`.
+
+Prueba desde el botón en localhost a las **12:43**: aviso
+`6f0f37c2-1d38-4742-ae51-708ef4246738`, enviado, un intento. El automático pendiente
+se conservó. El usuario confirmó que recibió el correo y que el enlace muestra el
+saldo pendiente en el portal. La lectura con la identidad de Alberto mostró solo
+sus dos consultas ya finalizadas, sin exponer sus turnos futuros.
+
+Verificación final: `npm run verificar` aprobado, **246 pruebas en 35 archivos**, lint,
+tipos y compilación. La interfaz se revisó en el navegador local. Estos cambios de
+envío inmediato y portal todavía no se publicaron en Vercel.
 
 Se verificaron las vistas día/semana/mes del gráfico, la ausencia de indicadores
 repetidos y el ícono de billetera en Finanzas. Se comprobó alta, edición y

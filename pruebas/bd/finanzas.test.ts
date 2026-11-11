@@ -105,6 +105,7 @@ describe('finanzas de pacientes',()=>{
     await bd.exec('select public.preparar_recordatorios_cobro()');
     const id=(await operacion(t)).id;
     await bd.query("update public.recordatorios_cobro set programado_en=now()-interval '1 minute' where operacion_id=$1",[id]);
+    await bd.query("update public.turnos set inicio=now()-interval '2 hours',fin=now()-interval '1 hour' where id=$1",[t]);
     const primer=(await bd.query<{lote:{id:string;reclamado_en:string}[]}>('select public.reclamar_recordatorios_cobro() as lote')).rows[0].lote;
     expect(primer).toHaveLength(2);
     expect((await bd.query<{lote:unknown[]}>('select public.reclamar_recordatorios_cobro() as lote')).rows[0].lote).toHaveLength(0);
@@ -121,4 +122,31 @@ describe('finanzas de pacientes',()=>{
     const lectura=await comoUsuario(bd,usuario,tx=>tx.query<{datos:{operaciones:{turno_id:string}[];atenciones:{fecha:string}[]}}>('select public.consultar_finanzas($1,null) as datos',[t]));
     expect(lectura.rows[0].datos.operaciones).toHaveLength(1);expect(lectura.rows[0].datos.atenciones).toHaveLength(0);
   });
+});
+
+describe('envío inmediato y resumen para paciente',()=>{
+ it('reclama solo el turno propio, evita duplicados y rechaza futuros o ajenos',async()=>{
+  const t=await crearTurno(servicio,'2027-01-05 12:00:00+00');
+  await accion('consentimiento',{paciente,autorizado:true});
+  await expect(comoUsuario(bd,usuario,tx=>tx.query('select public.reclamar_recordatorio_manual($1,$2)',[t,randomUUID()]))).rejects.toThrow(/consulta_no_atendida/);
+  await bd.query("update public.turnos set inicio=now()-interval '2 days',fin=now()-interval '2 days'+interval '1 hour',estado='completado' where id=$1",[t]);
+  const clave=randomUUID();
+  const reclamar=(actor=usuario)=>comoUsuario(bd,actor,tx=>tx.query<{aviso:{id:string;estado:string}}>('select public.reclamar_recordatorio_manual($1,$2) as aviso',[t,clave]));
+  await expect(reclamar(ajeno)).rejects.toThrow(/sin_permiso/);
+  const a=(await reclamar()).rows[0].aviso;expect(a.estado).toBe('reclamado');
+  const b=(await reclamar()).rows[0].aviso;expect(b.id).toBe(a.id);expect(b.estado).toBe('enviando');
+  await expect(comoUsuario(bd,usuario,tx=>tx.query('select public.reclamar_recordatorio_manual($1,$2)',[t,randomUUID()]))).rejects.toThrow(/esperar_recordatorio/);
+  await expect(comoAnonimo(bd,tx=>tx.query('select public.reclamar_recordatorio_manual($1,$2)',[t,clave]))).rejects.toThrow(/permission denied/);
+ });
+ it('solo muestra los cobros propios después de la consulta',async()=>{
+  const persona=await crearUsuario(bd,'paciente-cobros@prueba.test');
+  await bd.transaction(async tx=>{await tx.query("select set_config('privado.vincular_paciente','1',true)");await tx.query('update public.pacientes set usuario_id=$1 where id=$2',[persona,paciente]);});
+  const propios=await comoUsuario(bd,persona,tx=>tx.query<{datos:{turno_id:string;abonado:number}[]}>('select public.consultar_mis_cobros() as datos'));
+  expect(propios.rows[0].datos.length).toBeGreaterThan(0);
+  const visibles=propios.rows[0].datos.map(c=>c.turno_id);
+  const futuros=await bd.query<{id:string}>('select id from public.turnos where fin>now()');
+  expect(futuros.rows.every(t=>!visibles.includes(t.id))).toBe(true);
+  const ajenos=await comoUsuario(bd,ajeno,tx=>tx.query<{datos:unknown[]}>('select public.consultar_mis_cobros() as datos'));expect(ajenos.rows[0].datos).toEqual([]);
+  await expect(comoAnonimo(bd,tx=>tx.query('select public.consultar_mis_cobros()'))).rejects.toThrow(/permission denied/);
+ });
 });

@@ -1,12 +1,15 @@
 # Facturación y Mercado Pago
 
-Estado revisado el **4 de noviembre de 2026**: aplicación en `localhost:3000` y
+Estado revisado el **11 de noviembre de 2026**: aplicación en `localhost:3000` y
 `https://nutrisfera.vercel.app`, con Supabase hospedado de desarrollo. El usuario completó
 la autorización en el checkout externo con el comprador de prueba y confirmó que
 aparece en **Tus suscripciones** de Mercado Pago y como **Autorizada** en Nutrisfera.
 El 4/11/2026 se validó un cobro mensual de prueba de punta a punta: ARS 15.999,
 un solo registro y cobertura hasta el 4/12/2026, con recuperación del acceso. El dominio de la
 pasarela no determina si el cobro usa cuentas reales o cuentas de prueba.
+La validación funcional de fase 5 está cerrada con cuentas ficticias: se verificaron
+dos renovaciones automáticas sobre la misma autorización con frecuencia diaria de QA.
+Ver «Cierre de la prueba de recurrencia» para evidencia, correos y limitaciones.
 
 ## Decisión
 
@@ -75,6 +78,32 @@ comerciales se preparan en una cola privada y se envían por Gmail SMTP al ejecu
 conciliación diaria, solo si están configuradas las variables del servidor.
 La clave única por consultorio y evento evita repetir un aviso al volver a ejecutar el cron.
 La entrega SMTP debe verificarse en la cuenta remitente y destinataria antes de darla por operativa.
+
+El 11/11/2026 se agregó HTML a los avisos comerciales, conservando la alternativa
+de texto. La confirmación de cobro de la suscripción incluye encabezado de marca,
+estado destacado y acceso a Plan y facturación. No agrega importes o períodos
+inventados ni modifica los eventos de la cola. El contenido dinámico se escapa.
+Los colores provienen de los tokens `--correo-*` de `src/app/globals.css`;
+`node scripts/generar-paleta-correo.mjs` actualiza la paleta usada por la plantilla.
+La vista previa se revisó en el navegador; su presentación en clientes de correo
+reales todavía requiere comprobarse. El cambio no configura un dominio remitente
+propio ni garantiza la llegada a la bandeja de entrada.
+
+En la revisión posterior del 11/11 se unificó el marco con los recordatorios de
+pacientes en `src/servicios/correos/presentacion.ts` y se guardó la convención de
+diseño en `AGENTS.md`. Se envió una confirmación HTML de muestra a la casilla
+indicada por el usuario a las 11:53 (Argentina), aceptada por SMTP. El usuario
+confirmó que esa muestra y el recordatorio llegaron a Recibidos y se ven bien al
+abrirlos. La opción
+interna `prueba` agrega una advertencia en HTML y texto, y el prefijo `[PRUEBA]`
+al asunto; no modifica pagos, suscripciones ni eventos comerciales.
+
+Con aprobación del usuario, el commit `978b7c8` con los nuevos correos quedó
+publicado en Production el 11/11/2026, despliegue
+`dpl_7yAFGFCGjrTozjCrhZhZ19pF2cTf` (`READY`). El cron de recordatorios de pacientes
+se ejecutó manualmente desde el endpoint público con secreto: un envío, cero
+fallos y repetición sin duplicados. El usuario confirmó recepción y diseño
+correctos. Detalle y prueba de ejecución natural pendiente en `finanzas-consultorio.md`.
 
 El 5/11/2026 se verificó Gmail SMTP con una contraseña de aplicación de 16 caracteres:
 la autenticación respondió correctamente y un único mensaje de prueba a la misma
@@ -349,7 +378,7 @@ ya se completó con el comprador correcto, según la prueba manual del usuario.
 cobrado la mensualidad ni acreditado cobertura. La mensualidad posterior sí quedó
 validada, como se registra en «Verificación técnica del 4/11/2026».
 
-### Qué sigue pendiente
+### Configuración verificada y pendientes de despliegue
 
 - `20261103220000_checkout_suscripciones.sql` quedó aplicada en una transacción y registrada
   el 4/11/2026. Se verificaron el trigger, la función de acreditación idempotente y los permisos.
@@ -361,16 +390,76 @@ validada, como se registra en «Verificación técnica del 4/11/2026».
   simulador de Mercado Pago una notificación firmada `subscription_preapproval` sobre
   una suscripción existente: recibió 200. La consulta posterior a Supabase confirmó
   evento procesado, error nulo y estado `authorized`, conservando cero pagos y cobertura
-  nula. Falta validar cobros mensuales aprobados/rechazados, sus eventos y reintentos.
+  nula. Los cobros aprobados/rechazados y las renovaciones se verificaron posteriormente,
+  como se documenta en los resultados fechados de esta guía.
   La simulación de autorización no demuestra que se haya acreditado una mensualidad.
 
 El endpoint `/api/facturacion/mercadopago` ya valida la firma, consulta la API del
 proveedor y procesa eventos con deduplicación y reintentos. Se verificaron entregas
 firmadas de autorización, pago y factura, además de acreditación y conciliación.
 El rechazo, la recuperación por nuevo cobro y los correos comerciales ya se verificaron
-externamente. Queda observar la renovación periódica de una misma autorización;
-reautorizar un checkout y cobrar de inmediato no demuestra esa renovación.
+externamente. La renovación periódica de una misma autorización también quedó
+verificada el 11/11/2026; reautorizar un checkout y cobrar de inmediato por sí solo
+no demuestra esa renovación.
 Los criterios de cierre están en [`avances.md`](avances.md).
+
+### Cierre de la prueba de recurrencia — 11/11/2026
+
+Consultas autenticadas de solo lectura a Mercado Pago y Supabase confirmaron que
+el vendedor sigue siendo argentino (`MLA`) y tiene la etiqueta `test_user`.
+La autorización `d29dd7ef8ac44dc5ba419a958177800c` conserva frecuencia diaria de QA,
+inicio el 6/11 y fin el 9/11/2026 a las 11:16:32 de Argentina. El proveedor devuelve
+`quotas=3`, `charged_quantity=3`, `pending_charge_quantity=0`, total ARS 47.997
+y ninguna `next_payment_date`. Aunque su estado sigue siendo `authorized`,
+el calendario finito terminó: no hay un cuarto cobro del 9 pendiente de registrar.
+
+La búsqueda `/authorized_payments/search` devolvió exactamente tres facturas
+`processed`, todas asociadas a esa misma autorización. La consulta individual
+`/v1/payments/{id}` confirmó `approved`, ARS 15.999 en cada caso:
+
+- 6/11: factura `7033691582`, pago inicial `187048297859`, aprobado a las 11:18:34.
+- 7/11: factura `7033730500`, renovación `188327738426`, aprobada a las 12:02:44.
+- 8/11: factura `7033766919`, renovación `187435087351`, aprobada a las 12:02:32.
+
+Todas las horas de este cierre están expresadas en Argentina (UTC−3).
+Los tres pagos aparecen una sola vez en Supabase y en Facturación. La cobertura
+por ciclo avanza al 6, 7 y 8 de diciembre, respectivamente, según la política mensual
+del producto. El último ciclo comienza el 8/11 a las 12:02:30 y cubre hasta el
+8/12/2026 a las 12:02:30; la frecuencia diaria solo aceleró esta prueba ficticia.
+
+Se recibieron eventos de pago y factura de las dos renovaciones. Hubo fallos
+transitorios en entregas iniciales: dos eventos de factura del 6 y un evento de pago
+del 7 y del 8 conservan `no_procesado`. Entregas posteriores del mismo recurso
+se procesaron sin error (factura del 6 a las 11:35:48, pagos del 7 a las 12:02:50
+y del 8 a las 12:02:38). No se borraron ni marcaron artificialmente como exitosos
+los intentos fallidos; tampoco se presentan esos registros como cobros perdidos.
+
+La cola comercial vincula cada correo a un pago concreto mediante `clave_evento`:
+
+- Correo del 6 a las 03:59:28: pago del 5 `186838355547`, de la prueba anterior.
+- Correo del 7 a las 03:59:28: pago inicial del 6 `187048297859`.
+- Correo del 8 a las 03:59:28: renovación del 7 `188327738426`.
+- Correo del 9 a las 03:59:28: renovación del 8 `187435087351`.
+
+Hay un único envío registrado por clave, con un intento en estos cuatro casos.
+El usuario confirmó recepción en Gmail y adjuntó el mensaje del 9 a las 03:59.
+Los correos se envían durante la conciliación diaria, después del cobro, por eso
+la fecha del mensaje difiere de la fecha del historial. El mensaje actual no incluye
+fecha ni número de operación; el vínculo de la cola permite resolver esa ambigüedad.
+No se enviaron mensajes nuevos durante esta revisión.
+
+El 11/11 se pulsó **Verificar cobros** desde la sesión del titular en localhost.
+La lectura posterior confirmó conciliación a las 10:07:59, error nulo, cursor cero,
+los mismos siete pagos históricos (seis aprobados y uno rechazado), sin duplicados
+y cobertura sin cambios. No se modificaron el calendario, los pagos ni la cobertura
+manualmente. No fue necesario cancelar un ciclo pendiente: las tres cuotas ya
+habían terminado cuando se hizo esta revisión.
+
+Con estas evidencias queda cerrada la validación funcional de fase 5 en pruebas.
+Esto demuestra recurrencia automática sobre la misma autorización, usando días
+para acelerar QA; no demuestra un mes transcurrido ni cobros con cuentas reales.
+La conciliación del historial de migraciones, el correo con dominio propio y la
+preparación de lanzamiento conservan sus pendientes en `despliegue.md` y `avances.md`.
 
 Fuentes oficiales para este flujo: [prueba de Suscripciones `pending`](https://www.mercadopago.com.ar/developers/es/news/2023/11/16/Questions-on-how-to-test-your-integration--#Suscripciones),
 [compra de prueba de Suscripciones](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-test/payment-approval)

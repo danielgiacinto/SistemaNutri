@@ -4,8 +4,8 @@ import { z } from 'zod';
 import type { ClienteSupabase } from '@/lib/supabase/servidor';
 import { crearMensajeRecordatorioCobro } from '@/servicios/correos/recordatorio-cobro';
 
-const esquemaAviso=z.object({correo:z.email(),paciente:z.string(),consulta:z.string(),original:z.number(),abonado:z.number(),saldo:z.number().positive(),moneda:z.string(),nombre_remitente:z.string(),instrucciones:z.string(),texto:z.string(),zona:z.string()});
-export async function despacharRecordatoriosCobro(cliente:ClienteSupabase) {
+const esquemaAviso=z.object({correo:z.email(),paciente:z.string(),consulta:z.string(),original:z.number(),abonado:z.number(),saldo:z.number().positive(),moneda:z.string(),nombre_remitente:z.string(),instrucciones:z.string(),texto:z.string(),zona:z.string(),turno_id:z.uuid().optional()});
+export async function despacharRecordatoriosCobro(cliente:ClienteSupabase,reclamoManual?:{id:string;reclamado_en:string}) {
   const personalizado=[process.env.CORREO_COBROS_HOST,process.env.CORREO_COBROS_USUARIO,process.env.CORREO_COBROS_CLAVE,process.env.CORREO_COBROS_REMITENTE].some(v=>v?.trim());
   const host=personalizado?process.env.CORREO_COBROS_HOST?.trim():'smtp.gmail.com';
   const usuario=(personalizado?process.env.CORREO_COBROS_USUARIO:process.env.CORREO_COMERCIAL_USUARIO)?.trim();
@@ -13,9 +13,13 @@ export async function despacharRecordatoriosCobro(cliente:ClienteSupabase) {
   const remitente=personalizado?process.env.CORREO_COBROS_REMITENTE?.trim():usuario;
   if(!host||!usuario||!clave||!remitente) return {configurado:false,enviados:0,fallidos:0};
   const transporte=nodemailer.createTransport({host,port:Number(process.env.CORREO_COBROS_PUERTO??465),secure:process.env.CORREO_COBROS_TLS!=='false',requireTLS:process.env.CORREO_COBROS_TLS==='false',auth:{user:usuario,pass:clave},connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000});
+  let reclamos: {id:string;reclamado_en:string}[];
+  if(reclamoManual) reclamos=[reclamoManual];
+  else {
   const {error:preparacion}=await cliente.rpc('preparar_recordatorios_cobro');if(preparacion)throw preparacion;
   const {data,error}=await cliente.rpc('reclamar_recordatorios_cobro');if(error)throw error;
-  const reclamos=z.array(z.object({id:z.uuid(),reclamado_en:z.string()})).parse(data);
+  reclamos=z.array(z.object({id:z.uuid(),reclamado_en:z.string()})).parse(data);
+  }
   let enviados=0;let fallidos=0;
   for(const reclamo of reclamos) {
     let resultado='incierto';let mensaje='';

@@ -50,7 +50,7 @@ export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{dat
         <Campo etiqueta="Saldo mínimo"><input type="number" min="0" value={minimo} onChange={e=>fijarMinimo(e.target.value)} className={estilo}/></Campo><Campo etiqueta="Saldo máximo"><input type="number" min="0" value={maximo} onChange={e=>fijarMaximo(e.target.value)} className={estilo}/></Campo>
         <Campo etiqueta="Días de atraso mínimos"><input type="number" min="0" value={antiguedad} onChange={e=>fijarAntiguedad(e.target.value)} className={estilo}/></Campo></div></details>
       {!filas.length?<EstadoVacio icono={ReceiptText} titulo="No hay cobros para mostrar" descripcion="Los cobros de tus consultas aparecerán acá. Podés cambiar el filtro para ver todo el historial."/>:<div>
-        <ul className="divide-y sm:hidden" aria-label="Cobros de consultas">
+        <ul className="divide-y lg:hidden" aria-label="Cobros de consultas">
           {filas.map(o=><li key={o.id} className="min-w-0 space-y-4 p-5">
             <div className="space-y-1 wrap-anywhere">
               <p className="font-medium">{o.paciente}</p>
@@ -61,10 +61,10 @@ export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{dat
               <div className="min-w-0"><dt className="text-xs text-muted-foreground">Saldo</dt><dd className="mt-1 font-semibold tabular-nums wrap-anywhere">{dinero(saldoOperacion(o))}</dd></div>
               <div className="col-span-2"><dt className="sr-only">Estado</dt><dd><InsigniaCobro estado={estadoEconomico(o)} />{deudaExigible(o)&&o.vence_en&&o.vence_en<datos.ahora&&<p className="mt-1 text-xs text-destructive">Vencido · {fecha(o.vence_en)}</p>}</dd></div>
             </dl>
-            <CobroRapido zona={zona} turnoId={o.turno_id} estado={estadoEconomico(o)} inicial={datos}/>
+            <CobroRapido mostrarEstado={false} zona={zona} turnoId={o.turno_id} estado={estadoEconomico(o)} inicial={datos}/>
           </li>)}
         </ul>
-        <div className="hidden overflow-x-auto sm:block"><table className="w-full text-left text-sm"><thead className="bg-muted/25 text-xs text-muted-foreground"><tr>{['Paciente y servicio','Consulta','Saldo','Estado',''].map(t=><th key={t} className="px-5 py-3 font-medium">{t}</th>)}</tr></thead><tbody className="divide-y">{filas.map(o=><tr key={o.id}><td className="px-5 py-4"><p className="font-medium">{o.paciente}</p><p className="mt-1 text-xs text-muted-foreground">{o.servicio_nombre}</p></td><td className="px-5 py-4 whitespace-nowrap text-muted-foreground">{fecha(o.inicio)}</td><td className="px-5 py-4 font-medium tabular-nums whitespace-nowrap">{dinero(saldoOperacion(o))}</td><td className="px-5 py-4"><InsigniaCobro estado={estadoEconomico(o)} />{deudaExigible(o)&&o.vence_en&&o.vence_en<datos.ahora&&<p className="mt-1 text-xs text-destructive">Vencido · {fecha(o.vence_en)}</p>}</td><td className="px-5 py-4 text-right"><CobroRapido zona={zona} turnoId={o.turno_id} estado={estadoEconomico(o)} inicial={datos}/></td></tr>)}</tbody></table></div>
+        <div className="hidden overflow-x-auto lg:block"><table className="w-full text-left text-sm"><thead className="bg-muted/25 text-xs text-muted-foreground"><tr>{['Paciente y servicio','Consulta','Saldo','Estado',''].map(t=><th key={t} className="px-5 py-3 font-medium">{t}</th>)}</tr></thead><tbody className="divide-y">{filas.map(o=><tr key={o.id}><td className="px-5 py-4"><p className="font-medium">{o.paciente}</p><p className="mt-1 text-xs text-muted-foreground">{o.servicio_nombre}</p></td><td className="px-5 py-4 whitespace-nowrap text-muted-foreground">{fecha(o.inicio)}</td><td className="px-5 py-4 font-medium tabular-nums whitespace-nowrap">{dinero(saldoOperacion(o))}</td><td className="px-5 py-4"><InsigniaCobro estado={estadoEconomico(o)} />{deudaExigible(o)&&o.vence_en&&o.vence_en<datos.ahora&&<p className="mt-1 text-xs text-destructive">Vencido · {fecha(o.vence_en)}</p>}</td><td className="px-5 py-4 text-right"><CobroRapido mostrarEstado={false} zona={zona} turnoId={o.turno_id} estado={estadoEconomico(o)} inicial={datos}/></td></tr>)}</tbody></table></div>
       </div>}
     </section>}
     {!pacienteId&&vista==='movimientos'&&<section className="overflow-hidden rounded-2xl border bg-card">
@@ -81,12 +81,12 @@ function ConfiguracionDialogo({configuracion}:{configuracion:ConfiguracionFinanc
   return <DialogoFinanciero titulo="Configuración de cobros" descripcion="Personalizá los vencimientos y los recordatorios de tus consultas." boton={<><Settings2/>Configuración</>}>
     {cerrar=><FormularioFinanzas accion="configuracion" fijos={{moneda:'ARS'}} alGuardar={cerrar}>
       <Campo etiqueta="Días de vencimiento desde la atención"><input name="dias" type="number" min="0" max="365" defaultValue={configuracion.dias_vencimiento} className={estilo} required/></Campo>
-      <label className="text-sm"><input name="recordatorios" type="checkbox" defaultChecked={configuracion.recordatorios}/> Activar recordatorios automáticos (requiere autorización del paciente)</label>
+      <section className="rounded-xl border p-4 space-y-3"><h3 className="font-medium">Recordatorios automáticos</h3><p className="text-xs text-muted-foreground">Se envían después de la atención, con saldo y autorización. Proceso diario: 09:00–09:59 (Argentina). El envío inmediato está disponible en cada cobro.</p><label className="flex items-start gap-3 text-sm"><input className="mt-1 accent-primary" name="recordatorios" type="checkbox" defaultChecked={configuracion.recordatorios}/> Activar envío automático</label>
       <Campo etiqueta="Plazos en horas, separados por comas"><input name="plazos" defaultValue={configuracion.plazos.join(', ')} className={estilo} required/></Campo>
-      <Campo etiqueta="Nombre del consultorio en correos"><input name="nombre" defaultValue={configuracion.nombre_remitente} className={estilo} required/></Campo>
+      </section><details className="rounded-xl border p-4"><summary className="cursor-pointer text-sm font-medium">Personalizar los correos</summary><div className="grid gap-4 pt-4"><Campo etiqueta="Nombre del consultorio en correos"><input name="nombre" defaultValue={configuracion.nombre_remitente} className={estilo} required/></Campo>
       <Campo etiqueta="Texto del recordatorio"><textarea name="texto" defaultValue={configuracion.texto_recordatorio} className={estilo} required/></Campo>
       <Campo etiqueta="Instrucciones de pago"><textarea name="instrucciones" defaultValue={configuracion.instrucciones} className={estilo}/></Campo>
-      <Campo etiqueta="Medios de pago, separados por comas"><input name="medios" defaultValue={configuracion.medios.join(', ')} className={estilo} required/></Campo>
+      </div></details><Campo etiqueta="Medios de pago, separados por comas"><input name="medios" defaultValue={configuracion.medios.join(', ')} className={estilo} required/></Campo>
     </FormularioFinanzas>}
   </DialogoFinanciero>;
 }

@@ -1,4 +1,7 @@
 'use server';
+import { z } from 'zod';
+import { crearClienteServicio } from '@/lib/supabase/servicio';
+import { despacharRecordatoriosCobro } from '@/servicios/recordatorios-cobro';
 import { esquemaUuid } from '@/esquemas/comunes';
 import { refresh } from 'next/cache';
 import { requerirProfesional } from '@/autorizacion/sesion';
@@ -13,6 +16,22 @@ export async function cargarFinanzas(turnoId: string) {
 }
 export async function guardarFinanzas(datos: unknown) {
   await requerirProfesional();
+  const inmediato=z.object({accion:z.literal('enviar_recordatorio'),turno:esquemaUuid,clave:esquemaUuid}).safeParse(datos);
+  if(inmediato.success) {
+    const servicio=crearClienteServicio();
+    const personalizado=[process.env.CORREO_COBROS_HOST,process.env.CORREO_COBROS_USUARIO,process.env.CORREO_COBROS_CLAVE,process.env.CORREO_COBROS_REMITENTE].some(v=>v?.trim());
+    const configurado=personalizado?[process.env.CORREO_COBROS_HOST,process.env.CORREO_COBROS_USUARIO,process.env.CORREO_COBROS_CLAVE,process.env.CORREO_COBROS_REMITENTE].every(v=>v?.trim()):!!(process.env.CORREO_COMERCIAL_USUARIO?.trim()&&process.env.CORREO_COMERCIAL_CLAVE_APLICACION?.trim());
+    if(!servicio||!configurado)return {ok:false,mensaje:'El envío de correos todavía no está configurado.'};
+    const cliente=await crearClienteServidor();
+    const {data,error}=await cliente.rpc('reclamar_recordatorio_manual',{p_turno:inmediato.data.turno,p_clave:inmediato.data.clave});
+    if(error)return {ok:false,mensaje:error.message==='esperar_recordatorio'?'Esperá un minuto antes de enviar otro aviso.':'No se pudo enviar. Verificá que la consulta haya finalizado, tenga saldo y autorización.'};
+    const reclamo=z.object({id:z.uuid(),reclamado_en:z.string().nullable(),estado:z.string()}).parse(data);
+    if(reclamo.estado==='enviado')return {ok:true,mensaje:'Este recordatorio ya fue enviado.'};
+    if(reclamo.estado!=='reclamado'||!reclamo.reclamado_en)return {ok:false,mensaje:'Este intento ya fue procesado. Revisá el historial antes de volver a enviar.'};
+    const resultado=await despacharRecordatoriosCobro(servicio,{id:reclamo.id,reclamado_en:reclamo.reclamado_en});
+    refresh();
+    return {ok:resultado.enviados===1,mensaje:resultado.enviados===1?'Recordatorio enviado por correo.':'No se confirmó el envío. Revisá el historial antes de reintentar.'};
+  }
   const validacion=esquemaFinanzas.safeParse(datos);
   if (!validacion.success) return {ok:false,mensaje:'Revisá los campos obligatorios, las fechas y los importes. Usá importes en pesos argentinos con hasta dos decimales.'};
   const cliente=await crearClienteServidor();

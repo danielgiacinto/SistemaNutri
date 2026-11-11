@@ -1,10 +1,12 @@
 # Avances y criterios de cierre del MVP
 
-Actualizado el **5 de noviembre de 2026**. App en localhost y en
+Actualizado el **11 de noviembre de 2026**. App en localhost y en
 `https://nutrisfera.vercel.app`, con Supabase hospedado de desarrollo.
 Las fases 1 a 4 y 6 están implementadas para probar. El circuito principal de la
 fase 5 quedó validado con cuentas ficticias: cancelación, nuevo cobro aprobado,
 webhooks de pago/factura, cobertura, recuperación de acceso y conciliación repetida.
+La renovación automática de la misma autorización quedó verificada el 11/11/2026:
+validación funcional de fase 5 cerrada en pruebas, sin habilitar cobros reales.
 
 ## Avances confirmados
 
@@ -52,7 +54,7 @@ webhooks de pago/factura, cobertura, recuperación de acceso y conciliación rep
 
 El webhook ya existe en `src/app/api/facturacion/mercadopago/route.ts`, con firma,
 consulta autenticada al proveedor, deduplicación y reintentos cubiertos por pruebas.
-Falta demostrar el recorrido completo con notificaciones externas:
+Recorrido funcional demostrado con notificaciones externas y cuentas ficticias:
 
 - [x] Disponer de una URL pública HTTPS de pruebas: `https://nutrisfera.vercel.app`.
   Inicio de OAuth y retorno a `/auth/confirmar` comprobados; falta completar el ingreso.
@@ -65,8 +67,6 @@ Falta demostrar el recorrido completo con notificaciones externas:
   cuenta sin ficha y paciente inactivo.
 - [x] Aplicar y verificar `20261103220000_checkout_suscripciones.sql` en Supabase hospedado
   (4/11/2026): trigger de checkout, función idempotente, permisos de servicio e historial comprobados.
-- [ ] Conciliar las diferencias de versiones históricas entre el repositorio y Supabase
-  antes de habilitar el `db push` automático; no se repararon versiones antiguas a ciegas.
 - [x] Configurar `SUPABASE_SECRET_KEY` y `MERCADOPAGO_WEBHOOK_SECRETO` en Vercel;
   usuario confirmó configuración y redeploy. POST sin firma devuelve 401
   `firma_invalida` el 4/11/2026. La simulación firmada posterior devolvió 200.
@@ -84,8 +84,14 @@ Falta demostrar el recorrido completo con notificaciones externas:
   `187895829450`, con facturas vinculadas y webhooks sin errores. El usuario confirmó
   el bloqueo previo; el servidor recuperó `activo` y cobertura al 5/12/2026.
   El vencimiento previo fue simulado y auditado; los pagos no se modificaron.
-- [ ] Observar la renovación periódica de una misma autorización. Las pruebas
-  automáticas cubren sus transiciones; el nuevo checkout aprobado no prueba esa recurrencia.
+- [x] Renovación periódica de la autorización `d29dd7ef8ac44dc5ba419a958177800c`:
+  pago inicial del 6/11 y dos cobros automáticos del 7 y 8/11, con facturas y pagos
+  distintos confirmados por API y registrados una sola vez. Prueba acelerada diaria
+  con cuentas ficticias; terminó con tres cuotas cobradas y ninguna pendiente.
+  El 11/11 se repitió la conciliación desde la interfaz: error nulo, cursor cero,
+  siete pagos históricos conservados y cobertura al 8/12/2026 12:02:30 (Argentina).
+  Hubo fallos transitorios de entregas iniciales, recuperados por entregas posteriores;
+  los registros fallidos originales se conservan. Evidencia en `facturacion.md`.
 - [x] Cancelación de renovación visible para el titular, con confirmación y motivo.
   Solicitud auditada desde la identidad; confirmación por API y recuperación por cron
   si falla el proveedor. Conserva la prueba/cobertura pagada. El usuario completó la
@@ -118,8 +124,11 @@ Falta demostrar el recorrido completo con notificaciones externas:
   verificados desde Vercel, con deduplicación. Los demás avisos comerciales siguen
   disponibles en la interfaz; no se afirma que todos tengan correo.
 
-Registrar el resultado de esas pruebas y sus limitaciones antes de marcar fase 5
-como cerrada. Una compilación o un webhook simulado no sustituyen esta validación.
+La validación funcional de fase 5 queda cerrada el 11/11/2026 con estas evidencias.
+La recurrencia se aceleró a un día; no se afirma haber esperado un mes calendario
+ni operado con dinero real. La preparación de lanzamiento sigue pendiente,
+incluida la conciliación de versiones históricas entre repositorio y Supabase antes
+de habilitar `db push` automático; no se repararon versiones antiguas a ciegas.
 Pasos de integración en [Facturación](facturacion.md).
 
 ## Alcance de «lista»

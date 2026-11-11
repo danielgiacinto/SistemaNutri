@@ -36,3 +36,5 @@ describe("presentación del recordatorio de cobro", () => {
     expect(html).toContain("MUESTRA DE DISEÑO · SIN COBRO REAL");
   });
 });
+
+it('enlaza al turno del portal tanto en HTML como en texto',()=>{const mensaje=crearMensajeRecordatorioCobro({...datos,correo:'paciente@prueba.test',turno_id:'11111111-1111-4111-8111-111111111111'},'consultorio@prueba.test','muestra');expect(mensaje.html).toContain('/portal/turnos?turno=11111111-1111-4111-8111-111111111111');expect(mensaje.text).toContain('/portal/turnos?turno=');});

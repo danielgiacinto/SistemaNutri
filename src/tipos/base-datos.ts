@@ -1523,6 +1523,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      reclamar_recordatorio_manual: { Args: { p_turno: string; p_clave: string }; Returns: Json }
+      consultar_mis_cobros: { Args: never; Returns: Json }
       gestionar_finanzas: { Args: { p_accion: string; p_datos: Json }; Returns: Json }
       consultar_finanzas: { Args: {p_turno?:string;p_paciente?:string}; Returns: Json }
       consultar_economia_turnos: { Args: {p_turnos:string[]}; Returns: Json }
