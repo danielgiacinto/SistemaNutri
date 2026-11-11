@@ -25,6 +25,7 @@ export type Database = {
           profesional_id: string
           nombre: string
           descripcion: string | null
+          aclaracion_paciente: string
           precio: number
           moneda: string
           duracion_minutos: number | null
@@ -36,6 +37,7 @@ export type Database = {
           profesional_id: string
           nombre: string
           descripcion?: string | null
+          aclaracion_paciente?: string
           precio: number
           moneda: string
           duracion_minutos?: number | null
@@ -47,6 +49,7 @@ export type Database = {
           profesional_id?: string
           nombre?: string
           descripcion?: string | null
+          aclaracion_paciente?: string
           precio?: number
           moneda?: string
           duracion_minutos?: number | null
@@ -66,6 +69,7 @@ export type Database = {
           texto_recordatorio: string
           nombre_remitente: string
           medios: string[]
+          nota_precios: string
         }
         Insert: {
           profesional_id: string
@@ -78,6 +82,7 @@ export type Database = {
           texto_recordatorio?: string
           nombre_remitente?: string
           medios?: string[]
+          nota_precios?: string
         }
         Update: {
           profesional_id?: string
@@ -90,6 +95,7 @@ export type Database = {
           texto_recordatorio?: string
           nombre_remitente?: string
           medios?: string[]
+          nota_precios?: string
         }
         Relationships: []
       }
@@ -1535,6 +1541,7 @@ export type Database = {
       reclamar_recordatorio_manual: { Args: { p_turno: string; p_clave: string }; Returns: Json }
       consultar_mis_cobros: { Args: never; Returns: Json }
       gestionar_finanzas: { Args: { p_accion: string; p_datos: Json }; Returns: Json }
+      gestionar_presentacion_catalogo: { Args: { p_datos: Json }; Returns: Json }
       consultar_finanzas: { Args: {p_turno?:string;p_paciente?:string}; Returns: Json }
       consultar_economia_turnos: { Args: {p_turnos:string[]}; Returns: Json }
       validar_recordatorio_cobro: { Args: {p_id:string}; Returns: Json }

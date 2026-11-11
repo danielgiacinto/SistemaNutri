@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { CalendarioAgenda, GrillaHoraria, type PropiedadesCalendario } from "./calendario-agenda";
-import { VistaDiaAgenda } from "./vista-dia-agenda";
+import { DiaSeleccionadoMes, VistaDiaAgenda } from "./vista-dia-agenda";
 import { CobroRapido } from "@/componentes/finanzas/cobro-rapido";
 import { filtrarPeriodoAgenda } from "./filtrar-periodo";
 import type { VistaAgenda } from "@/configuracion/clinica";
@@ -33,10 +33,11 @@ export function AgendaInteractiva({ profesionalId, ...propiedades }: Propiedades
 
   return <>
     <CalendarioAgenda {...propiedades} vista={vista} turnos={turnos} parametros={parametros.toString()} alCambiarVista={cambiarVista} mostrarLeyendaDia={mostrarHorarios}
+      contenidoMes={vista === "mes" ? <DiaSeleccionadoMes fecha={propiedades.fecha} zona={propiedades.zonaHoraria} profesionalId={profesionalId} turnos={filtrarPeriodoAgenda(propiedades.turnos,"dia",propiedades.fecha,propiedades.zonaHoraria)} parametros={parametros.toString()}/> : undefined}
       contenidoDia={vista === "dia" ? <VistaDiaAgenda fecha={propiedades.fecha} fechaHoy={propiedades.fechaHoy} zonaHoraria={propiedades.zonaHoraria} profesionalId={profesionalId} turnos={turnos} turnosDelRango={propiedades.turnos} parametros={parametros.toString()} mostrarHorarios={mostrarHorarios} alCambiarPresentacion={cambiarPresentacion}>
-        <GrillaHoraria {...propiedades} turnos={turnos} dias={[propiedades.fecha]} parametros={parametros.toString()} />
+        <GrillaHoraria {...propiedades} vista="dia" turnos={turnos} dias={[propiedades.fecha]} parametros={parametros.toString()} />
       </VistaDiaAgenda> : undefined} />
-    {vista !== "dia" || mostrarHorarios ? <section className="grid gap-3 rounded-xl border bg-card p-4" aria-label="Cobro rápido de los turnos">
+    {vista === "semana" || (vista === "dia" && mostrarHorarios) ? <section className="grid gap-3 rounded-xl border bg-card p-4" aria-label="Cobro rápido de los turnos">
       <h2 className="font-semibold">Cobros de esta agenda</h2>
       {propios.map(turno => <div key={turno.id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-sm">
         <span>{turno.pacientes?.nombre} {turno.pacientes?.apellido} · {new Date(turno.inicio).toLocaleString("es-AR", { timeZone: propiedades.zonaHoraria })}</span>

@@ -115,7 +115,7 @@ Avance implementado después del relevamiento: el desglose **Cómo te pagaron** 
 está disponible en Finanzas, sobre Cobros y Caja, con barras, importes, porcentajes,
 conteo de ingresos y navegación mensual. Usa ingresos efectivos en ARS y conserva
 las devoluciones como egresos. Ver [reglas del bloque](finanzas-consultorio.md#cómo-te-pagaron).
-El resto de la integración de Agenda y Caja y los gráficos por servicio siguen pendientes.
+La continuación descrita debajo implementa la integración y el gráfico por servicio.
 
 ### Entregas incrementales y estado (11/11/2026)
 
@@ -159,18 +159,58 @@ apertura del cobro, grilla horaria, vacío y alta precargada con descarte. Dise�
 comprobado a 390 px, sin desborde horizontal de página ni errores de consola
 observados. No se guardaron datos de prueba ni se modificó el entorno hospedado.
 
-**9B — Navegación y contexto, pendiente.** Caja debe tomar el mes de Agenda y ofrecer
-retorno al día original. Completar el retorno contextual en accesos de Semana/Mes,
-edición y demás recorridos; no dar por implementado todo el criterio de navegación
-de fase 9 solo por el retorno desde las nuevas tarjetas.
+**9B — Navegación y contexto, implementada.** Caja recibe mes, fecha, vista y
+presentación de Agenda en parámetros separados y validados; no acepta URLs de
+redirección arbitrarias. Cambiar el mes financiero conserva el regreso al origen.
+Sus accesos Día/Semana/Mes vuelven a esa fecha. Los enlaces a turnos de tarjetas,
+Semana y grilla conservan vista/fecha/presentación al volver y durante la edición.
+Una entrada sin contexto vuelve al día del turno. La cabecera de Agenda precarga
+su fecha seleccionada al abrir Nuevo turno. Mes selecciona la fecha en su URL,
+resalta la celda y muestra sus tarjetas y Agendar debajo, sin repetir cobros.
 
-**9C — Caja operativa, pendiente.** Implementar sus indicadores, desglose por servicio,
-deuda accionable y movimientos según las definiciones detalladas debajo. Reutilizar
-Cómo te pagaron; conciliar importes y turnos distintos, sin duplicar pagos parciales.
+**9C — Caja operativa, implementada.** Un selector mensual común controla tarjetas,
+Cómo te pagaron, servicios y movimientos. Cuatro indicadores con iconos y números
+destacados; barras diarias con valores accesibles; comparación a igual día/hora
+local del mes anterior para el mes en curso, con límite al último día si es más
+corto. Los meses cerrados comparan meses completos. Promedio sin divisor: «—»;
+sin ingresos previos, mensaje explícito. Cálculos en centavos, sin mezclar monedas.
+Se separan ingresos brutos de consultas, ingresos manuales, egresos/devoluciones,
+neto, deuda por fecha de atención, deuda acumulada y anticipos cancelados/ausentes.
+Servicios usa nombres históricos y turnos distintos; sus barras suman el mismo
+cobrado de consultas. Los pendientes abren el cobro existente, y Ver toda la deuda
+limpia filtros anteriores antes de abrir Cobros. Movimientos conserva originales,
+compensaciones y devoluciones, con signo, estado y diálogo de detalle (fecha local,
+medio, categoría, paciente, servicio y referencia); sus fechas amplían el mes inicial.
 
-**9D — Catálogo compacto, pendiente.** Edición en filas, aclaraciones, atajos y nota
-general. La publicación de precios se habilita al existir reservas; requiere la
-migración y autorización descritas en la propuesta de Servicios y precios.
+**9D — Catálogo compacto, implementada con activación pendiente.** Alta y edición
+dentro del mismo diálogo, estado de cambios, Guardar/Cancelar, precio cero y
+desactivación. Las altas reusan su identificador al reintentar. Se conservan duración
+y descripción. Aclaración independiente de hasta 300 caracteres, cuatro atajos que
+solo afectan esa fila, y nota general de hasta 1000 caracteres. Se guardan mediante
+RPC transaccional autenticada, reutilizando validación monetaria y permisos del
+catálogo existente; no modifica operaciones históricas ni instrucciones de cobro.
+
+Activación de 9D: aplicar `20261111210000_presentacion_catalogo_servicios.sql` antes
+de verificar los nuevos campos en el entorno de destino. Sus columnas mantienen
+RLS de lectura por dueño/consultorio y no conceden escrituras directas ni borrado.
+Sin la migración, la aplicación conserva la edición compacta de campos anteriores;
+solo reconoce como compatibilidad la ausencia de las columnas, no errores de red
+o autorización. La migración se prueba en PostgreSQL aislado y no se aplica al
+Supabase hospedado en esta entrega. Validación visual de aclaraciones/nota y
+publicación en Vercel pendientes de esa activación. La visibilidad pública y las
+reservas siguen en fase 13; no se muestra un ojo que prometa una publicación inexistente.
+
+Verificación final de 9B–9D: `npm run verificar` aprobado con lint, tipos, 291 pruebas
+en 40 archivos y build. Pruebas de pagos parciales/múltiples medios, ingresos manuales,
+devolución, corrección entre meses, moneda, centavos, atención frente a fecha de turno,
+medianoche local, mes previo corto, vacío y navegación; en PostgreSQL aislado, límites,
+RLS/permiso de lectura y escritura, RPC ajena/anónima y precios/nombres históricos.
+Revisión local autenticada de Caja con datos y vacía, selector mensual compartido,
+regreso a Agenda tras consultar otro mes, selección y detalle mensual, movimiento y
+catálogo compacto con descarte; escritorio y 390 px, sin desbordes ni errores de consola
+observados. Sin altas, pagos ni cambios de servicios hospedados durante la revisión.
+El cierre operativo en destino requiere activar la migración y verificar allí los
+nuevos campos antes de desplegar; la implementación de estas entregas queda completa.
 
 Prioridad alta. Reutilizar el sistema financiero de fase 7: operaciones por turno,
 pagos parciales/anticipados, movimientos, descuentos, bonificaciones, egresos y

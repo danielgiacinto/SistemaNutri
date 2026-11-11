@@ -19,6 +19,7 @@ export function FormularioFinanzas({accion,fijos={},children,boton='Guardar',alG
     for (const campo of ['plazos','medios']) if (typeof datos[campo]==='string') datos[campo]=String(datos[campo]).split(',').map(v=>campo==='plazos'?Number(v.trim()):v.trim()).filter(v=>v!=='');
     for (const campo of ['fecha','vence']) if (datos[campo]) datos[campo]=new Date(String(datos[campo])).toISOString();
     clave.current??=crypto.randomUUID(); datos.clave=clave.current;
+    if (['servicio','servicio_catalogo'].includes(accion) && datos.id==='') datos.id=clave.current;
     iniciar(async()=>{
       try {
         const resultado=await guardarFinanzas(datos);

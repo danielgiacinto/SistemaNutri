@@ -1,7 +1,13 @@
 "use client";
 import { InsigniaCobro } from "@/componentes/comunes/insignia-estado";
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Plus, Settings2, Wallet, ReceiptText, SlidersHorizontal } from 'lucide-react';
+import { fechaEnZona } from '@/lib/fechas';
+import { esMesCaja, resumirCaja } from '@/lib/caja-consultorio';
+import { TableroCaja } from './tablero-caja';
+import { NavegacionCaja } from './navegacion-caja';
+import { DetalleMovimiento } from './detalle-movimiento';
 import { CONFIGURACION_FINANCIERA_INICIAL, dineroFinanzas, estadoEconomico, coincideEstadoCobro, deudaExigible, saldoOperacion, movimientosEfectivos, type DatosFinanzas, type ConfiguracionFinanciera, type OperacionConsultorio } from '@/tipos/finanzas';
 import { EstadoVacio } from '@/componentes/comunes/estado-vacio';
 import { cn } from '@/lib/utilidades';
@@ -13,8 +19,10 @@ import { GraficoMediosPago } from './grafico-medios-pago';
 import { IndicadoresFinanzas } from './indicadores-finanzas';
 const dinero=(valor:number)=>dineroFinanzas(valor,'ARS');
 
-export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{datos:DatosFinanzas;pacienteId?:string;vistaInicial?:string;zona:string}) {
-  const [vista,fijarVista]=useState(vistaInicial==='resumen'?'cobros':vistaInicial);
+export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona,notaPrecios}:{datos:DatosFinanzas;pacienteId?:string;vistaInicial?:string;zona:string;notaPrecios?:{disponible:boolean;nota:string}}) {
+  const parametros=useSearchParams();
+  const vista=parametros.get('vista')==='movimientos'&&!pacienteId?'movimientos':pacienteId?'cobros':parametros.get('vista')==='cobros'?'cobros':vistaInicial;
+  function fijarVista(siguiente:string) {const consulta=new URLSearchParams(parametros.toString());consulta.set('vista',siguiente);window.history.pushState(null,'',`?${consulta}`);}
   const [busqueda,fijarBusqueda]=useState('');
   const [estado,fijarEstado]=useState(!pacienteId?'pendientes':'');
   const [servicio,fijarServicio]=useState('');
@@ -24,22 +32,26 @@ export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{dat
   const [tipo,fijarTipo]=useState('');
   const [categoria,fijarCategoria]=useState('');const [medio,fijarMedio]=useState('');
   const configuracion=datos.configuracion??CONFIGURACION_FINANCIERA_INICIAL;
-  const fecha=(valor:string)=>new Intl.DateTimeFormat('en-CA',{timeZone:zona,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(valor));
-  const mes=fecha(datos.ahora).slice(0,7);
+  const fecha=(valor:string)=>fechaEnZona(new Date(valor),zona);
+  const mesParametro=parametros.get('mes')??'';
+  const mes=esMesCaja(mesParametro)?mesParametro:fechaEnZona(new Date(datos.ahora),zona).slice(0,7);
+  const resumenCaja=useMemo(()=>resumirCaja(datos,mes,zona),[datos,mes,zona]);
+  function cambiarMes(siguiente:string) {if(!esMesCaja(siguiente))return;const consulta=new URLSearchParams(parametros.toString());consulta.set('mes',siguiente);window.history.pushState(null,'',`?${consulta}`);fijarDesde('');fijarHasta('');}
   const pendientes=datos.operaciones.filter(o=>o.moneda==='ARS'&&(!pacienteId||o.paciente_id===pacienteId)&&deudaExigible(o));
   const saldoPendiente=pendientes.reduce((s,o)=>s+saldoOperacion(o),0);
   const efectivos=movimientosEfectivos(datos).filter(m=>m.moneda==='ARS'&&fecha(m.fecha).startsWith(mes));
+  const idsEfectivos=new Set(movimientosEfectivos(datos).map(movimiento=>movimiento.id));
   const total=(tipo:'ingreso'|'egreso')=>efectivos.filter(m=>m.tipo===tipo).reduce((s,m)=>s+m.importe,0);
   const filas=datos.operaciones.filter(o=>o.moneda==='ARS'&&(!pacienteId||o.paciente_id===pacienteId)&&o.paciente.toLocaleLowerCase().includes(busqueda.toLocaleLowerCase())&&(!servicio||o.servicio_nombre===servicio)&&(!desde||fecha(o.inicio)>=desde)&&(!hasta||fecha(o.inicio)<=hasta)&&(!minimo||saldoOperacion(o)>=Number(minimo))&&(!maximo||saldoOperacion(o)<=Number(maximo))&&(!antiguedad||(o.vence_en&&new Date(datos.ahora).getTime()-new Date(o.vence_en).getTime()>=Number(antiguedad)*86400000))&&coincideEstadoCobro(o,estado,datos.ahora)).sort((a,b)=>orden==='importe'?saldoOperacion(b)-saldoOperacion(a):a.inicio.localeCompare(b.inicio));
-  const movimientos=datos.movimientos.filter(m=>m.moneda==='ARS'&&(!desde||fecha(m.fecha)>=desde)&&(!hasta||fecha(m.fecha)<=hasta)&&(!tipo||m.tipo===tipo)&&(!categoria||m.categoria.toLowerCase().includes(categoria.toLowerCase()))&&(!medio||m.medio===medio));
+  const movimientos=datos.movimientos.filter(m=>m.moneda==='ARS'&&((desde||hasta)||fecha(m.fecha).startsWith(mes))&&(!desde||fecha(m.fecha)>=desde)&&(!hasta||fecha(m.fecha)<=hasta)&&(!tipo||m.tipo===tipo)&&(!categoria||m.categoria.toLowerCase().includes(categoria.toLowerCase()))&&(!medio||m.medio===medio));
   return <div className="@container/finanzas min-w-0 space-y-6">
     {!pacienteId&&<>
-      <IndicadoresFinanzas ingresos={total('ingreso')} deuda={saldoPendiente} egresos={total('egreso')} mes={mes}/>
-      <GraficoMediosPago datos={datos} zona={zona}/>
+      <NavegacionCaja mes={mes} parametros={parametros.toString()} cambiarMes={cambiarMes} mesActual={fechaEnZona(new Date(datos.ahora),zona).slice(0,7)}/>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <nav className="flex gap-1" aria-label="Secciones de finanzas">{[['cobros','Cobros'],['movimientos','Caja']].map(([valor,etiqueta])=><button type="button" key={valor} aria-current={vista===valor?'page':undefined} onClick={()=>fijarVista(valor)} className={cn('border-b-2 px-3 py-2.5 text-sm font-medium transition-colors',vista===valor?'border-primary text-foreground':'border-transparent text-muted-foreground hover:text-foreground')}>{etiqueta}</button>)}</nav>
-        <div className="flex flex-wrap gap-2"><DialogoServicios servicios={datos.servicios}/><ConfiguracionDialogo configuracion={configuracion}/></div>
+        <div className="flex flex-wrap gap-2"><DialogoServicios servicios={datos.servicios} notaPrecios={notaPrecios}/><ConfiguracionDialogo configuracion={configuracion}/></div>
       </div>
+      {vista==='movimientos'?<TableroCaja datos={datos} resumen={resumenCaja} mes={mes} zona={zona} alVerDeuda={()=>{fijarEstado('deuda');fijarBusqueda('');fijarServicio('');fijarDesde('');fijarHasta('');fijarMinimo('');fijarMaximo('');fijarAntiguedad('');fijarVista('cobros');}}><GraficoMediosPago datos={datos} zona={zona} mesSeleccionado={mes}/></TableroCaja>:<><IndicadoresFinanzas ingresos={total('ingreso')} deuda={saldoPendiente} egresos={total('egreso')} mes={mes}/><GraficoMediosPago datos={datos} zona={zona} mesSeleccionado={mes}/></>}
     </>}
     {(pacienteId||vista==='cobros')&&<section className="overflow-hidden rounded-2xl border bg-card">
       <div className="grid gap-4 border-b p-4 sm:p-5 @min-[880px]/finanzas:grid-cols-[1fr_1.5fr] @min-[880px]/finanzas:items-center">
@@ -66,10 +78,10 @@ export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{dat
       </div>}
     </section>}
     {!pacienteId&&vista==='movimientos'&&<section className="overflow-hidden rounded-2xl border bg-card">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b p-5"><div><h2 className="font-semibold">Movimientos de caja</h2><p className="mt-1 text-xs text-muted-foreground">Ingresos y egresos del consultorio.</p></div><DialogoFinanciero titulo="Registrar movimiento" descripcion="Los pagos de consultas se registran automáticamente. Agregá acá otros ingresos o gastos." boton={<><Plus/>Nuevo movimiento</>} principal>{cerrar=><EditorMovimiento configuracion={configuracion} alGuardar={cerrar}/>}</DialogoFinanciero></div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b p-5"><div><h2 className="font-semibold">Movimientos de caja</h2><p className="mt-1 text-xs text-muted-foreground">Ingresos y egresos del mes seleccionado. Las fechas permiten ampliar el período.</p></div><DialogoFinanciero titulo="Registrar movimiento" descripcion="Los pagos de consultas se registran automáticamente. Agregá acá otros ingresos o gastos." boton={<><Plus/>Nuevo movimiento</>} principal>{cerrar=><EditorMovimiento configuracion={configuracion} alGuardar={cerrar}/>}</DialogoFinanciero></div>
       <div className="grid gap-3 border-b p-5 sm:grid-cols-3"><Campo etiqueta="Desde"><input type="date" value={desde} onChange={e=>fijarDesde(e.target.value)} className={estilo}/></Campo><Campo etiqueta="Hasta"><input type="date" value={hasta} onChange={e=>fijarHasta(e.target.value)} className={estilo}/></Campo><Campo etiqueta="Tipo"><select value={tipo} onChange={e=>fijarTipo(e.target.value)} className={estilo}><option value="">Todos</option><option value="ingreso">Ingresos</option><option value="egreso">Egresos</option></select></Campo></div>
       <details className="border-b px-5 py-3"><summary className="flex w-fit cursor-pointer items-center gap-2 text-xs text-muted-foreground"><SlidersHorizontal className="size-3.5"/>Más filtros de caja</summary><div className="grid gap-3 py-4 sm:grid-cols-2"><Campo etiqueta="Categoría"><input className={estilo} value={categoria} onChange={e=>fijarCategoria(e.target.value)}/></Campo><Campo etiqueta="Medio de pago"><select className={estilo} value={medio} onChange={e=>fijarMedio(e.target.value)}><option value="">Todos</option>{[...new Set(datos.movimientos.map(m=>m.medio))].map(m=><option key={m}>{m}</option>)}</select></Campo></div></details>
-      {!movimientos.length?<EstadoVacio icono={Wallet} titulo="Tu caja, en un solo lugar" descripcion="Los pagos y los movimientos que registres aparecerán acá."/>:<div className="divide-y">{movimientos.map(m=><article key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div><p className="text-sm font-medium">{m.descripcion}</p><p className="mt-1 text-xs text-muted-foreground">{fecha(m.fecha)} · {m.categoria} · {m.medio}</p></div><div className="flex items-center gap-3"><span className={cn('text-sm font-semibold tabular-nums',m.tipo==='ingreso'?'text-exito':'text-foreground')}>{m.tipo==='ingreso'?'+':'−'}{dinero(m.importe)}</span>{!m.pago_id&&!m.compensacion_de&&!datos.movimientos.some(c=>c.compensacion_de===m.id)&&<DialogoFinanciero titulo="Corregir movimiento" descripcion="Se conservará el original y se agregará un movimiento compensatorio." boton="Corregir">{cerrar=><FormularioFinanzas accion="revertir_movimiento" fijos={{id:m.id}} alGuardar={cerrar} boton="Confirmar corrección"><Campo etiqueta="Motivo"><input name="motivo" minLength={3} className={estilo} required/></Campo><label className="text-sm"><input type="checkbox" required/> Confirmo la corrección de este movimiento.</label></FormularioFinanzas>}</DialogoFinanciero>}</div></article>)}</div>}
+      {!movimientos.length?<EstadoVacio icono={Wallet} titulo="Tu caja, en un solo lugar" descripcion="Los pagos y los movimientos que registres aparecerán acá."/>:<div className="divide-y">{movimientos.map(m=><article key={m.id} className="m-3 flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-muted/15 p-4 sm:m-4"><div><p className="text-sm font-medium">{m.descripcion}</p><p className="mt-1 text-xs text-muted-foreground">{fecha(m.fecha)} · {m.categoria} · {m.medio}</p><p className="mt-2 text-xs font-medium text-muted-foreground">{idsEfectivos.has(m.id)?(m.tipo==='egreso'&&m.pago_id?'Devolución efectiva':'Movimiento efectivo'):(m.compensacion_de?'Compensación · no suma':'Corregido por error · no suma')}</p></div><div className="flex items-center gap-3"><span className={cn('text-sm font-semibold tabular-nums',m.tipo==='ingreso'?'text-exito':'text-foreground')}>{m.tipo==='ingreso'?'+':'−'}{dinero(m.importe)}</span><DetalleMovimiento movimiento={m} datos={datos} zona={zona} efectivo={idsEfectivos.has(m.id)}/>{!m.pago_id&&!m.compensacion_de&&!datos.movimientos.some(c=>c.compensacion_de===m.id)&&<DialogoFinanciero titulo="Corregir movimiento" descripcion="Se conservará el original y se agregará un movimiento compensatorio." boton="Corregir">{cerrar=><FormularioFinanzas accion="revertir_movimiento" fijos={{id:m.id}} alGuardar={cerrar} boton="Confirmar corrección"><Campo etiqueta="Motivo"><input name="motivo" minLength={3} className={estilo} required/></Campo><label className="text-sm"><input type="checkbox" required/> Confirmo la corrección de este movimiento.</label></FormularioFinanzas>}</DialogoFinanciero>}</div></article>)}</div>}
       <p className="border-t px-5 py-3 text-xs text-muted-foreground">Comprobantes internos. No constituyen facturas fiscales.</p>
     </section>}
   </div>;

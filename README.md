@@ -48,7 +48,7 @@ entrega real de recordatorios. Ver [Finanzas del consultorio](docs/finanzas-cons
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 | 7 | Servicios, cobros a pacientes, caja, estadísticas y recordatorios | Migración aplicada; formularios, persistencia, panel y diseño móvil verificados en localhost. Lint, tipos, 230 pruebas y build aprobados. Pendientes scheduler desplegado y entrega real de correo. |
 | 8 | Alta rápida de pacientes y modales de Nuevo turno, Servicios y precios y Horarios | ✅ Implementada y verificada en localhost. Pendientes aplicar la migración de contacto/cobertura al entorno hospedado y desplegar; ver requisito de activación debajo. |
-| 9 | Agenda y Caja integradas, tarjetas de consultas y catálogo de servicios | En curso por entregas: **9A, vista Día**, implementada en esta entrega; medios de pago y resumen de Finanzas ya disponibles. Integración de Caja y ampliación del catálogo pendientes. |
+| 9 | Agenda y Caja integradas, tarjetas de consultas y catálogo de servicios | 9A–9D implementadas en el repositorio y verificadas en local. Pendientes activar la migración del catálogo, comprobar sus nuevos campos en el entorno hospedado y desplegar. La visibilidad pública de precios depende de las reservas de fase 13. |
 | 10 | Inicio operativo, tareas e indicadores | Planificada |
 | 11 | Biblioteca reutilizable | Planificada |
 | 12 | Planes visuales y plantillas | Planificada |
@@ -172,17 +172,49 @@ y pendiente, retorno al día desde el detalle, apertura de Cobros, alternancia c
 Horarios, vacío y Nuevo turno con fecha precargada/cancelación. Sin desbordes de
 página ni errores de consola observados; no se guardaron turnos ni pagos de prueba.
 
-La fase 9 se divide para revisar cada avance antes del siguiente:
+**Continuación de fase 9 — 9B, 9C y 9D (11/11/2026).** Implementadas la navegación
+contextual y Caja: toma el mes de Agenda y vuelve a la fecha/vista original, aunque
+se consulte otro mes en Finanzas. Mes permite elegir un día sin salir de la grilla
+y muestra sus tarjetas debajo. Los detalles abiertos desde Semana, Mes y Horarios
+conservan el regreso contextual; Nuevo turno de la cabecera precarga la fecha elegida.
 
-- **9A — Vista Día:** esta entrega. Tira de fechas, tarjetas y alternancia con horarios.
-- **9B — Contexto de navegación:** Caja toma el mes seleccionado en Agenda y permite
-  volver a la fecha original; completar la conservación del contexto en todos los
-  accesos y en Semana/Mes, sin alterar la grilla existente.
-- **9C — Tablero de Caja:** cobrado de consultas, turnos distintos con cobros, saldo
+Caja incorpora cobrado de consultas, turnos distintos con cobros, deuda de consultas
+atendidas en el mes y promedio, barras diarias y comparación con el mes anterior.
+Comparte el mes con Cómo te pagaron, muestra ingresos por servicio histórico, deuda
+acumulada, anticipos por resolver, ingresos totales, egresos y neto. Los movimientos
+se filtran inicialmente por mes y tienen tarjetas con detalle e identificación de
+correcciones que no suman. Los filtros de fechas permiten ampliar el período.
+
+Servicios y precios permite alta y edición en el diálogo, con Guardar/Cancelar,
+aviso de cambios sin guardar y desactivación sin borrar historial. La ampliación
+incluye aclaración por servicio, atajos y nota general independiente de las
+instrucciones de cobro. **Para habilitar esos nuevos campos**, aplicar
+`supabase/migrations/20261111210000_presentacion_catalogo_servicios.sql` y revisar
+su guardado en el entorno de destino; antes de activarla, el catálogo compacto
+mantiene sus campos anteriores. No hay ojo de publicación ni papelera destructiva:
+la exposición pública de precios queda para reservas en fase 13.
+
+La fase 9 quedó organizada en estas entregas:
+
+- **9A — Vista Día:** implementada. Tira de fechas, tarjetas y alternancia con horarios.
+- **9B — Contexto de navegación:** implementado. Caja toma el mes seleccionado en Agenda y permite
+  volver a la fecha original; Semana, Mes y grilla conservan el contexto al abrir
+  un turno. Mes añade el detalle del día seleccionado.
+- **9C — Tablero de Caja:** implementado. Cobrado de consultas, turnos distintos con cobros, saldo
   exigible y promedio; gráfico por servicio, pendientes accionables y movimientos.
-  Conciliarlo con Finanzas y sus pagos parciales, anticipos, reversiones y egresos.
-- **9D — Catálogo compacto:** edición en filas y aclaraciones/atajos/nota general.
+  Reutiliza los registros de Finanzas, con pagos parciales, anticipos, reversiones y egresos.
+- **9D — Catálogo compacto:** implementado; nuevos campos pendientes de activación.
+  Edición en filas y aclaraciones/atajos/nota general.
   Visibilidad pública condicionada a reservas de fase 13; precios históricos intactos.
+
+Verificación de la continuación: `npm run verificar` aprobado, **291 pruebas en 40
+archivos**, lint, tipos y build. Pruebas nuevas de conciliación monetaria, límites
+de fecha, comparación mensual y permisos/históricos del catálogo en PostgreSQL
+aislado. Revisión autenticada de Caja con datos y vacía, regreso a Agenda, selección
+mensual, detalle de movimiento y edición/cancelación de servicios; escritorio y
+390 px sin desborde horizontal ni errores de consola observados. No se guardaron
+datos de prueba en el entorno hospedado. Aclaraciones y nota requieren la activación
+y comprobación indicadas arriba.
 
 **Avance de fase 9:** Finanzas ya muestra **Cómo te pagaron**, con barras por medio
 de pago, importes, porcentajes, cantidad de ingresos y navegación mensual. Está
@@ -195,8 +227,8 @@ deuda y egresos, coherentes con el gráfico y adaptadas al ancho disponible.
 El relevamiento funcional y estético completo, decisiones, dependencias, casos
 límite y criterios de aceptación están en
 [Hoja de ruta a partir de la referencia](docs/hoja-de-ruta-experiencia-consultorio.md).
-La fase 9 está **en curso** con los avances indicados arriba; las fases 10 a 13
-siguen **planificadas**:
+La implementación de fase 9 está lista para activar y revisar en el entorno de
+destino. Las fases 10 a 13 siguen **planificadas**:
 
 1. **Fase 9 — Agenda y Caja integradas.** Mantener fecha/período al cambiar entre
    Día/Semana/Mes/Caja; tira de días, tarjetas de consultas, resumen mensual con
@@ -221,7 +253,7 @@ siguen **planificadas**:
    definición de proveedor, consentimiento y funcionamiento; no bloquear las fases
    anteriores ni mostrar conexiones inexistentes.
 
-Orden recomendado: completar la activación de 8; implementar 9 y 10 sobre los datos
+Orden recomendado: completar la activación de 8 y 9; continuar con 10 sobre los datos
 existentes; construir 11 antes de la integración completa de 12. Reservas y visibilidad
 pública dependen de 13. Ver los criterios de cierre de cada fase en la hoja de ruta.
 

@@ -13,6 +13,7 @@ import { horaEnZona, hoyEnZona } from "@/lib/fechas";
 import { rangoLecturaAgenda } from "@/componentes/agenda/filtrar-periodo";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { AgendaInteractiva } from "@/componentes/agenda/agenda-interactiva";
+import { AccionesCabeceraAgenda } from "@/componentes/agenda/acciones-cabecera-agenda";
 import { Button } from "@/componentes/ui/button";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { esFechaIso } from "@/lib/fechas";
@@ -26,7 +27,7 @@ export default function PaginaAgenda({ searchParams }: PageProps<"/panel/agenda"
         titulo="Agenda"
         descripcion="Tu día, organizado. Consultá tus turnos y encontrá el próximo espacio disponible."
         acciones={
-          <>
+          <Suspense fallback={<>
             <Button asChild variant="outline"><Link href="/panel/configuracion/servicios"><Tags aria-hidden="true" />Servicios y precios</Link></Button>
             <Button asChild variant="outline">
               <Link href="/panel/agenda/disponibilidad">
@@ -40,7 +41,7 @@ export default function PaginaAgenda({ searchParams }: PageProps<"/panel/agenda"
                 Nuevo turno
               </Link>
             </Button>
-          </>
+          </>}><AccionesCabeceraAgenda /></Suspense>
         }
       />
       <Suspense fallback={<Skeleton className="h-[32rem]" />}>

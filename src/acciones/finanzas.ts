@@ -6,7 +6,7 @@ import { esquemaUuid } from '@/esquemas/comunes';
 import { refresh } from 'next/cache';
 import { requerirProfesional } from '@/autorizacion/sesion';
 import { crearClienteServidor } from '@/lib/supabase/servidor';
-import { esquemaFinanzas } from '@/esquemas/finanzas';
+import { esquemaFinanzas, esquemaPresentacionCatalogo } from '@/esquemas/finanzas';
 import { consultarFinanzas } from '@/servicios/finanzas';
 
 export async function cargarFinanzas(turnoId: string) {
@@ -16,6 +16,16 @@ export async function cargarFinanzas(turnoId: string) {
 }
 export async function guardarFinanzas(datos: unknown) {
   await requerirProfesional();
+  const accionCatalogo=z.object({accion:z.enum(['servicio_catalogo','nota_precios'])}).safeParse(datos);
+  if(accionCatalogo.success) {
+    const validacion=esquemaPresentacionCatalogo.safeParse(datos);
+    if(!validacion.success)return {ok:false,mensaje:'Revisá nombre, precio, duración y longitud de los textos del catálogo.'};
+    const {accion,...campos}=validacion.data;
+    const cliente=await crearClienteServidor();
+    const {error}=await cliente.rpc('gestionar_presentacion_catalogo',{p_datos:{...campos,tipo:accion==='servicio_catalogo'?'servicio':'nota'}});
+    if(error)return {ok:false,mensaje:['PGRST202','42883'].includes(error.code)?'Esta mejora del catálogo todavía no está habilitada en este entorno.':'No se pudo guardar el catálogo. Revisá los datos e intentá de nuevo.'};
+    refresh();return {ok:true,mensaje:'Catálogo actualizado.'};
+  }
   const inmediato=z.object({accion:z.literal('enviar_recordatorio'),turno:esquemaUuid,clave:esquemaUuid}).safeParse(datos);
   if(inmediato.success) {
     const servicio=crearClienteServicio();

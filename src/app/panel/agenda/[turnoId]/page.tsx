@@ -37,7 +37,7 @@ async function Contenido({ params, searchParams }: Pick<PageProps<"/panel/agenda
   const { turno, paciente, contexto, cliente } = await requerirTurnoDelConsultorio(turnoId);
   const consulta = await searchParams;
   const retorno = esquemaFiltroAgenda.safeParse({ vista: consulta.vista, fecha: consulta.fecha });
-  const volverA = retorno.success && retorno.data.fecha ? enlaceAgenda(retorno.data.vista, retorno.data.fecha) : "/panel/agenda";
+  const volverA = retorno.success && retorno.data.fecha ? enlaceAgenda(retorno.data.vista, retorno.data.fecha, consulta.detalle === "horarios" ? "detalle=horarios" : "") : enlaceAgenda("dia", fechaEnZona(new Date(turno.inicio), contexto.consultorio.zonaHoraria));
   const [pacientes, consultorio, operaciones, evoluciones] = await Promise.all([
     listarPacientesActivos(cliente, contexto.consultorio.id),
     obtenerDatosConsultorio(cliente, contexto.consultorio.id),

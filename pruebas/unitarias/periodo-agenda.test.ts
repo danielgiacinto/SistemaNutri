@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contarTurnosPorDia, diasDeTiraAgenda, enlaceAgenda, filtrarPeriodoAgenda, rangoLecturaAgenda } from "@/componentes/agenda/filtrar-periodo";
+import { contarTurnosPorDia, diasDeTiraAgenda, enlaceAgenda, enlaceCajaAgenda, enlaceTurnoAgenda, filtrarPeriodoAgenda, rangoLecturaAgenda } from "@/componentes/agenda/filtrar-periodo";
 import { instanteDesdeLocal, rangoDeVista } from "@/lib/fechas";
 
 const zona = "America/Argentina/Buenos_Aires";
@@ -63,5 +63,15 @@ describe("tira diaria de la agenda", () => {
     const enlace = enlaceAgenda("dia", "2027-01-01", "vista=semana&fecha=2026-12-31&detalle=horarios&estado=confirmado");
     const consulta = new URL(enlace, "http://localhost").searchParams;
     expect(Object.fromEntries(consulta)).toEqual({ vista: "dia", fecha: "2027-01-01", detalle: "horarios", estado: "confirmado" });
+  });
+
+  it("lleva el mes a Caja y conserva la vista y fecha de origen, incluida la semana por defecto", () => {
+    const caja = new URL(enlaceCajaAgenda("2027-01-01", "vista=mes&detalle=horarios"), "http://localhost");
+    expect(Object.fromEntries(caja.searchParams)).toEqual({ vista: "movimientos", mes: "2027-01", fechaAgenda: "2027-01-01", vistaAgenda: "mes", detalleAgenda: "horarios" });
+    expect(new URL(enlaceCajaAgenda("2027-01-01"), "http://localhost").searchParams.get("vistaAgenda")).toBe("semana");
+  });
+
+  it("conserva la vista mensual y la presentación al abrir el detalle de un turno", () => {
+    expect(enlaceTurnoAgenda("turno", "mes", "2027-01-01", "detalle=horarios")).toBe("/panel/agenda/turno?detalle=horarios&vista=mes&fecha=2027-01-01");
   });
 });

@@ -29,10 +29,11 @@ function desplazarMes(mes: string, cantidad: number) {
   return new Date(Date.UTC(anio, numeroMes - 1 + cantidad, 1)).toISOString().slice(0, 7);
 }
 
-export function GraficoMediosPago({ datos, zona }: { datos: DatosFinanzas; zona: string }) {
+export function GraficoMediosPago({ datos, zona, mesSeleccionado }: { datos: DatosFinanzas; zona: string; mesSeleccionado?: string }) {
   const tituloId = useId();
   const mesActual = fechaEnZona(new Date(datos.ahora), zona).slice(0, 7);
-  const [mes, fijarMes] = useState(mesActual);
+  const [mesInterno, fijarMes] = useState(mesActual);
+  const mes = mesSeleccionado ?? mesInterno;
   const resumenes = useMemo(() => resumirMediosPago(datos, zona), [datos, zona]);
   const primerMes = resumenes[0]?.mes ?? mesActual;
   const resumen = resumenes.find(fila => fila.mes === mes);
@@ -44,11 +45,11 @@ export function GraficoMediosPago({ datos, zona }: { datos: DatosFinanzas; zona:
         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"><ChartNoAxesColumnIncreasing className="size-5" aria-hidden="true" /></span>
         <div><h2 id={tituloId} className="font-semibold">Cómo te pagaron</h2><p className="mt-0.5 text-xs text-muted-foreground">Tus ingresos, por medio de pago.</p></div>
       </div>
-      <div className="flex items-center gap-1 rounded-xl border bg-muted/30 p-1" role="group" aria-label="Mes de los medios de pago">
+      {mesSeleccionado ? <span className="rounded-xl border bg-muted/30 px-3 py-2 text-xs font-medium">{nombreMes(`${mes}-01`)}</span> : <div className="flex items-center gap-1 rounded-xl border bg-muted/30 p-1" role="group" aria-label="Mes de los medios de pago">
         <Button variant="ghost" size="icon-sm" aria-label="Mes anterior de medios de pago" disabled={mes <= primerMes} onClick={() => fijarMes(actual => desplazarMes(actual, -1))}><ChevronLeft aria-hidden="true" /></Button>
         <span className="min-w-36 px-1 text-center text-xs font-medium" aria-live="polite">{nombreMes(`${mes}-01`)}</span>
         <Button variant="ghost" size="icon-sm" aria-label="Mes siguiente de medios de pago" disabled={mes >= mesActual} onClick={() => fijarMes(actual => desplazarMes(actual, 1))}><ChevronRight aria-hidden="true" /></Button>
-      </div>
+      </div>}
     </header>
 
     <div className="grid min-w-0 gap-6 p-5 sm:p-6 @min-[700px]/medios:grid-cols-[minmax(0,0.85fr)_minmax(0,1.3fr)]">

@@ -356,3 +356,50 @@ desactivación de un servicio desde diálogos, cierre automático al guardar,
 guardado de configuración y apertura del registro de caja. El servicio temporal
 se retiró al terminar. El inicio, Finanzas y los diálogos se revisaron a 390 px
 sin desbordamiento horizontal; no se observaron nuevos errores de consola.
+
+## Caja y catálogo — Fase 9 (11/11/2026)
+
+Agenda envía a Caja su mes y el contexto de regreso. El selector financiero guarda
+`mes` en la URL y sincroniza indicadores, medios de pago, servicios y movimientos.
+Consultar otro mes conserva el retorno a la fecha/vista inicial. La ficha financiera
+de un paciente mantiene su alcance propio; no recibe el tablero del consultorio.
+
+El tablero separa estos conceptos, todos en ARS y según la zona del consultorio:
+
+- Cobrado de consultas: ingresos efectivos ligados a pagos y operaciones propias,
+  por fecha de pago. Se excluyen correcciones por error resueltas sobre el historial
+  completo; las devoluciones permanecen como egresos, sin restarlas dos veces.
+- Consultas con cobros: turnos distintos, aunque haya varios abonos o medios.
+  Promedio: cobrado dividido por esa cantidad; «—» si no hay consultas con cobros.
+- Deuda del mes: saldo positivo de consultas completadas cuya fecha de atención
+  local pertenece al mes. Los futuros y anticipos cancelados/ausentes quedan aparte.
+  Deuda acumulada usa todas las fechas y ofrece abrir el filtro de deuda sin filtros
+  anteriores que oculten resultados.
+- Ingresos totales: añade movimientos manuales. Egresos incluye gastos y devoluciones;
+  neto es ingresos totales menos egresos. El detalle identifica registros corregidos
+  y compensaciones conservados en el historial que no suman a los agregados.
+- Qué cobraste: atribuye ingresos al servicio histórico de la operación. Sus importes
+  suman el mismo cobrado de consultas. Las barras diarias usan esa misma base.
+- Comparación: mes anterior completo para períodos cerrados, o igual día y hora
+  local para el mes actual, limitando al último día si el anterior es más corto.
+  Sin base previa se muestra un mensaje, sin porcentajes infinitos.
+
+Los cálculos acumulan centavos enteros antes de presentar importes. Las fechas de
+movimientos amplían el mes si se especifica Desde/Hasta; vacías, se usa el mes
+seleccionado. Los errores de consulta se propagan y no se presentan como ceros.
+
+El catálogo permite alta/edición en el diálogo, Guardar/Cancelar explícitos y
+desactivar sin eliminar historia. La migración
+`20261111210000_presentacion_catalogo_servicios.sql` añade `aclaracion_paciente`
+(300 caracteres) y `nota_precios` (1000), con RPC transaccional, lectura RLS por
+dueño/consultorio y sin escrituras directas. Los atajos solo modifican la aclaración
+de esa fila. La nota no modifica instrucciones de cobro ni comprobantes históricos.
+Las altas conservan su identificador al reintentar. Visibilidad pública pendiente
+de reservas (fase 13), sin controles que prometan publicación o borrado inexistentes.
+
+Verificación: `npm run verificar` aprobado, 291 pruebas en 40 archivos, lint, tipos
+y build. Conciliación y permisos/históricos probados en PostgreSQL aislado. Caja,
+movimientos y catálogo compacto revisados en localhost en escritorio y a 390 px,
+sin guardar datos de prueba hospedados. Pendientes aplicar la nueva migración y
+verificar visualmente y con persistencia las aclaraciones/nota en el destino; no se
+desplegó código ni se aplicaron migraciones a Supabase hospedado en esta entrega.

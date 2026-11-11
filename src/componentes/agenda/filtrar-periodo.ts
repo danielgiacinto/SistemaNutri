@@ -41,3 +41,16 @@ export function enlaceAgenda(vista: VistaAgenda, fecha: string, parametros = "")
   consulta.set("fecha", fecha);
   return `/panel/agenda?${consulta.toString()}`;
 }
+
+export function enlaceCajaAgenda(fecha: string, parametros = ""): string {
+  const origen = new URLSearchParams(parametros);
+  const vista = origen.get("vista") ?? "semana";
+  const consulta = new URLSearchParams({ vista: "movimientos", mes: fecha.slice(0, 7), fechaAgenda: fecha, vistaAgenda: vista === "semana" || vista === "mes" ? vista : "dia" });
+  if (origen.get("detalle") === "horarios") consulta.set("detalleAgenda", "horarios");
+  return `/panel/finanzas?${consulta.toString()}`;
+}
+
+export function enlaceTurnoAgenda(turnoId: string, vista: VistaAgenda, fecha: string, parametros = ""): string {
+  const consulta = new URLSearchParams(enlaceAgenda(vista, fecha, parametros).split("?")[1]);
+  return `/panel/agenda/${turnoId}?${consulta.toString()}`;
+}

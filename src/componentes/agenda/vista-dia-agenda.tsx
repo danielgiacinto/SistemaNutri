@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, type ReactNode } from "react";
 import { ArrowUpRight, CalendarCheck2, CalendarPlus, Clock3, LayoutList, Rows3 } from "lucide-react";
-import { DIAS_SEMANA, ETIQUETAS_TIPO_CONSULTA } from "@/configuracion/clinica";
+import { DIAS_SEMANA, ETIQUETAS_TIPO_CONSULTA, type VistaAgenda } from "@/configuracion/clinica";
 import { nombreNatural } from "@/lib/antropometria";
 import { formatearFechaIso, horaCortaEnZona, isoDiaSemana, minutosEntre } from "@/lib/fechas";
 import { cn } from "@/lib/utilidades";
@@ -12,7 +12,7 @@ import type { TurnoConPaciente } from "@/servicios/turnos";
 import { InsigniaCobro, InsigniaTurno } from "@/componentes/comunes/insignia-estado";
 import { CobroRapido } from "@/componentes/finanzas/cobro-rapido";
 import { Button } from "@/componentes/ui/button";
-import { contarTurnosPorDia, diasDeTiraAgenda, enlaceAgenda } from "./filtrar-periodo";
+import { contarTurnosPorDia, diasDeTiraAgenda, enlaceAgenda, enlaceTurnoAgenda } from "./filtrar-periodo";
 
 type Propiedades = {
   fecha: string;
@@ -75,7 +75,7 @@ export function VistaDiaAgenda({ fecha, fechaHoy, zonaHoraria, profesionalId, tu
     </div>
 
     {mostrarHorarios ? children : ordenados.length ? <ol className="space-y-3" aria-label="Consultas ordenadas por horario">
-      {ordenados.map(turno => <li key={turno.id}><TarjetaConsulta turno={turno} fecha={fecha} zona={zonaHoraria} propia={turno.profesional_id === profesionalId} /></li>)}
+      {ordenados.map(turno => <li key={turno.id}><TarjetaConsulta turno={turno} fecha={fecha} zona={zonaHoraria} propia={turno.profesional_id === profesionalId} parametros={parametros} /></li>)}
     </ol> : <div className="flex flex-col items-center rounded-2xl border border-dashed bg-card px-5 py-10 text-center sm:py-12">
       <span className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary"><CalendarPlus className="size-6" aria-hidden="true" /></span>
       <h4 className="font-semibold">Un día con espacio para tus pacientes</h4>
@@ -85,12 +85,12 @@ export function VistaDiaAgenda({ fecha, fechaHoy, zonaHoraria, profesionalId, tu
   </div>;
 }
 
-function TarjetaConsulta({ turno, fecha, zona, propia }: { turno: TurnoConPaciente; fecha: string; zona: string; propia: boolean }) {
+function TarjetaConsulta({ turno, fecha, zona, propia, vista = "dia", parametros = "" }: { turno: TurnoConPaciente; fecha: string; zona: string; propia: boolean; vista?: VistaAgenda; parametros?: string }) {
   const nombre = turno.pacientes ? nombreNatural(turno.pacientes) : "Paciente no disponible";
   const resumen = turno.resumenEconomico;
   const sinAsistencia = turno.estado === "cancelado" || turno.estado === "ausente";
   const anticipo = sinAsistencia && resumen && resumen.abonado > 0;
-  const enlaceConsulta = `/panel/agenda/${turno.id}?vista=dia&fecha=${fecha}`;
+  const enlaceConsulta = enlaceTurnoAgenda(turno.id, vista, fecha, parametros);
 
   return <article className={cn("overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary/35", turno.estado === "confirmado" && "border-primary/30", turno.estado === "cancelado" && "bg-muted/20")} aria-label={`Consulta de ${nombre}`}>
     <div className="flex flex-col gap-4 p-4 sm:flex-row sm:gap-5 sm:p-5">
@@ -113,4 +113,11 @@ function TarjetaConsulta({ turno, fecha, zona, propia }: { turno: TurnoConPacien
       {propia ? <CobroRapido turnoId={turno.id} zona={zona} mostrarEstado={false} estado={turno.estadoEconomico} /> : <span className="text-xs text-muted-foreground">Otro profesional</span>}
     </footer>
   </article>;
+}
+
+export function DiaSeleccionadoMes({ fecha, zona, profesionalId, turnos, parametros }: { fecha: string; zona: string; profesionalId: string; turnos: TurnoConPaciente[]; parametros: string }) {
+  return <section className="space-y-4" aria-label="Consultas del día seleccionado en el mes">
+    <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-4"><div><h3 className="font-semibold">Día seleccionado · {formatearFechaIso(fecha)}</h3><p className="mt-1 text-xs text-muted-foreground">{turnos.filter(turno => turno.estado !== "cancelado").length} {turnos.filter(turno => turno.estado !== "cancelado").length === 1 ? "consulta" : "consultas"} · Los cancelados se conservan en el listado.</p></div><div className="flex flex-wrap gap-2"><Button asChild size="sm" variant="outline"><Link href={enlaceAgenda("dia", fecha, parametros)}>Ver día completo</Link></Button><Button asChild size="sm"><Link href={`/panel/agenda/nuevo?fecha=${fecha}`}><CalendarPlus aria-hidden="true" />Agendar</Link></Button></div></header>
+    {turnos.length ? <ol className="space-y-3">{turnos.toSorted((a, b) => a.inicio.localeCompare(b.inicio)).map(turno => <li key={turno.id}><TarjetaConsulta turno={turno} fecha={fecha} zona={zona} propia={turno.profesional_id === profesionalId} vista="mes" parametros={parametros} /></li>)}</ol> : <p className="rounded-xl border border-dashed bg-card p-5 text-sm text-muted-foreground">No hay consultas en el día seleccionado.</p>}
+  </section>;
 }

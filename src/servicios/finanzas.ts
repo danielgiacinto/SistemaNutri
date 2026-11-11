@@ -23,12 +23,20 @@ export async function consultarEconomiaTurnos(cliente: ClienteSupabase, turnos: 
 }
 
 export async function listarServicios(cliente: ClienteSupabase): Promise<ServicioConsultorio[]> {
-  const { data, error } = await cliente.from('servicios_consultorio').select('id,nombre,descripcion,precio,moneda,duracion_minutos,activo').order('nombre');
+  const { data, error } = await cliente.from('servicios_consultorio').select('*').order('nombre');
   if (error) {
     registrarError('listar_servicios', error);
     throw new Error('No se pudieron cargar los servicios.');
   }
-  return data;
+  return data.map(({id,nombre,descripcion,precio,moneda,duracion_minutos,activo,aclaracion_paciente})=>({id,nombre,descripcion,precio,moneda,duracion_minutos,activo,aclaracion_paciente}));
+}
+
+export async function leerNotaPrecios(cliente: ClienteSupabase): Promise<{ disponible: boolean; nota: string }> {
+  const { data, error } = await cliente.from('configuracion_financiera').select('nota_precios').maybeSingle();
+  // Compatibilidad durante la activación: no ocultar errores de autorización o red.
+  if (error?.code === '42703' || error?.code === 'PGRST204') return { disponible: false, nota: '' };
+  if (error) { registrarError('leer_nota_precios',error); throw new Error('No se pudo cargar la nota de precios.'); }
+  return { disponible: true, nota: data?.nota_precios ?? '' };
 }
 
 export async function listarServiciosActivos(cliente: ClienteSupabase) {
