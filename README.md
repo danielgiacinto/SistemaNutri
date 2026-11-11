@@ -47,6 +47,12 @@ entrega real de recordatorios. Ver [Finanzas del consultorio](docs/finanzas-cons
 | 5 | Suscripciones, pagos y administración | ✅ Validación funcional cerrada con cuentas ficticias: cobros, renovación automática de la misma autorización, webhooks/reintentos, correos, cancelación y recuperación. Prueba acelerada diaria; sin cobros reales. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 | 7 | Servicios, cobros a pacientes, caja, estadísticas y recordatorios | Migración aplicada; formularios, persistencia, panel y diseño móvil verificados en localhost. Lint, tipos, 230 pruebas y build aprobados. Pendientes scheduler desplegado y entrega real de correo. |
+| 8 | Alta rápida de pacientes y modales de Nuevo turno, Servicios y precios y Horarios | ✅ Implementada y verificada en localhost. Pendientes aplicar la migración de contacto/cobertura al entorno hospedado y desplegar; ver requisito de activación debajo. |
+| 9 | Agenda y Caja integradas, tarjetas de consultas y catálogo de servicios | En curso por entregas: **9A, vista Día**, implementada en esta entrega; medios de pago y resumen de Finanzas ya disponibles. Integración de Caja y ampliación del catálogo pendientes. |
+| 10 | Inicio operativo, tareas e indicadores | Planificada |
+| 11 | Biblioteca reutilizable | Planificada |
+| 12 | Planes visuales y plantillas | Planificada |
+| 13 | Reservas, calendario e integraciones opcionales | Planificada |
 
 ### Qué se puede probar ahora (profesional)
 
@@ -146,6 +152,38 @@ en Supabase hospedado ni publica en Vercel.
 
 ### Próximas fases — Experiencia del consultorio
 
+**Primera entrega de fase 9 — 9A: Agenda del día (11/11/2026).** Día abre un
+listado de tarjetas con hora inicial/final, duración, paciente, servicio histórico,
+estados de atención y cobro separados, total y saldo. Ver consulta y Cobros son
+acciones independientes. Los turnos cancelados siguen visibles y sus anticipos se
+presentan para resolver, sin sumarlos como deuda exigible. Sin servicio asignado se
+indica «Importe sin configurar»; los cobros de otro profesional permanecen privados.
+
+La tira de 14 días comienza el lunes de la semana elegida, muestra contadores sin
+cancelados y distingue Hoy. En móvil se desplaza horizontalmente dentro de la
+tarjeta. El selector **Consultas / Horarios** conserva la grilla con disponibilidad,
+bloqueos, duración real y hora actual. Fecha, vista y presentación quedan en la URL;
+el acceso al detalle desde las tarjetas permite volver a ese mismo día. El vacío
+ofrece Agendar un turno con la fecha precargada. Esta parte no requiere migraciones.
+
+Validación de 9A: `npm run verificar` aprobado (lint, tipos, **278 pruebas en 38
+archivos** y build). Revisión autenticada en escritorio y a 390 px: consulta pagada
+y pendiente, retorno al día desde el detalle, apertura de Cobros, alternancia con
+Horarios, vacío y Nuevo turno con fecha precargada/cancelación. Sin desbordes de
+página ni errores de consola observados; no se guardaron turnos ni pagos de prueba.
+
+La fase 9 se divide para revisar cada avance antes del siguiente:
+
+- **9A — Vista Día:** esta entrega. Tira de fechas, tarjetas y alternancia con horarios.
+- **9B — Contexto de navegación:** Caja toma el mes seleccionado en Agenda y permite
+  volver a la fecha original; completar la conservación del contexto en todos los
+  accesos y en Semana/Mes, sin alterar la grilla existente.
+- **9C — Tablero de Caja:** cobrado de consultas, turnos distintos con cobros, saldo
+  exigible y promedio; gráfico por servicio, pendientes accionables y movimientos.
+  Conciliarlo con Finanzas y sus pagos parciales, anticipos, reversiones y egresos.
+- **9D — Catálogo compacto:** edición en filas y aclaraciones/atajos/nota general.
+  Visibilidad pública condicionada a reservas de fase 13; precios históricos intactos.
+
 **Avance de fase 9:** Finanzas ya muestra **Cómo te pagaron**, con barras por medio
 de pago, importes, porcentajes, cantidad de ingresos y navegación mensual. Está
 visible sobre Cobros y Caja y usa ingresos efectivos en ARS, con correcciones por
@@ -157,7 +195,8 @@ deuda y egresos, coherentes con el gráfico y adaptadas al ancho disponible.
 El relevamiento funcional y estético completo, decisiones, dependencias, casos
 límite y criterios de aceptación están en
 [Hoja de ruta a partir de la referencia](docs/hoja-de-ruta-experiencia-consultorio.md).
-Las fases siguientes siguen **planificadas**, salvo el avance de medios de pago indicado arriba:
+La fase 9 está **en curso** con los avances indicados arriba; las fases 10 a 13
+siguen **planificadas**:
 
 1. **Fase 9 — Agenda y Caja integradas.** Mantener fecha/período al cambiar entre
    Día/Semana/Mes/Caja; tira de días, tarjetas de consultas, resumen mensual con

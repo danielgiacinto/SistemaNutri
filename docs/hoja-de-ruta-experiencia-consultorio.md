@@ -117,6 +117,61 @@ conteo de ingresos y navegación mensual. Usa ingresos efectivos en ARS y conser
 las devoluciones como egresos. Ver [reglas del bloque](finanzas-consultorio.md#cómo-te-pagaron).
 El resto de la integración de Agenda y Caja y los gráficos por servicio siguen pendientes.
 
+### Entregas incrementales y estado (11/11/2026)
+
+**9A — Vista Día, implementada en esta entrega.** Se reutiliza la lectura autorizada
+de turnos del consultorio y de operaciones propias, sin cambios de esquema:
+
+- Tira de catorce fechas desde el lunes de la semana seleccionada. Cada enlace
+  anuncia fecha, cantidad y selección; Hoy tiene texto y borde. Contadores visibles
+  sin cancelados, con medianoche en la zona del consultorio. La consulta de datos
+  incluye todo el mes visible y la segunda semana de la tira aunque cruce mes/año.
+- Tarjetas en orden horario con inicio, fin, minutos, paciente y servicio histórico
+  de la operación; a falta de operación, tipo de consulta. Insignias independientes
+  para atención y estado económico. Total después del descuento y saldo restante,
+  con moneda de origen, sin sumar ni convertir monedas.
+- Pagos parciales y anticipados conservan su estado. Un cancelado/ausente con dinero
+  abonado muestra «Anticipo a resolver» y ese importe, sin presentar el precio como
+  deuda exigible. Sin anticipo muestra «Sin deuda exigible». Sin operación no se
+  inventa un precio cero: «Importe sin configurar». No se revelan importes ni se
+  ofrece Cobros para turnos de otros profesionales.
+- Nombre/Ver consulta abren el detalle; Cobros abre el diálogo existente con sus
+  validaciones. Son controles separados, sin botones dentro de enlaces. En el
+  listado no se repite la antigua sección de cobros debajo de las tarjetas.
+- Consultas/Horarios alterna sin recargar ni repetir consultas al servidor y guarda
+  `detalle=horarios` en la URL. Se mantiene fecha y vista; fechas nuevas navegan al
+  servidor para obtener contadores actualizados. El detalle abierto desde una tarjeta
+  recibe fecha/vista validadas y su enlace Agenda vuelve al mismo día.
+- Horarios mantiene la grilla original con bloqueos, disponibilidad, duraciones,
+  solapamientos e indicador actual. Semana y Mes conservan su comportamiento.
+- Vacío con icono, explicación breve y Agendar un turno con fecha precargada. Un día
+  con cancelados conserva sus tarjetas y especifica la cantidad de cancelaciones.
+- Estética: tokens y tema del consultorio, bordes suaves, tarjetas redondeadas,
+  iconos discretos, hora y total destacados, acciones en un pie separado. En celular,
+  tira desplazable dentro del contenedor y tarjetas apiladas; importe y acciones
+  tienen espacio propio. Selección y botones se anuncian a lectores de pantalla.
+
+Verificación de 9A: lint, tipos, 278 pruebas en 38 archivos y build aprobados mediante
+`npm run verificar`. Nuevas pruebas de límites de mes/año, año bisiesto, medianoche
+local, exclusión de cancelaciones y conservación de parámetros. Revisión autenticada
+en localhost de una consulta pagada y otra pendiente, regreso desde el detalle,
+apertura del cobro, grilla horaria, vacío y alta precargada con descarte. Diseño
+comprobado a 390 px, sin desborde horizontal de página ni errores de consola
+observados. No se guardaron datos de prueba ni se modificó el entorno hospedado.
+
+**9B — Navegación y contexto, pendiente.** Caja debe tomar el mes de Agenda y ofrecer
+retorno al día original. Completar el retorno contextual en accesos de Semana/Mes,
+edición y demás recorridos; no dar por implementado todo el criterio de navegación
+de fase 9 solo por el retorno desde las nuevas tarjetas.
+
+**9C — Caja operativa, pendiente.** Implementar sus indicadores, desglose por servicio,
+deuda accionable y movimientos según las definiciones detalladas debajo. Reutilizar
+Cómo te pagaron; conciliar importes y turnos distintos, sin duplicar pagos parciales.
+
+**9D — Catálogo compacto, pendiente.** Edición en filas, aclaraciones, atajos y nota
+general. La publicación de precios se habilita al existir reservas; requiere la
+migración y autorización descritas en la propuesta de Servicios y precios.
+
 Prioridad alta. Reutilizar el sistema financiero de fase 7: operaciones por turno,
 pagos parciales/anticipados, movimientos, descuentos, bonificaciones, egresos y
 reversiones. No reemplazarlo por un simple booleano «pagado».

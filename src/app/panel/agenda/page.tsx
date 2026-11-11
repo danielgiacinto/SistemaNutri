@@ -1,5 +1,5 @@
 import { consultarEconomiaTurnos } from "@/servicios/finanzas";
-import { estadoEconomico } from "@/tipos/finanzas";
+import { estadoEconomico, saldoOperacion } from "@/tipos/finanzas";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -9,7 +9,8 @@ import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { esquemaFiltroAgenda } from "@/esquemas/turno";
 import { listarTurnosEnRango } from "@/servicios/turnos";
 import { listarBloqueos, listarHorarios } from "@/servicios/agenda";
-import { horaEnZona, hoyEnZona, rangoDeVista } from "@/lib/fechas";
+import { horaEnZona, hoyEnZona } from "@/lib/fechas";
+import { rangoLecturaAgenda } from "@/componentes/agenda/filtrar-periodo";
 import { EncabezadoPagina } from "@/componentes/comunes/encabezado-pagina";
 import { AgendaInteractiva } from "@/componentes/agenda/agenda-interactiva";
 import { Button } from "@/componentes/ui/button";
@@ -62,7 +63,7 @@ async function ContenidoAgenda({ searchParams }: { searchParams: PageProps<"/pan
   const fechaHoy = hoyEnZona(contexto.consultorio.zonaHoraria, ahora);
   const horaHoy = horaEnZona(contexto.consultorio.zonaHoraria, ahora);
   const fecha = filtro.fecha ?? fechaHoy;
-  const rango = rangoDeVista("mes", fecha, contexto.consultorio.zonaHoraria);
+  const rango = rangoLecturaAgenda(fecha, contexto.consultorio.zonaHoraria);
   const cliente = await crearClienteServidor();
   const [turnos, horarios, bloqueos] = await Promise.all([
     listarTurnosEnRango(cliente, contexto.consultorio.id, rango.desde, rango.hasta),
@@ -70,7 +71,8 @@ async function ContenidoAgenda({ searchParams }: { searchParams: PageProps<"/pan
     listarBloqueos(cliente, contexto.consultorio.id, rango.desde),
   ]);
 
-  const operaciones = await consultarEconomiaTurnos(cliente,turnos.map(t=>t.id));
+  const operaciones = await consultarEconomiaTurnos(cliente, turnos.filter(turno => turno.profesional_id === contexto.usuarioId).map(turno => turno.id));
+  const operacionesPorTurno = new Map(operaciones.map(operacion => [operacion.turno_id, operacion]));
   return (
     <AgendaInteractiva
       vista={filtro.vista}
@@ -78,7 +80,21 @@ async function ContenidoAgenda({ searchParams }: { searchParams: PageProps<"/pan
       fechaHoy={fechaHoy}
       horaHoy={horaHoy}
       zonaHoraria={contexto.consultorio.zonaHoraria}
-      turnos={turnos.map(t=>({...t,estadoEconomico:estadoEconomico(operaciones.find(o=>o.turno_id===t.id))}))}
+      turnos={turnos.map(turno => {
+        const propia = turno.profesional_id === contexto.usuarioId;
+        const operacion = propia ? operacionesPorTurno.get(turno.id) : undefined;
+        return {
+          ...turno,
+          estadoEconomico: propia ? estadoEconomico(operacion) : "Cobro de otro profesional",
+          resumenEconomico: operacion ? {
+            nombreServicio: operacion.servicio_nombre,
+            moneda: operacion.moneda,
+            importe: operacion.original - operacion.descuento,
+            abonado: operacion.abonado,
+            saldo: saldoOperacion(operacion),
+          } : undefined,
+        };
+      })}
       horarios={horarios}
       bloqueos={bloqueos}
       profesionalId={contexto.usuarioId}

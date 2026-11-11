@@ -22,6 +22,7 @@ export const MENSAJES_TURNO: Record<string, string> = {
 
 export type TurnoConPaciente = Turno & {
   estadoEconomico?: string;
+  resumenEconomico?: { nombreServicio: string; moneda: string; importe: number; abonado: number; saldo: number };
   pacientes: Pick<Paciente, "id" | "nombre" | "apellido" | "documento" | "telefono"> | null;
 };
 

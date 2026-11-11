@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { CalendarDays, CalendarRange, CalendarClock, Wallet, ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import { cn } from "@/lib/utilidades";
 import { DIAS_SEMANA, ETIQUETAS_ESTADO_TURNO, type VistaAgenda } from "@/configuracion/clinica";
@@ -8,9 +9,10 @@ import type { BloqueoAgenda, HorarioAtencion } from "@/tipos/entidades";
 import type { TurnoConPaciente } from "@/servicios/turnos";
 import { distribuirTurnos, formatoMinutos, intervaloDelDia } from "./distribucion-turnos";
 import { ContenedorHorarioAgenda, IndicadorHoraAgenda, RelojAgenda } from "./reloj-agenda";
+import { enlaceAgenda } from "./filtrar-periodo";
 
 export type PropiedadesCalendario = { vista: VistaAgenda; fecha: string; fechaHoy: string; horaHoy: string; zonaHoraria: string; turnos: TurnoConPaciente[]; horarios: HorarioAtencion[]; bloqueos: BloqueoAgenda[] };
-type Propiedades = PropiedadesCalendario & { alCambiarVista?: (vista: VistaAgenda) => void };
+type Propiedades = PropiedadesCalendario & { alCambiarVista?: (vista: VistaAgenda) => void; contenidoDia?: ReactNode; mostrarLeyendaDia?: boolean; parametros?: string };
 const COLOR_ESTADO: Record<string, string> = {
   programado: "border-primary/25 bg-accent/70 text-accent-foreground",
   confirmado: "border-primary/50 bg-accent text-accent-foreground",
@@ -18,7 +20,6 @@ const COLOR_ESTADO: Record<string, string> = {
   cancelado: "border-border bg-muted text-muted-foreground line-through",
   ausente: "border-advertencia/40 bg-advertencia/10 text-foreground",
 };
-function hrefAgenda(vista: VistaAgenda, fecha: string) { return `/panel/agenda?vista=${vista}&fecha=${fecha}`; }
 function cambiarFecha(vista: VistaAgenda, fecha: string, direccion: number) {
   if (vista !== "mes") return agregarDias(fecha, direccion * (vista === "semana" ? 7 : 1));
   const [anio, mes] = inicioDeMes(fecha).split("-").map(Number);
@@ -29,6 +30,7 @@ function cambiarFecha(vista: VistaAgenda, fecha: string, direccion: number) {
 export function CalendarioAgenda(propiedades: Propiedades) {
   const { vista, fecha, fechaHoy, horaHoy, zonaHoraria, turnos } = propiedades;
   const dias = Array.from({ length: 7 }, (_, indice) => agregarDias(inicioDeSemana(fecha), indice));
+  const hrefAgenda = (opcion: VistaAgenda, dia: string) => enlaceAgenda(opcion, dia, propiedades.parametros);
   const cantidad = turnos.filter((turno) => turno.estado !== "cancelado" && (vista !== "mes" || fechaEnZona(new Date(turno.inicio), zonaHoraria).startsWith(fecha.slice(0, 7)))).length;
   return (
     <section className="min-w-0 space-y-5" aria-label="Calendario de turnos">
@@ -54,13 +56,14 @@ export function CalendarioAgenda(propiedades: Propiedades) {
           <div className="shrink-0"><RelojAgenda zona={zonaHoraria} fechaInicial={fechaHoy} horaInicial={horaHoy} /></div>
         </div>
       </div>
-      {vista === "mes" ? <VistaMes {...propiedades} /> : vista === "semana" ? <><div className="xl:hidden"><ResumenSemana {...propiedades} dias={dias} /></div><div className="hidden xl:block"><GrillaHoraria {...propiedades} dias={dias} /></div></> : <GrillaHoraria {...propiedades} dias={[fecha]} />}
-      {vista !== "mes" ? <p className="flex flex-wrap items-center gap-x-5 gap-y-2 px-1 text-xs text-muted-foreground"><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" />Hora actual</span><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-muted-foreground/30" />Fuera de horario o pasado</span><span>Seleccioná un espacio libre para agendar.</span></p> : null}
+      {vista === "mes" ? <VistaMes {...propiedades} /> : vista === "semana" ? <><div className="xl:hidden"><ResumenSemana {...propiedades} dias={dias} /></div><div className="hidden xl:block"><GrillaHoraria {...propiedades} dias={dias} /></div></> : propiedades.contenidoDia ?? <GrillaHoraria {...propiedades} dias={[fecha]} />}
+      {vista === "semana" || (vista === "dia" && propiedades.mostrarLeyendaDia !== false) ? <p className="flex flex-wrap items-center gap-x-5 gap-y-2 px-1 text-xs text-muted-foreground"><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" />Hora actual</span><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-muted-foreground/30" />Fuera de horario o pasado</span><span>Seleccioná un espacio libre para agendar.</span></p> : null}
     </section>
   );
 }
 
-function VistaMes({ fecha, fechaHoy, zonaHoraria, turnos }: Propiedades) {
+function VistaMes({ fecha, fechaHoy, zonaHoraria, turnos, parametros }: Propiedades) {
+  const hrefAgenda = (vista: VistaAgenda, dia: string) => enlaceAgenda(vista, dia, parametros);
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
       <div className="grid grid-cols-7">
@@ -80,6 +83,7 @@ function VistaMes({ fecha, fechaHoy, zonaHoraria, turnos }: Propiedades) {
 }
 
 function ResumenSemana({ dias, ...propiedades }: Propiedades & { dias: string[] }) {
+  const hrefAgenda = (vista: VistaAgenda, dia: string) => enlaceAgenda(vista, dia, propiedades.parametros);
   return <div className="space-y-3">{dias.map((dia) => {
     const turnos = propiedades.turnos.filter((turno) => fechaEnZona(new Date(turno.inicio), propiedades.zonaHoraria) === dia);
     const hoy = dia === propiedades.fechaHoy;
@@ -90,7 +94,8 @@ function ResumenSemana({ dias, ...propiedades }: Propiedades & { dias: string[] 
   })}</div>;
 }
 
-function GrillaHoraria({ dias, ...propiedades }: Propiedades & { dias: string[] }) {
+export function GrillaHoraria({ dias, ...propiedades }: Propiedades & { dias: string[] }) {
+  const hrefAgenda = (vista: VistaAgenda, dia: string) => enlaceAgenda(vista, dia, propiedades.parametros);
   const { zonaHoraria: zona, fechaHoy, horaHoy, turnos, horarios, bloqueos } = propiedades;
   let inicio = 7 * 60;
   let fin = 21 * 60;

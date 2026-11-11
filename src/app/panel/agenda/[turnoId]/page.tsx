@@ -19,20 +19,25 @@ import { fechaEnZona, formatearFechaHora, horaCortaEnZona, minutosEntre } from "
 import { nombreNatural } from "@/lib/antropometria";
 import { DURACION_TURNO_PREDETERMINADA, DURACIONES_TURNO_MINUTOS } from "@/configuracion/clinica";
 import { Skeleton } from "@/componentes/ui/skeleton";
+import { esquemaFiltroAgenda } from "@/esquemas/turno";
+import { enlaceAgenda } from "@/componentes/agenda/filtrar-periodo";
 
 export const metadata: Metadata = { title: "Turno" };
 
-export default function PaginaTurno({ params }: PageProps<"/panel/agenda/[turnoId]">) {
+export default function PaginaTurno({ params, searchParams }: PageProps<"/panel/agenda/[turnoId]">) {
   return (
     <Suspense fallback={<Skeleton className="h-96" />}>
-      <Contenido params={params} />
+      <Contenido params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function Contenido({ params }: { params: PageProps<"/panel/agenda/[turnoId]">["params"] }) {
+async function Contenido({ params, searchParams }: Pick<PageProps<"/panel/agenda/[turnoId]">, "params" | "searchParams">) {
   const { turnoId } = await params;
   const { turno, paciente, contexto, cliente } = await requerirTurnoDelConsultorio(turnoId);
+  const consulta = await searchParams;
+  const retorno = esquemaFiltroAgenda.safeParse({ vista: consulta.vista, fecha: consulta.fecha });
+  const volverA = retorno.success && retorno.data.fecha ? enlaceAgenda(retorno.data.vista, retorno.data.fecha) : "/panel/agenda";
   const [pacientes, consultorio, operaciones, evoluciones] = await Promise.all([
     listarPacientesActivos(cliente, contexto.consultorio.id),
     obtenerDatosConsultorio(cliente, contexto.consultorio.id),
@@ -51,7 +56,7 @@ async function Contenido({ params }: { params: PageProps<"/panel/agenda/[turnoId
         titulo={turno.pacientes ? nombreNatural(turno.pacientes) : "Turno"}
         descripcion={formatearFechaHora(inicio, contexto.consultorio.zonaHoraria)}
         acciones={<InsigniaTurno estado={turno.estado} />}
-        volverA="/panel/agenda"
+        volverA={volverA}
         etiquetaVolver="Agenda"
       />
       <div className="flex flex-wrap gap-2">
