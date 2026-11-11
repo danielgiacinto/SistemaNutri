@@ -69,6 +69,15 @@
 :root {
   --radius: 0.75rem;
 
+  /* Correos: valores hexadecimales compatibles con clientes de correo. */
+  --correo-primario: #285b39;
+  --correo-fondo: #f4f7f2;
+  --correo-tarjeta: #ffffff;
+  --correo-texto: #24332a;
+  --correo-secundario: #58665d;
+  --correo-borde: #dce5d9;
+  --correo-acento: #edf4d9;
+
   --background: oklch(0.982 0.004 240);
   --foreground: oklch(0.22 0.02 255);
   --card: oklch(1 0 0);

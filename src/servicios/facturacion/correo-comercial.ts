@@ -1,10 +1,13 @@
 import "server-only";
 import nodemailer from "nodemailer";
+import { crearHtmlCorreoComercial } from "./plantilla-correo";
 
 export type AvisoCorreoComercial = {
   destinatario: string;
   asunto: string;
   texto: string;
+  tipo?: string;
+  prueba?: boolean;
 };
 
 /** El remitente debe coincidir con la cuenta Gmail autenticada o un alias verificado. */
@@ -24,8 +27,9 @@ export async function enviarCorreoComercial(aviso: AvisoCorreoComercial): Promis
   const resultado = await transporte.sendMail({
     from: { name: "Nutrisfera", address: usuario },
     to: aviso.destinatario,
-    subject: aviso.asunto,
-    text: aviso.texto,
+    subject: `${aviso.prueba ? "[PRUEBA] " : ""}${aviso.asunto}`,
+    text: `${aviso.prueba ? "MUESTRA DE DISEÑO — SIN COBRO REAL. No corresponde realizar ningún pago.\n\n" : ""}${aviso.texto}`,
+    html: crearHtmlCorreoComercial(aviso, process.env.NEXT_PUBLIC_SITIO_URL ?? "https://nutrisfera.vercel.app"),
   });
   if (!resultado.accepted.includes(aviso.destinatario)) throw new Error("correo_comercial_rechazado");
   return resultado.messageId;

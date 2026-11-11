@@ -2,7 +2,7 @@ import 'server-only';
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
 import type { ClienteSupabase } from '@/lib/supabase/servidor';
-import { dineroFinanzas } from '@/tipos/finanzas';
+import { crearMensajeRecordatorioCobro } from '@/servicios/correos/recordatorio-cobro';
 
 const esquemaAviso=z.object({correo:z.email(),paciente:z.string(),consulta:z.string(),original:z.number(),abonado:z.number(),saldo:z.number().positive(),moneda:z.string(),nombre_remitente:z.string(),instrucciones:z.string(),texto:z.string(),zona:z.string()});
 export async function despacharRecordatoriosCobro(cliente:ClienteSupabase) {
@@ -24,8 +24,8 @@ export async function despacharRecordatoriosCobro(cliente:ClienteSupabase) {
       const aviso=esquemaAviso.safeParse(validacion.data);
       if(!aviso.success)resultado='cancelado';
       else {
-        const a=aviso.data;const dinero=(n:number)=>dineroFinanzas(n,a.moneda);
-        const envio=await transporte.sendMail({from:{name:a.nombre_remitente,address:remitente},to:a.correo,subject:`Recordatorio de pago pendiente — ${a.nombre_remitente}`,messageId:`<cobro-${reclamo.id}@${remitente.split('@')[1]}>`,text:`Hola, ${a.paciente}:\n\n${a.texto}\n\nConsulta: ${new Intl.DateTimeFormat('es-AR',{dateStyle:'long',timeZone:a.zona}).format(new Date(a.consulta))}\nImporte original: ${dinero(a.original)}\nTotal abonado: ${dinero(a.abonado)}\nSaldo pendiente: ${dinero(a.saldo)}\n\n${a.instrucciones}\n\nSi ya realizaste el pago, comunicate con el consultorio para confirmar su registro.\n\n${a.nombre_remitente}`});
+        const a=aviso.data;
+        const envio=await transporte.sendMail(crearMensajeRecordatorioCobro(a,remitente,reclamo.id));
         if(!envio.accepted.includes(a.correo))throw new Error('rechazo');
         resultado='enviado';mensaje=envio.messageId;enviados++;
       }

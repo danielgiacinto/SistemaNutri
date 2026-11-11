@@ -25,6 +25,7 @@ describe('despacho de recordatorios de pacientes',()=>{
  it('comprueba el saldo actualizado antes de enviar sin contenido clínico',async()=>{
   saldo=5000;const resultado=await despacharRecordatoriosCobro({rpc} as unknown as ClienteSupabase);
   expect(resultado.enviados).toBe(1);expect(enviar.mock.calls[0][0].text).toContain('Saldo pendiente:');expect(enviar.mock.calls[0][0].text).toContain('5.000');
+  expect(enviar.mock.calls[0][0].html).toContain('5.000');expect(enviar.mock.calls[0][0].html).toContain('En nombre de Consultorio');
   expect(confirmar).toHaveBeenCalledWith(expect.objectContaining({p_resultado:'enviado',p_mensaje:'mensaje-prueba'}));
  });
  it('cancela sin enviar si el pago o la autorización cambiaron',async()=>{

@@ -86,7 +86,7 @@ export async function despacharAvisosComerciales(cliente: ClienteSupabase) {
           continue;
         }
       }
-      const mensajeId = await enviarCorreoComercial({ destinatario: aviso.destinatario, asunto: aviso.asunto, texto: aviso.texto });
+      const mensajeId = await enviarCorreoComercial({ destinatario: aviso.destinatario, asunto: aviso.asunto, texto: aviso.texto, tipo: aviso.tipo });
       const { error: guardar } = await cliente.from("correos_comerciales").update({ enviado_en: new Date().toISOString(), mensaje_id: mensajeId, ultimo_error: null })
         .eq("id", aviso.id).eq("reclamado_en", aviso.reclamado_en!);
       if (guardar) throw guardar;

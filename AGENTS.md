@@ -15,6 +15,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Esquema de base solo mediante migraciones en `supabase/migrations`, con permisos explícitos y políticas RLS por operación, más pruebas en `pruebas/bd`.
 - Lecturas de sesión dentro de `<Suspense>` (Cache Components). Sin `use cache` sobre datos clínicos.
 - Colores solo mediante tokens de `src/app/globals.css`.
+- Correos a pacientes y consultorios: diseño profesional, atractivo y coherente con Nutrisfera; usar el marco compartido de `src/servicios/correos/presentacion.ts` para avisos de la aplicación. Identificar al remitente, destacar el estado o saldo, cuidar legibilidad en móvil y Outlook, escapar los datos y conservar una alternativa de texto. Revisar visualmente los cambios; las muestras deben aclarar que no hay un cobro real. Mantener el mismo criterio al actualizar las plantillas de autenticación.
 - Ejecutar `npm run verificar` una vez al final cuando se modifique código, configuración, migraciones o pruebas. Si falla, corregir el problema y volver a ejecutarlo. Para cambios solo de documentación, omitirlo.
 
 ## Uso eficiente del contexto
