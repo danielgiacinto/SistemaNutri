@@ -111,6 +111,12 @@ Implementación en el repositorio, inspirada en la revisión autenticada de
   fecha/hora/duración, motivo y notas privadas plegables, con acciones al pie.
   Abrir la URL directamente muestra el diálogo sobre la agenda. Agendar conserva
   las validaciones de solapamientos y abre el detalle del turno al guardar.
+- **Servicios y precios** y **Horarios** de la cabecera de Agenda también abren
+  modales, conservando debajo la vista y fecha de la agenda. Sus formularios de
+  servicios, franjas y bloqueos se abren dentro de ese recorrido.
+- La apertura de Nuevo turno usa un único marco durante la carga y el formulario,
+  sin cerrar/reabrir ni repetir la animación. La carga interna mantiene sus dimensiones;
+  Cancelar, X y Escape descartan la carga. El catálogo y los horarios usan el mismo marco.
 - La edición conserva los nuevos campos y la ficha muestra la cobertura. El enlace
   antiguo `/panel/pacientes/nuevo` redirige al listado con el diálogo abierto.
 - Agenda agrupa **Día, Semana, Mes y Caja** con iconos. Caja abre la sección existente
@@ -127,6 +133,9 @@ Escape/retorno del foco, redirección del enlace anterior, acceso a Caja y catá
 de servicios con apertura de su formulario de alta, sin guardar datos de prueba.
 La ampliación de Nuevo turno también se comprobó desde Inicio y franjas de Agenda,
 con fecha/hora precargadas, descarte al cancelar y entrada directa por URL.
+Se comprobó además que su marco conserva la misma identidad al resolver la carga,
+que Servicios y precios y Horarios abren sobre Agenda y que sus formularios anidados
+cierran sin cerrar el modal principal. Revisión a 390 px y verificación completa aprobadas.
 
 **Requisito de activación:** aplicar primero
 `supabase/migrations/20261111180000_alta_paciente_contacto_cobertura.sql` al entorno

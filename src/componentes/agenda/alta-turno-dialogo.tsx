@@ -8,9 +8,8 @@ import { esquemaHora, esquemaUuid } from "@/esquemas/comunes";
 import { esFechaIso, hoyEnZona } from "@/lib/fechas";
 import { DialogoNuevoTurno } from "./dialogo-nuevo-turno";
 
-export async function AltaTurnoDialogo({ searchParams, entradaDirecta = false }: {
+export async function AltaTurnoDialogo({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
-  entradaDirecta?: boolean;
 }) {
   const contexto = await requerirProfesional();
   const parametros = await searchParams;
@@ -26,6 +25,5 @@ export async function AltaTurnoDialogo({ searchParams, entradaDirecta = false }:
 
   return <DialogoNuevoTurno pacientes={pacientes} servicios={servicios} fechaPredeterminada={hoyEnZona(contexto.consultorio.zonaHoraria)}
     duracionPredeterminada={consultorio?.duracion_turno_minutos ?? DURACION_TURNO_PREDETERMINADA}
-    zonaHoraria={contexto.consultorio.zonaHoraria} inicial={{ fecha, hora, pacienteId }}
-    volverA={entradaDirecta ? `/panel/agenda?vista=dia&fecha=${fecha}` : undefined} />;
+    zonaHoraria={contexto.consultorio.zonaHoraria} inicial={{ fecha, hora, pacienteId }} />;
 }

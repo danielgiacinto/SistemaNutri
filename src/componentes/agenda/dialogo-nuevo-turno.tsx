@@ -1,39 +1,16 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { esFechaIso } from "@/lib/fechas";
 import { esquemaHora, esquemaUuid } from "@/esquemas/comunes";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/componentes/ui/dialog";
+import { useDialogoRuta } from "@/componentes/comunes/dialogo-ruta";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { FormularioTurno, type PropiedadesFormularioTurno } from "./formulario-turno";
 
-function MarcoDialogoTurno({ children, pendiente = false, volverA, alCerrar }: { children: ReactNode; pendiente?: boolean; volverA?: string; alCerrar?: () => void }) {
-  const enrutador = useRouter();
-  const focoAnterior = useRef<HTMLElement | null>(null);
-  function cerrar() {
-    if (pendiente) return;
-    if (alCerrar) alCerrar();
-    else if (volverA) enrutador.replace(volverA, { scroll: false });
-    else enrutador.back();
-  }
-
-  return <Dialog open onOpenChange={abierto => { if (!abierto) cerrar(); }}>
-    <DialogContent className="flex h-[min(90dvh,46rem)] max-w-4xl flex-col gap-0 overflow-hidden p-0"
-      onInteractOutside={evento => evento.preventDefault()}
-      onOpenAutoFocus={() => { focoAnterior.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; }}
-      onCloseAutoFocus={evento => { evento.preventDefault(); if (focoAnterior.current?.isConnected) focoAnterior.current.focus(); }}>
-      <DialogTitle className="sr-only">Nuevo turno</DialogTitle>
-      <DialogDescription className="sr-only">Elegí paciente, servicio, fecha y horario para agendar la consulta.</DialogDescription>
-      {children}
-    </DialogContent>
-  </Dialog>;
-}
-
-export function DialogoNuevoTurno({ volverA, fechaPredeterminada, ...propiedades }: Omit<PropiedadesFormularioTurno, "modo" | "enDialogo" | "alCancelar" | "alCambiarPendiente"> & { volverA?: string; fechaPredeterminada: string }) {
-  const [pendiente, fijarPendiente] = useState(false);
-  const [apertura, fijarApertura] = useState(0);
-  const enrutador = useRouter();
+export function DialogoNuevoTurno({ fechaPredeterminada, ...propiedades }: Omit<PropiedadesFormularioTurno, "modo" | "enDialogo" | "alCancelar" | "alCambiarPendiente"> & { fechaPredeterminada: string }) {
+  const { cerrar, fijarPendiente, apertura } = useDialogoRuta();
+  const contenido = useRef<HTMLDivElement>(null);
   const parametros = useSearchParams();
   const fechaParam = parametros.get("fecha");
   const horaParam = parametros.get("hora");
@@ -43,19 +20,30 @@ export function DialogoNuevoTurno({ volverA, fechaPredeterminada, ...propiedades
     hora: horaParam && esquemaHora.safeParse(horaParam).success ? horaParam : "09:00",
     pacienteId: pacienteParam && esquemaUuid.safeParse(pacienteParam).success ? pacienteParam : "",
   };
-  function cerrar() {
-    if (pendiente) return;
-    fijarApertura(numero => numero + 1);
-    if (volverA) enrutador.replace(volverA, { scroll: false }); else enrutador.back();
-  }
+  useEffect(() => {
+    contenido.current?.querySelector<HTMLButtonElement>('[role="combobox"]')?.focus();
+  }, []);
 
-  return <MarcoDialogoTurno pendiente={pendiente} volverA={volverA} alCerrar={cerrar}>
-    <FormularioTurno key={`${apertura}:${inicial.fecha}:${inicial.hora}:${inicial.pacienteId}`} {...propiedades} inicial={inicial} modo="alta" enDialogo alCambiarPendiente={fijarPendiente} alCancelar={cerrar} />
-  </MarcoDialogoTurno>;
+  return <div ref={contenido} className="flex min-h-0 flex-1 flex-col">
+    <FormularioTurno key={`${apertura}:${inicial.fecha}:${inicial.hora}:${inicial.pacienteId}`} {...propiedades} inicial={inicial} modo="alta" enDialogo alCambiarPendiente={fijarPendiente}
+      alCancelar={cerrar} />
+  </div>;
 }
 
-export function CargandoDialogoTurno({ volverA }: { volverA?: string }) {
-  return <MarcoDialogoTurno volverA={volverA}><div className="space-y-6 p-7" role="status" aria-label="Cargando datos del nuevo turno">
-    <p className="font-semibold">Preparando tu próximo turno…</p><Skeleton className="h-16 w-3/4" /><Skeleton className="h-14" /><Skeleton className="h-14" /><Skeleton className="h-28" />
-  </div></MarcoDialogoTurno>;
+export function CargandoDialogoTurno() {
+  return <div className="grid min-h-0 flex-1 lg:grid-cols-[16rem_minmax(0,1fr)]" role="status" aria-label="Cargando datos del nuevo turno">
+    <div className="hidden flex-col gap-6 bg-primary p-7 text-primary-foreground lg:flex" aria-hidden="true">
+      <div className="size-14 rounded-2xl bg-primary-foreground/15" />
+      <div className="h-16 rounded-xl bg-primary-foreground/10" /><div className="h-24 rounded-xl bg-primary-foreground/10" />
+      <div className="mt-auto h-24 rounded-xl bg-primary-foreground/10" />
+    </div>
+    <div className="flex min-h-0 flex-col">
+      <div className="min-h-0 flex-1 space-y-6 overflow-hidden p-5 sm:p-7" aria-hidden="true">
+        <header className="pr-7"><p className="text-xs font-semibold uppercase tracking-wider text-primary">Nuevo turno</p><h2 className="mt-2 text-xl font-semibold tracking-tight">Reservá su próxima consulta</h2><p className="mt-1 text-sm text-muted-foreground">Elegí paciente, día y horario. El resto lo podés completar después.</p></header>
+        <Skeleton className="h-4 w-36" /><Skeleton className="h-14" /><Skeleton className="h-14" /><Skeleton className="h-4 w-32" />
+        <div className="grid grid-cols-3 gap-4"><Skeleton className="h-14" /><Skeleton className="h-14" /><Skeleton className="h-14" /></div>
+      </div>
+      <div className="flex shrink-0 justify-end gap-2 border-t p-4 sm:px-7" aria-hidden="true"><Skeleton className="h-8 w-20" /><Skeleton className="h-8 w-32" /></div>
+    </div>
+  </div>;
 }

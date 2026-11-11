@@ -57,6 +57,27 @@ lleva al listado con `crear=1`; al cerrar se limpia ese parámetro.
 
 ### Accesos simples de Agenda y Finanzas
 
+Corrección de apertura: el marco del diálogo de Nuevo turno se renderiza fuera del
+`Suspense` que carga pacientes y servicios. El estado de carga y el formulario solo
+reemplazan el contenido, conservando el mismo portal, foco contenido, dimensiones
+y una única animación. La carga interna usa la misma distribución lateral y de campos,
+sin una pantalla de texto que luego vuelva a abrir el modal. El formulario recibe el
+foco cuando está disponible; el cierre está bloqueado durante el envío.
+
+Servicios y precios y Horarios de la cabecera de Agenda también usan navegación
+interceptada sobre la pantalla actual, con cabecera fija, icono y contenido desplazable.
+El catálogo reutiliza el mismo contenido de Configuración y Finanzas; los horarios y
+bloqueos reutilizan la vista de disponibilidad. Se conservan los formularios anidados,
+permisos y acciones existentes. X y Escape vuelven a la agenda sin perder la vista.
+Las entradas directas a Configuración y Disponibilidad mantienen sus páginas completas.
+
+Validación: en el navegador se observó la carga de Nuevo turno y se comprobó que el
+identificador del diálogo no cambia al aparecer el formulario y que existe un único
+diálogo. También se comprobaron Servicios y precios, Horarios, apertura/cierre de
+Nuevo servicio y Nueva franja, descarte de notas con Escape y reapertura limpia,
+y diseño a 390 px sin registrar datos. `npm run verificar` aprobado: lint, tipos,
+271 pruebas en 38 archivos y compilación de producción. Sin nuevas migraciones ni despliegue.
+
 Ampliación implementada: **Nuevo turno** abre en diálogo mediante navegación
 interceptada, manteniendo debajo Inicio, Agenda o la ficha desde donde se abrió.
 El acceso desde una franja conserva fecha/hora y el acceso desde un paciente conserva
