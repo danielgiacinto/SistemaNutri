@@ -11,7 +11,7 @@ import { CONFIGURACION_FINANCIERA_INICIAL, dineroFinanzas, estadoEconomico, sald
 import { CampoFinanciero as Campo, estiloCampoFinanzas as estilo, FormularioFinanzas } from './formulario-finanzas';
 
 function fechaLocal(ahora=new Date()) {return new Date(ahora.getTime()-ahora.getTimezoneOffset()*60000).toISOString().slice(0,16);}
-export function CobroRapido({turnoId,estado='Sin configurar',inicial,mostrarEstado=true,zona=ZONA_HORARIA_PREDETERMINADA}:{turnoId:string;estado?:string;inicial?:DatosFinanzas;mostrarEstado?:boolean;zona?:string}) {
+export function CobroRapido({turnoId,estado='Sin configurar',inicial,mostrarEstado=true,compacto=false,zona=ZONA_HORARIA_PREDETERMINADA}:{turnoId:string;estado?:string;inicial?:DatosFinanzas;mostrarEstado?:boolean;compacto?:boolean;zona?:string}) {
   const [seccion,fijarSeccion]=useState('cobro');
   const [datos,fijarDatos]=useState(inicial);
   const [abierto,fijarAbierto]=useState(false);
@@ -20,7 +20,7 @@ export function CobroRapido({turnoId,estado='Sin configurar',inicial,mostrarEsta
   const operacion=datos?.operaciones.find(o=>o.turno_id===turnoId);
   const configuracion=datos?.configuracion??CONFIGURACION_FINANCIERA_INICIAL;
   return <Dialog open={abierto} onOpenChange={valor=>{fijarAbierto(valor);if(valor)recargar();}}>
-    <Button variant="outline" size="sm" className="h-9 gap-2 rounded-xl px-3" onClick={()=>{fijarAbierto(true);recargar();}}><ReceiptText className="size-4 text-primary" aria-hidden="true"/><span>Cobros</span>{mostrarEstado&&<InsigniaCobro estado={datos ? estadoEconomico(operacion) : estado} />}<ChevronRight className="size-3.5 text-muted-foreground" aria-hidden="true"/></Button>
+    <Button variant="outline" size={compacto?"icon":"sm"} aria-label={compacto?`Ver cobro de ${operacion?.paciente??"la consulta"}`:undefined} title={compacto?"Ver cobro":undefined} className={compacto?"size-9 shrink-0 rounded-xl p-0":"h-9 shrink-0 gap-2 rounded-xl px-3"} onClick={()=>{fijarAbierto(true);recargar();}}><ReceiptText className="size-4 text-primary" aria-hidden="true"/>{!compacto&&<span>Cobros</span>}{mostrarEstado&&<InsigniaCobro estado={datos ? estadoEconomico(operacion) : estado} />}{!compacto&&<ChevronRight className="size-3.5 text-muted-foreground" aria-hidden="true"/>}</Button>
     <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
       <DialogHeader><DialogTitle>{operacion?operacion.paciente:'Configurar cobro'}</DialogTitle><DialogDescription>{operacion?`${operacion.servicio_nombre} · ${new Date(operacion.inicio).toLocaleString('es-AR',{timeZone:zona,hourCycle:'h23'})}`:'Asigná un servicio para definir el precio. Un turno sin configurar no se considera gratuito.'}</DialogDescription></DialogHeader>
       {cargando && <p role="status">Actualizando…</p>}

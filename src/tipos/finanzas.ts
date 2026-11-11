@@ -28,6 +28,14 @@ export function estadoEconomico(operacion: OperacionConsultorio | undefined): st
   return operacion.abonado>0 ? 'Pago parcial' : 'Pendiente';
 }
 export function deudaExigible(operacion: OperacionConsultorio) { return operacion.estado_turno==='completado' && saldoOperacion(operacion)>0; }
+/** Pendiente de pago incluye anticipos posibles; deuda exige una consulta atendida. */
+export function coincideEstadoCobro(operacion: OperacionConsultorio, filtro: string, ahora: string): boolean {
+  if (!filtro) return true;
+  if (filtro === 'pendientes') return ['Pendiente', 'Pago parcial'].includes(estadoEconomico(operacion));
+  if (filtro === 'deuda') return deudaExigible(operacion);
+  if (filtro === 'vencido') return deudaExigible(operacion) && !!operacion.vence_en && operacion.vence_en < ahora;
+  return estadoEconomico(operacion) === filtro;
+}
 export function dineroFinanzas(importe: number, moneda: string) { return new Intl.NumberFormat('es-AR',{style:'currency',currency:moneda}).format(importe); }
 
 /** Las correcciones por error no representan dinero real; las devoluciones sí. */

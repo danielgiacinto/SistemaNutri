@@ -265,6 +265,27 @@ Hobby no retiene ese rango histórico; no se interpretó como ausencia de ejecuc
 
 ## Revisión de diseño en localhost
 
+### Filtros y distribución adaptable de cobros (11/11/2026)
+
+«Pendientes» incluye saldos sin pagar y pagos parciales de turnos programados,
+confirmados o completados. «Deudas de consultas atendidas» conserva la regla de
+deuda exigible; «Vencidos» solo considera esas deudas. Los turnos cancelados,
+ausentes, saldados, gratuitos y bonificados quedan fuera de Pendientes.
+El indicador superior se llama «Deuda de consultas atendidas» para distinguirlo
+de los saldos de turnos que todavía no se atendieron. El resumen del listado
+muestra la cantidad y el saldo de los resultados efectivamente filtrados.
+
+La vista elige tabla o tarjetas según el ancho disponible del panel, incluyendo
+el espacio ocupado por el menú lateral. La tabla usa columnas proporcionadas,
+saldo alineado a la derecha y acción compacta con nombre accesible. Las tarjetas
+ordenan paciente/servicio, saldo, fecha, estado y acción, sin repetir insignias.
+Se revisaron 390, 1081 y 1440 px sin desbordamiento horizontal.
+
+Con los datos de Daniel: Pendientes mostró dos resultados por ARS 65.000, Pagado
+dos por saldo cero, y Deudas de consultas atendidas ninguno. Se probaron además
+exclusiones, pagos parciales y vencimientos. `npm run verificar` aprobado:
+**249 pruebas en 35 archivos**, lint, tipos y compilación. Cambios en localhost.
+
 ### Envío inmediato y portal del paciente (11/11/2026)
 
 - «Enviar recordatorio ahora» reclama únicamente el aviso del turno del profesional

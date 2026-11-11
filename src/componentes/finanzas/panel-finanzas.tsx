@@ -2,7 +2,7 @@
 import { InsigniaCobro } from "@/componentes/comunes/insignia-estado";
 import { useState } from 'react';
 import { Plus, Settings2, Wallet, ReceiptText, SlidersHorizontal } from 'lucide-react';
-import { CONFIGURACION_FINANCIERA_INICIAL, dineroFinanzas, estadoEconomico, deudaExigible, saldoOperacion, movimientosEfectivos, type DatosFinanzas, type ConfiguracionFinanciera } from '@/tipos/finanzas';
+import { CONFIGURACION_FINANCIERA_INICIAL, dineroFinanzas, estadoEconomico, coincideEstadoCobro, deudaExigible, saldoOperacion, movimientosEfectivos, type DatosFinanzas, type ConfiguracionFinanciera, type OperacionConsultorio } from '@/tipos/finanzas';
 import { EstadoVacio } from '@/componentes/comunes/estado-vacio';
 import { cn } from '@/lib/utilidades';
 import { CampoFinanciero as Campo, estiloCampoFinanzas as estilo, FormularioFinanzas } from './formulario-finanzas';
@@ -13,7 +13,7 @@ const dinero=(valor:number)=>dineroFinanzas(valor,'ARS');
 export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{datos:DatosFinanzas;pacienteId?:string;vistaInicial?:string;zona:string}) {
   const [vista,fijarVista]=useState(vistaInicial==='resumen'?'cobros':vistaInicial);
   const [busqueda,fijarBusqueda]=useState('');
-  const [estado,fijarEstado]=useState(!pacienteId?'deuda':'');
+  const [estado,fijarEstado]=useState(!pacienteId?'pendientes':'');
   const [servicio,fijarServicio]=useState('');
   const [desde,fijarDesde]=useState('');const [hasta,fijarHasta]=useState('');
   const [minimo,fijarMinimo]=useState('');const [maximo,fijarMaximo]=useState('');
@@ -27,12 +27,12 @@ export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{dat
   const saldoPendiente=pendientes.reduce((s,o)=>s+saldoOperacion(o),0);
   const efectivos=movimientosEfectivos(datos).filter(m=>m.moneda==='ARS'&&fecha(m.fecha).startsWith(mes));
   const total=(tipo:'ingreso'|'egreso')=>efectivos.filter(m=>m.tipo===tipo).reduce((s,m)=>s+m.importe,0);
-  const filas=datos.operaciones.filter(o=>o.moneda==='ARS'&&(!pacienteId||o.paciente_id===pacienteId)&&o.paciente.toLocaleLowerCase().includes(busqueda.toLocaleLowerCase())&&(!servicio||o.servicio_nombre===servicio)&&(!desde||fecha(o.inicio)>=desde)&&(!hasta||fecha(o.inicio)<=hasta)&&(!minimo||saldoOperacion(o)>=Number(minimo))&&(!maximo||saldoOperacion(o)<=Number(maximo))&&(!antiguedad||(o.vence_en&&new Date(datos.ahora).getTime()-new Date(o.vence_en).getTime()>=Number(antiguedad)*86400000))&&(!estado||(estado==='deuda'?deudaExigible(o):estado==='vencido'?deudaExigible(o)&&!!o.vence_en&&o.vence_en<datos.ahora:estadoEconomico(o)===estado))).sort((a,b)=>orden==='importe'?saldoOperacion(b)-saldoOperacion(a):a.inicio.localeCompare(b.inicio));
+  const filas=datos.operaciones.filter(o=>o.moneda==='ARS'&&(!pacienteId||o.paciente_id===pacienteId)&&o.paciente.toLocaleLowerCase().includes(busqueda.toLocaleLowerCase())&&(!servicio||o.servicio_nombre===servicio)&&(!desde||fecha(o.inicio)>=desde)&&(!hasta||fecha(o.inicio)<=hasta)&&(!minimo||saldoOperacion(o)>=Number(minimo))&&(!maximo||saldoOperacion(o)<=Number(maximo))&&(!antiguedad||(o.vence_en&&new Date(datos.ahora).getTime()-new Date(o.vence_en).getTime()>=Number(antiguedad)*86400000))&&coincideEstadoCobro(o,estado,datos.ahora)).sort((a,b)=>orden==='importe'?saldoOperacion(b)-saldoOperacion(a):a.inicio.localeCompare(b.inicio));
   const movimientos=datos.movimientos.filter(m=>m.moneda==='ARS'&&(!desde||fecha(m.fecha)>=desde)&&(!hasta||fecha(m.fecha)<=hasta)&&(!tipo||m.tipo===tipo)&&(!categoria||m.categoria.toLowerCase().includes(categoria.toLowerCase()))&&(!medio||m.medio===medio));
-  return <div className="min-w-0 space-y-6">
+  return <div className="@container/finanzas min-w-0 space-y-6">
     {!pacienteId&&<>
       <div className="grid gap-5 rounded-2xl border bg-card p-5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:p-6">
-        {[["Ingresos del mes",total('ingreso')],["Pendiente de cobro",saldoPendiente],["Egresos del mes",total('egreso')]].map(([nombre,importe])=><div key={nombre} className="sm:px-6 sm:first:pl-0 sm:last:pr-0"><p className="text-xs text-muted-foreground">{nombre}</p><p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">{dinero(Number(importe))}</p></div>)}
+        {[["Ingresos del mes",total('ingreso')],["Deuda de consultas atendidas",saldoPendiente],["Egresos del mes",total('egreso')]].map(([nombre,importe])=><div key={nombre} className="sm:px-6 sm:first:pl-0 sm:last:pr-0"><p className="text-xs text-muted-foreground">{nombre}</p><p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">{dinero(Number(importe))}</p></div>)}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <nav className="flex gap-1" aria-label="Secciones de finanzas">{[['cobros','Cobros'],['movimientos','Caja']].map(([valor,etiqueta])=><button type="button" key={valor} aria-current={vista===valor?'page':undefined} onClick={()=>fijarVista(valor)} className={cn('border-b-2 px-3 py-2.5 text-sm font-medium transition-colors',vista===valor?'border-primary text-foreground':'border-transparent text-muted-foreground hover:text-foreground')}>{etiqueta}</button>)}</nav>
@@ -40,9 +40,9 @@ export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{dat
       </div>
     </>}
     {(pacienteId||vista==='cobros')&&<section className="overflow-hidden rounded-2xl border bg-card">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b p-5">
-        <div><h2 className="font-semibold">{pacienteId?'Pagos y deudas':'Cobros de consultas'}</h2><p className="mt-1 text-xs text-muted-foreground">{pendientes.length} {pendientes.length===1?'consulta pendiente':'consultas pendientes'} · {dinero(saldoPendiente)}</p></div>
-        <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap"><input aria-label="Buscar paciente" className={cn(estilo,'w-full sm:w-44')} value={busqueda} onChange={e=>fijarBusqueda(e.target.value)} placeholder="Buscar paciente…"/><select aria-label="Estado económico" className={cn(estilo,'w-full sm:w-auto')} value={estado} onChange={e=>fijarEstado(e.target.value)}><option value="deuda">Pendientes</option><option value="">Todo el historial</option><option value="vencido">Vencidos</option>{['Pago parcial','Pagado','Pagado anticipadamente','Sin cargo','Bonificado','Anticipo por resolver'].map(e=><option key={e}>{e}</option>)}</select></div>
+      <div className="grid gap-4 border-b p-4 sm:p-5 @min-[880px]/finanzas:grid-cols-[1fr_1.5fr] @min-[880px]/finanzas:items-center">
+        <div><h2 className="font-semibold">{pacienteId?'Pagos y deudas':'Cobros de consultas'}</h2><p className="mt-1 text-xs text-muted-foreground">{filas.length} {filas.length===1?'resultado':'resultados'} · Saldo {dinero(filas.reduce((s,o)=>s+saldoOperacion(o),0))}</p></div>
+        <div className="grid w-full min-w-0 gap-2 @min-[520px]/finanzas:grid-cols-2"><input aria-label="Buscar paciente" className={cn(estilo,'w-full')} value={busqueda} onChange={e=>fijarBusqueda(e.target.value)} placeholder="Buscar paciente…"/><select aria-label="Estado económico" className={cn(estilo,'w-full')} value={estado} onChange={e=>fijarEstado(e.target.value)}><option value="pendientes">Pendientes</option><option value="deuda">Deudas de consultas atendidas</option><option value="">Todo el historial</option><option value="vencido">Vencidos</option>{['Pago parcial','Pagado','Pagado anticipadamente','Sin cargo','Bonificado','Anticipo por resolver'].map(e=><option key={e}>{e}</option>)}</select></div>
       </div>
       <details className="border-b px-5 py-3"><summary className="flex w-fit cursor-pointer items-center gap-2 text-xs text-muted-foreground"><SlidersHorizontal className="size-3.5"/>Más filtros</summary><div className="grid gap-3 py-4 sm:grid-cols-2 lg:grid-cols-3"><Campo etiqueta="Servicio"><select className={estilo} value={servicio} onChange={e=>fijarServicio(e.target.value)}><option value="">Todos</option>{[...new Set(datos.operaciones.map(o=>o.servicio_nombre))].map(s=><option key={s}>{s}</option>)}</select></Campo>
         <Campo etiqueta="Orden"><select className={estilo} value={orden} onChange={e=>fijarOrden(e.target.value)}><option value="antiguas">Consultas más antiguas</option><option value="importe">Mayor saldo</option></select></Campo>
@@ -50,21 +50,17 @@ export function PanelFinanzas({datos,pacienteId,vistaInicial='cobros',zona}:{dat
         <Campo etiqueta="Saldo mínimo"><input type="number" min="0" value={minimo} onChange={e=>fijarMinimo(e.target.value)} className={estilo}/></Campo><Campo etiqueta="Saldo máximo"><input type="number" min="0" value={maximo} onChange={e=>fijarMaximo(e.target.value)} className={estilo}/></Campo>
         <Campo etiqueta="Días de atraso mínimos"><input type="number" min="0" value={antiguedad} onChange={e=>fijarAntiguedad(e.target.value)} className={estilo}/></Campo></div></details>
       {!filas.length?<EstadoVacio icono={ReceiptText} titulo="No hay cobros para mostrar" descripcion="Los cobros de tus consultas aparecerán acá. Podés cambiar el filtro para ver todo el historial."/>:<div>
-        <ul className="divide-y lg:hidden" aria-label="Cobros de consultas">
-          {filas.map(o=><li key={o.id} className="min-w-0 space-y-4 p-5">
-            <div className="space-y-1 wrap-anywhere">
-              <p className="font-medium">{o.paciente}</p>
-              <p className="text-sm text-muted-foreground">{o.servicio_nombre}</p>
+        <ul className="divide-y @min-[760px]/finanzas:hidden" aria-label="Cobros de consultas">
+          {filas.map(o=><li key={o.id} className="min-w-0 space-y-4 p-4 sm:p-5">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+              <div className="min-w-0"><p className="font-medium wrap-anywhere">{o.paciente}</p><p className="mt-1 text-sm text-muted-foreground wrap-anywhere">{o.servicio_nombre}</p></div>
+              <div className="text-right"><p className="text-xs text-muted-foreground">Saldo</p><p className="mt-1 text-base font-semibold tabular-nums">{dinero(saldoOperacion(o))}</p></div>
             </div>
-            <dl className="grid grid-cols-2 gap-4 text-sm">
-              <div className="min-w-0"><dt className="text-xs text-muted-foreground">Consulta</dt><dd className="mt-1">{fecha(o.inicio)}</dd></div>
-              <div className="min-w-0"><dt className="text-xs text-muted-foreground">Saldo</dt><dd className="mt-1 font-semibold tabular-nums wrap-anywhere">{dinero(saldoOperacion(o))}</dd></div>
-              <div className="col-span-2"><dt className="sr-only">Estado</dt><dd><InsigniaCobro estado={estadoEconomico(o)} />{deudaExigible(o)&&o.vence_en&&o.vence_en<datos.ahora&&<p className="mt-1 text-xs text-destructive">Vencido · {fecha(o.vence_en)}</p>}</dd></div>
-            </dl>
-            <CobroRapido mostrarEstado={false} zona={zona} turnoId={o.turno_id} estado={estadoEconomico(o)} inicial={datos}/>
+            <p className="text-xs text-muted-foreground">Consulta · {new Intl.DateTimeFormat('es-AR',{dateStyle:'medium',timeZone:zona}).format(new Date(o.inicio))}</p>
+            <div className="flex flex-wrap items-center justify-between gap-3"><EstadoCobroFila operacion={o} ahora={datos.ahora}/><CobroRapido mostrarEstado={false} zona={zona} turnoId={o.turno_id} inicial={datos}/></div>
           </li>)}
         </ul>
-        <div className="hidden overflow-x-auto lg:block"><table className="w-full text-left text-sm"><thead className="bg-muted/25 text-xs text-muted-foreground"><tr>{['Paciente y servicio','Consulta','Saldo','Estado',''].map(t=><th key={t} className="px-5 py-3 font-medium">{t}</th>)}</tr></thead><tbody className="divide-y">{filas.map(o=><tr key={o.id}><td className="px-5 py-4"><p className="font-medium">{o.paciente}</p><p className="mt-1 text-xs text-muted-foreground">{o.servicio_nombre}</p></td><td className="px-5 py-4 whitespace-nowrap text-muted-foreground">{fecha(o.inicio)}</td><td className="px-5 py-4 font-medium tabular-nums whitespace-nowrap">{dinero(saldoOperacion(o))}</td><td className="px-5 py-4"><InsigniaCobro estado={estadoEconomico(o)} />{deudaExigible(o)&&o.vence_en&&o.vence_en<datos.ahora&&<p className="mt-1 text-xs text-destructive">Vencido · {fecha(o.vence_en)}</p>}</td><td className="px-5 py-4 text-right"><CobroRapido mostrarEstado={false} zona={zona} turnoId={o.turno_id} estado={estadoEconomico(o)} inicial={datos}/></td></tr>)}</tbody></table></div>
+        <div className="hidden @min-[760px]/finanzas:block"><table className="w-full table-fixed text-left text-sm"><caption className="sr-only">Cobros de consultas filtrados por estado de pago</caption><thead className="bg-muted/25 text-xs text-muted-foreground"><tr><th scope="col" className="w-[29%] px-4 py-3 font-medium">Paciente y servicio</th><th scope="col" className="w-[18%] px-3 py-3 font-medium">Consulta</th><th scope="col" className="w-[18%] px-3 py-3 text-right font-medium">Saldo</th><th scope="col" className="w-[22%] px-3 py-3 font-medium">Estado de pago</th><th scope="col" className="w-[13%] px-3 py-3"><span className="sr-only">Acciones</span></th></tr></thead><tbody className="divide-y">{filas.map(o=><tr key={o.id} className="align-middle"><td className="px-4 py-4"><p className="font-medium wrap-anywhere">{o.paciente}</p><p className="mt-1 text-xs text-muted-foreground wrap-anywhere">{o.servicio_nombre}</p></td><td className="px-3 py-4 text-xs text-muted-foreground">{new Intl.DateTimeFormat('es-AR',{dateStyle:'medium',timeZone:zona}).format(new Date(o.inicio))}</td><td className="px-3 py-4 text-right font-semibold tabular-nums whitespace-nowrap">{dinero(saldoOperacion(o))}</td><td className="px-3 py-4"><EstadoCobroFila operacion={o} ahora={datos.ahora}/></td><td className="px-3 py-4 text-right"><CobroRapido mostrarEstado={false} compacto zona={zona} turnoId={o.turno_id} inicial={datos}/></td></tr>)}</tbody></table></div>
       </div>}
     </section>}
     {!pacienteId&&vista==='movimientos'&&<section className="overflow-hidden rounded-2xl border bg-card">
@@ -94,4 +90,9 @@ function EditorMovimiento({configuracion,alGuardar}:{configuracion:Configuracion
   return <FormularioFinanzas accion="movimiento" fijos={{moneda:'ARS'}} alGuardar={alGuardar} boton="Registrar movimiento">
       <div className="grid gap-3 sm:grid-cols-2"><Campo etiqueta="Tipo"><select name="tipo" className={estilo}><option value="egreso">Egreso</option><option value="ingreso">Ingreso</option></select></Campo><Campo etiqueta="Categoría"><input name="categoria" placeholder="Alquiler, materiales, otros…" className={estilo} required/></Campo><Campo etiqueta="Descripción"><input name="descripcion" className={estilo} required/></Campo><Campo etiqueta="Importe"><input name="importe" type="number" min="0.01" step="0.01" className={estilo} required/></Campo><Campo etiqueta="Fecha efectiva"><input name="fecha" type="datetime-local" className={estilo} required/></Campo><Campo etiqueta="Medio"><select name="medio" className={estilo}>{configuracion.medios.map(m=><option key={m}>{m}</option>)}</select></Campo></div>
     </FormularioFinanzas>;
+}
+
+function EstadoCobroFila({operacion,ahora}:{operacion:OperacionConsultorio;ahora:string}) {
+ const vencido=deudaExigible(operacion)&&!!operacion.vence_en&&operacion.vence_en<ahora;
+ return <div className="min-w-0 space-y-1 [&_[data-slot=badge]]:max-w-full [&_[data-slot=badge]]:whitespace-normal [&_[data-slot=badge]]:text-left [&_[data-slot=badge]]:leading-snug"><InsigniaCobro estado={estadoEconomico(operacion)}/>{vencido?<p className="text-xs text-destructive">Vencido</p>:['programado','confirmado'].includes(operacion.estado_turno)&&saldoOperacion(operacion)>0?<p className="text-xs text-muted-foreground">Por atender</p>:null}</div>;
 }
