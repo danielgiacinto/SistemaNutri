@@ -386,12 +386,14 @@ del panel fluida y gráficos legibles con teclado, lector de pantalla y en celul
 
 ## Fase 11: Biblioteca del profesional
 
-Estado al 12/11/2026: **11A y 11B implementadas** como módulo propio en `/panel/biblioteca`.
+Estado al 12/11/2026: **11A, 11B y 11C implementadas** como módulo propio en `/panel/biblioteca`.
 Incluye fuentes, alimentos, grupos, platos y platos por grupos del consultorio,
 con búsqueda, versiones, copias, archivo y RLS. Incluye cálculos por porción/100 g,
 rendimientos y preparaciones reutilizables con ingredientes versionados (11B).
-Suplementos y catálogo base curado (11C) siguen pendientes. Alcance y evidencia
-en [Biblioteca propia](biblioteca.md). El Inicio conserva el diseño anterior.
+Incluye suplementos con medidas y variantes de mezcla, y catálogo base de nueve
+recursos trazables, de solo lectura y con copia transaccional al consultorio (11C).
+Migración aplicada en desarrollo; 341 pruebas y build aprobados. Alcance y evidencia
+en [Biblioteca](biblioteca.md). La integración con planes sigue en fase 12.
 
 La Biblioteca aporta recursos reutilizables sin mezclar la información de un paciente
 con el catálogo compartido. Las siguientes secciones conservan la referencia y el

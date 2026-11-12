@@ -1,6 +1,6 @@
 import "server-only";
 import type { ClienteSupabase } from "@/lib/supabase/servidor";
-import type { DetalleBiblioteca, FiltroBiblioteca, ListadoBiblioteca } from "@/tipos/biblioteca";
+import type { DetalleBiblioteca, FiltroBiblioteca, ListadoBiblioteca, OrigenBiblioteca } from "@/tipos/biblioteca";
 import type { Json } from "@/tipos/base-datos";
 import { mensajeDeNegocio, registrarError } from "@/lib/errores";
 import type { ResultadoAccion } from "@/tipos/acciones";
@@ -15,9 +15,10 @@ const MENSAJES = {
   fraccion_invalida: "Las partes deben sumar 100%.",
   composicion_vacia: "Agregá al menos un ingrediente o grupo.",
   datos_invalidos: "Revisá los datos y las cantidades del recurso.",
+  base_no_disponible: "Este recurso base o uno de sus insumos fue retirado. Elegí otra versión disponible.",
 };
 export async function listarBiblioteca(cliente: ClienteSupabase, filtros: FiltroBiblioteca): Promise<ListadoBiblioteca> {
-  const { data, error } = await cliente.rpc("consultar_biblioteca", { p_filtros: filtros as unknown as Json });
+  const { data, error } = await cliente.rpc(filtros.origen === "base" ? "consultar_catalogo_base" : "consultar_biblioteca", { p_filtros: filtros as unknown as Json });
   if (error) { registrarError("listar_biblioteca", error); throw new Error("No se pudo cargar la biblioteca."); }
   const listado = data as unknown as ListadoBiblioteca;
   return { ...listado, recursos: listado.recursos.map(recurso => {
@@ -26,11 +27,20 @@ export async function listarBiblioteca(cliente: ClienteSupabase, filtros: Filtro
     return resumen.calculo ? { ...resumen, calculo: { ...resumen.calculo, ingredientes: [] } } : resumen;
   }) };
 }
-export async function obtenerRecursoBiblioteca(cliente: ClienteSupabase, id: string, version?: number): Promise<DetalleBiblioteca | null> {
-  const { data, error } = await cliente.rpc("obtener_recurso_biblioteca", { p_id: id, ...(version ? { p_version: version } : {}) });
+export async function obtenerRecursoBiblioteca(cliente: ClienteSupabase, id: string, version?: number, origen: OrigenBiblioteca = "propio"): Promise<DetalleBiblioteca | null> {
+  const { data, error } = await cliente.rpc(origen === "base" ? "obtener_recurso_base" : "obtener_recurso_biblioteca", { p_id: id, ...(version ? { p_version: version } : {}) });
   if (error) { registrarError("recurso_biblioteca", error); throw new Error("No se pudo cargar el recurso."); }
   const detalle = data as unknown as DetalleBiblioteca | null;
   return detalle ? { ...detalle, recurso: resumirRecursoBiblioteca(detalle.recurso, detalle.relaciones) } : null;
+}
+export async function copiarBaseBiblioteca(cliente: ClienteSupabase, id: string, version: number): Promise<ResultadoAccion<{ id: string }>> {
+  const { data, error } = await cliente.rpc("copiar_recurso_base", { p_id: id, p_version: version });
+  if (error) {
+    const mensaje = mensajeDeNegocio(error, MENSAJES);
+    if (!mensaje) registrarError("copiar_base_biblioteca", error);
+    return { ok: false, mensaje: mensaje ?? "No pudimos copiar el recurso. Intentá nuevamente." };
+  }
+  return { ok: true, datos: { id: data } };
 }
 export async function modificarBiblioteca(cliente: ClienteSupabase, accion: string, datos: Json): Promise<ResultadoAccion<{ id: string }>> {
   const { data, error } = await cliente.rpc("gestionar_biblioteca", { p_accion: accion, p_datos: datos });

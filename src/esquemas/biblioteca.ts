@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { esFechaIso } from "@/lib/fechas";
 import { esquemaUuid, textoObligatorio } from "./comunes";
-import { TIPOS_BIBLIOTECA } from "@/tipos/biblioteca";
+import { CATEGORIAS_SUPLEMENTOS, TIPOS_BIBLIOTECA, UNIDADES_MEDIDA } from "@/tipos/biblioteca";
 
 const texto = z.string().trim().max(6000).default("");
 const nutricion = (maximo: number) => z.number().min(0).max(maximo).nullable();
@@ -10,14 +10,18 @@ const relacionIngrediente = z.object({ referencia_id: esquemaUuid, referencia_ve
 const relacionGrupo = z.object({ referencia_id: esquemaUuid, referencia_version: z.number().int().positive(), detalle: z.object({ fraccion: z.number().min(.0001).max(1), ejemplos: z.string().max(1000), coccion: z.string().max(1000) }).strict() }).strict();
 const sinRelaciones = z.array(z.never()).max(0).default([]);
 const receta = { contenido: z.object({ porciones: z.number().min(.001).max(10000), peso_final: z.number().min(.001).max(1000000).nullable(), preparacion: texto, alternativas: texto, notas: texto }).strict(), relaciones: z.array(relacionIngrediente).min(1,"Agregá al menos un ingrediente.").max(100) };
+const variante = z.object({ nombre: textoObligatorio("el nombre de la variante",100), medidas: z.number().min(.001).max(1000), preparacion: z.string().trim().max(2000) }).strict();
+const relacionSuplemento = z.object({ referencia_id: esquemaUuid, referencia_version: z.number().int().positive(), detalle: z.object({ cantidad: z.number().min(.001).max(1000000), unidad: z.enum(["g","ml","unidad","porcion"]), gramos_por_unidad: z.number().min(.001).max(1000000).nullable(), rendimiento: z.literal(1), variante: z.number().int().min(0).max(9) }).strict().refine(d => d.unidad !== "g" || d.gramos_por_unidad === 1, "La conversión de gramos debe ser 1.") }).strict();
 export const esquemaRecursoBiblioteca = z.discriminatedUnion("tipo", [
   z.object({ ...identidad, tipo: z.literal("fuente"), contenido: z.object({ referencia: textoObligatorio("la referencia",1000), version: textoObligatorio("la versión o fecha de referencia",1000), licencia: textoObligatorio("la licencia o permiso de uso",1000), base: textoObligatorio("la base de cálculo",1000), fecha: z.string().refine(v => !v || esFechaIso(v), "La fecha no es válida."), notas: texto }).strict(), relaciones: sinRelaciones }).strict(),
   z.object({ ...identidad, tipo: z.literal("alimento"), fuente_id: esquemaUuid, fuente_version: z.number().int().positive(), contenido: z.object({ energia: nutricion(10000), proteinas: nutricion(100), carbohidratos: nutricion(100), grasas: nutricion(100), notas: texto }).strict().refine(c => (c.proteinas ?? 0) + (c.carbohidratos ?? 0) + (c.grasas ?? 0) <= 100, "Los macronutrientes no pueden superar 100 g en total por 100 g de alimento."), relaciones: sinRelaciones }).strict(),
   z.object({ ...identidad, tipo: z.literal("grupo"), contenido: z.object({ ejemplos: texto, coccion: texto, notas: texto }).strict(), relaciones: sinRelaciones }).strict(),
+  z.object({ ...identidad, categoria: z.enum(CATEGORIAS_SUPLEMENTOS), tipo: z.literal("suplemento"), fuente_id: esquemaUuid, fuente_version: z.number().int().positive(), contenido: z.object({ marca: z.string().trim().max(100), medida_cantidad: z.number().min(.001).max(1000000), medida_unidad: z.enum(UNIDADES_MEDIDA), energia: nutricion(1000000), proteinas: nutricion(1000000), carbohidratos: nutricion(1000000), grasas: nutricion(1000000), variantes: z.array(variante).min(1).max(10).refine(filas => new Set(filas.map(f => f.nombre.toLocaleLowerCase("es-AR"))).size === filas.length,"Los nombres de las variantes no pueden repetirse."), notas: texto }).strict(), relaciones: z.array(relacionSuplemento).max(100) }).strict().refine(d => d.relaciones.every(f => f.detalle.variante < d.contenido.variantes.length), "Revisá la variante de cada ingrediente.").refine(d => d.contenido.medida_unidad !== "g" || (d.contenido.proteinas ?? 0) + (d.contenido.carbohidratos ?? 0) + (d.contenido.grasas ?? 0) <= d.contenido.medida_cantidad, "Los macronutrientes no pueden superar el peso de la medida declarada."),
   z.object({ ...identidad, tipo: z.literal("plato"), ...receta }).strict(),
   z.object({ ...identidad, tipo: z.literal("preparacion"), ...receta }).strict(),
   z.object({ ...identidad, tipo: z.literal("plato_grupos"), contenido: z.object({ preparacion: texto, alternativas: texto, notas: texto }).strict(), relaciones: z.array(relacionGrupo).min(1,"Agregá al menos un grupo.").max(100).refine(filas => Math.abs(filas.reduce((s, f) => s + f.detalle.fraccion, 0) - 1) <= .000001, "Las partes deben sumar 100%.") }).strict(),
 ]).refine(d => (!d.id && !d.version) || (!!d.id && !!d.version), "La versión del recurso no es válida.");
 
-export const esquemaFiltroBiblioteca = z.object({ tipo: z.enum(TIPOS_BIBLIOTECA).default("plato"), q: z.string().trim().max(100).default(""), categoria: z.string().max(80).default(""), archivados: z.boolean().default(false), pagina: z.number().int().min(1).max(100000).default(1) });
+export const esquemaOrigenBiblioteca = z.enum(["propio","base"]);
+export const esquemaFiltroBiblioteca = z.object({ tipo: z.enum(TIPOS_BIBLIOTECA).default("plato"), q: z.string().trim().max(100).default(""), categoria: z.string().max(80).default(""), archivados: z.boolean().default(false), pagina: z.number().int().min(1).max(100000).default(1), origen: esquemaOrigenBiblioteca.default("propio") });
 export const esquemaOperacionBiblioteca = z.object({ accion: z.enum(["duplicar", "archivar", "restaurar"]), id: esquemaUuid, version: z.number().int().positive() }).strict();

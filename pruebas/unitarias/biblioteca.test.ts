@@ -27,7 +27,7 @@ describe("Biblioteca: validación y sesión", () => {
   });
   it("exige sesión en todas las acciones, incluidas lecturas y buscadores", async () => {
     vi.mocked(requerirProfesional).mockRejectedValue(new Error("sin_sesion"));
-    for (const ejecutar of [()=>guardarRecursoBiblioteca(alimento),()=>leerRecursoBiblioteca(id),()=>operarRecursoBiblioteca("archivar",id,1),()=>buscarOpcionesBiblioteca("alimento","",1)]) await expect(ejecutar()).rejects.toThrow("sin_sesion");
+    for (const ejecutar of [()=>guardarRecursoBiblioteca(alimento),()=>leerRecursoBiblioteca(id),()=>leerRecursoBiblioteca(id,1,"base"),()=>operarRecursoBiblioteca("duplicar",id,1,"base"),()=>operarRecursoBiblioteca("archivar",id,1),()=>buscarOpcionesBiblioteca("alimento","",1)]) await expect(ejecutar()).rejects.toThrow("sin_sesion");
     expect(crearClienteServidor).not.toHaveBeenCalled();
   });
 });

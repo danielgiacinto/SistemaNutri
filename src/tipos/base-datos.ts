@@ -1541,6 +1541,9 @@ export type Database = {
       gestionar_biblioteca: { Args: { p_accion: string; p_datos: Json }; Returns: string }
       consultar_biblioteca: { Args: { p_filtros?: Json }; Returns: Json }
       obtener_recurso_biblioteca: { Args: { p_id: string; p_version?: number }; Returns: Json }
+      consultar_catalogo_base: { Args: { p_filtros?: Json }; Returns: Json }
+      obtener_recurso_base: { Args: { p_id: string; p_version?: number }; Returns: Json }
+      copiar_recurso_base: { Args: { p_id: string; p_version: number }; Returns: string }
       reclamar_recordatorio_manual: { Args: { p_turno: string; p_clave: string }; Returns: Json }
       consultar_mis_cobros: { Args: never; Returns: Json }
       gestionar_finanzas: { Args: { p_accion: string; p_datos: Json }; Returns: Json }

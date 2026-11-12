@@ -50,7 +50,7 @@ entrega real de recordatorios. Ver [Finanzas del consultorio](docs/finanzas-cons
 | 8 | Alta rápida de pacientes y modales de Nuevo turno, Servicios y precios y Horarios | ✅ Implementada; migración de contacto/cobertura aplicada en Supabase hospedado el 12/11/2026. Código disponible en el despliegue de producción del commit `9380b58`. |
 | 9 | Agenda y Caja integradas, tarjetas de consultas y catálogo de servicios | ✅ Cerrada el 12/11/2026. 9A–9D publicadas, migración del catálogo aplicada y guardado verificado en la web publicada, con revisión móvil y 291 pruebas aprobadas. Visibilidad pública de precios/reservas en fase 13. |
 | 10 | Inicio operativo, tareas e indicadores | Planificada |
-| 11 | Biblioteca reutilizable | 11A implementada: fuentes, alimentos, grupos y platos propios con versiones y aislamiento por consultorio. Cálculos y preparaciones (11B), suplementos y catálogo base (11C) pendientes. Ver [Biblioteca](docs/biblioteca.md). |
+| 11 | Biblioteca reutilizable | 11A–11C implementadas: catálogo propio, cálculos y preparaciones, suplementos con variantes y nueve recursos base trazables, protegidos y duplicables. Ver [Biblioteca](docs/biblioteca.md). |
 | 12 | Planes visuales y plantillas | Planificada |
 | 13 | Reservas, calendario e integraciones opcionales | Planificada |
 
@@ -237,8 +237,8 @@ deuda y egresos, coherentes con el gráfico y adaptadas al ancho disponible.
 El relevamiento funcional y estético completo, decisiones, dependencias, casos
 límite y criterios de aceptación están en
 [Hoja de ruta a partir de la referencia](docs/hoja-de-ruta-experiencia-consultorio.md).
-La fase 9 está cerrada y disponible en el entorno actual. Biblioteca tiene 11A y
-11B implementadas; las fases 10, 12, 13 y la subfase 11C siguen **planificadas**:
+La fase 9 está cerrada y disponible en el entorno actual. Biblioteca tiene 11A,
+11B y 11C implementadas; las fases 10, 12 y 13 siguen **planificadas**:
 
 1. **Fase 9 — Agenda y Caja integradas.** Mantener fecha/período al cambiar entre
    Día/Semana/Mes/Caja; tira de días, tarjetas de consultas, resumen mensual con
@@ -254,9 +254,9 @@ La fase 9 está cerrada y disponible en el entorno actual. Biblioteca tiene 11A 
    composición química, preparaciones y grupos de alimentos; buscadores, categorías,
    procedencia, porciones, macros e ingredientes. Contenido propio editable y recursos
    base duplicables; datos con fuente y licencia verificadas, sin copiar el catálogo ajeno.
-   **11A y 11B implementadas:** catálogo propio, cálculos por porción/100 g y
-   preparaciones reutilizables con versiones guardadas. Pendiente 11C: suplementos
-   y catálogo base curado. Ver [Biblioteca](docs/biblioteca.md).
+   **11A, 11B y 11C implementadas:** catálogo propio, cálculos por porción/100 g,
+   preparaciones reutilizables, suplementos con variantes y catálogo base de nueve
+   recursos trazables y duplicables. Ver [Biblioteca](docs/biblioteca.md).
 4. **Fase 12 — Planes visuales.** Catálogo de plantillas separado de las entregas
    por paciente; filtros y etiquetas; grillas semanales, opciones por comida, bloques
    de texto e indicaciones; guardar grillas, copiar sin alterar originales, vista
@@ -347,7 +347,7 @@ Guía completa (Supabase, Google OAuth, Vercel, primer superadministrador) en
 - [Despliegue y variables de entorno](docs/despliegue.md)
 - [Facturación y Mercado Pago](docs/facturacion.md)
 - [Finanzas del consultorio — Fase 7](docs/finanzas-consultorio.md)
-- [Biblioteca propia y cálculos — Fases 11A y 11B](docs/biblioteca.md)
+- [Biblioteca, cálculos, suplementos y catálogo base — Fase 11](docs/biblioteca.md)
 - [Avances y criterios de cierre del MVP](docs/avances.md)
 - [Hoja de ruta de experiencia — Fases 8 a 13](docs/hoja-de-ruta-experiencia-consultorio.md)
 - [Seguridad y privacidad](docs/seguridad-y-privacidad.md)

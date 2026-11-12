@@ -40,5 +40,17 @@ export function calcularComposicionBiblioteca(recurso: RecursoBiblioteca, relaci
 export function resumirRecursoBiblioteca(recurso: RecursoBiblioteca, relaciones = recurso.relaciones ?? []): RecursoBiblioteca {
   const { relaciones: insumos, ...resumen } = recurso;
   void insumos;
+  if (recurso.tipo === "suplemento") return { ...resumen, calculo_suplemento: calcularSuplemento(recurso, relaciones) };
   return recurso.tipo === "plato" || recurso.tipo === "preparacion" ? { ...resumen, calculo: calcularComposicionBiblioteca(recurso, relaciones) } : resumen;
+}
+
+export function calcularSuplemento(recurso: RecursoBiblioteca, relaciones: RelacionBiblioteca[]): NonNullable<RecursoBiblioteca["calculo_suplemento"]> {
+  const producto = Object.fromEntries(NUTRIENTES_BIBLIOTECA.map(clave => [clave,recurso.contenido[clave] ?? null])) as NutrientesBiblioteca;
+  return { producto, variantes: (recurso.contenido.variantes ?? []).map((variante, indice) => {
+    const insumos = relaciones.filter(f => f.detalle.variante === indice);
+    const agregados = insumos.length ? calcularComposicionBiblioteca(recurso, insumos).total : { energia: 0, proteinas: 0, carbohidratos: 0, grasas: 0 };
+    const aporteProducto = escalar(producto, positivo(variante.medidas) ? variante.medidas : null);
+    const mezcla = Object.fromEntries(NUTRIENTES_BIBLIOTECA.map(clave => [clave, aporteProducto[clave] == null || agregados[clave] == null ? null : aporteProducto[clave] + agregados[clave]])) as NutrientesBiblioteca;
+    return { producto: aporteProducto, agregados, mezcla };
+  }) };
 }

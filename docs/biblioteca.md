@@ -1,4 +1,4 @@
-# Biblioteca del consultorio — 11A y 11B
+# Biblioteca del consultorio — Fase 11
 
 La primera entrega de fase 11 está en `/panel/biblioteca`, con acceso profesional
 desde el menú. El Inicio conserva su diseño anterior.
@@ -21,12 +21,13 @@ desde el menú. El Inicio conserva su diseño anterior.
   edición explícita, duplicación, archivo, restauración e historial de versiones.
   Abrir o cerrar el detalle conserva filtros y devuelve el foco al listado.
 
-Los platos y las preparaciones ya calculan energía y macronutrientes según sus
-ingredientes guardados (11B). Suplementos y catálogo base curado/licenciado siguen
-pendientes en 11C. La integración con bloques y publicaciones de planes corresponde a fase 12.
+Los platos y las preparaciones calculan energía y macronutrientes según sus
+ingredientes guardados (11B). 11C incorpora suplementos con variantes y un catálogo
+base versionado y duplicable. La integración con bloques y publicaciones de planes corresponde a fase 12.
 Los planes actuales y sus publicaciones conservan su funcionamiento.
 
-Esta entrega no incorpora cargas de imágenes, archivos ni catálogos externos.
+Esta entrega no incorpora cargas de imágenes ni archivos. Los datos iniciales de
+USDA se limitan a los dos alimentos documentados abajo; no hay importación masiva.
 
 ## Modelo y autorización
 
@@ -136,3 +137,112 @@ foco al recurso comprobado y consola sin errores ni advertencias durante el reco
 A 390 px, documento y diálogo sin desborde horizontal medido. Los cuatro recursos
 ficticios quedaron archivados conservando su historia; no se modificaron pacientes,
 planes ni movimientos financieros. Se restauró el ancho habitual del navegador.
+
+## Suplementos y catálogo base — 11C
+
+**Suplementos** admite nombre, marca opcional, categoría (Proteína, Creatina,
+Aminoácidos, Ganador, Vitaminas, Colágeno u Otro), etiquetas, fuente versionada,
+medida declarada y energía/proteínas/carbohidratos/grasas por esa medida. La medida
+puede expresarse en g, ml, scoop, cápsula, comprimido o unidad: no se convierte
+automáticamente entre unidades ni constituye una dosis recomendada.
+
+Cada producto tiene entre una y diez variantes con nombre, cantidad de medidas y
+preparación escrita. Se pueden agregar alimentos o preparaciones propios con sus
+versiones, cantidad y conversión a gramos. La ficha separa **Producto**, **Agregados
+registrados** y **Mezcla completa**. No se calculan nutrientes a partir del texto
+de preparación: si se utiliza leche o yogur, hay que registrarlos como ingredientes.
+Sin agregados registrados, el aporte adicional es cero y se aclara ese alcance.
+Un nutriente desconocido o una conversión ausente se propaga como **Sin dato**;
+se conservan los ceros informados. No hay dosificación, frecuencia ni indicaciones
+terapéuticas automáticas. La incorporación a planes y su instantánea al publicar
+siguen perteneciendo a fase 12.
+
+El suplemento exige una fuente propia activa. La fuente de la etiqueta y cada
+ingrediente se guardan como copias de la versión seleccionada, incluyendo los
+insumos de una preparación. Editar la fuente o el ingrediente en el catálogo no
+cambia la composición de un suplemento guardado. Cambiar notas conserva las
+versiones seleccionadas. Duplicar, archivar, restaurar y controlar concurrencia
+reutilizan las garantías de 11A/11B.
+
+### Colección inicial y procedencia
+
+**Mis recursos** y **Catálogo base** son alcances separados. Cada uno conserva
+buscador, categoría, estante y paginación de 25 recursos. El catálogo base es de
+solo lectura: copiar crea un recurso editable y nuevas copias de sus dependencias,
+con identificadores del consultorio. No modifica ni fusiona recursos existentes.
+La procedencia conserva el identificador y la versión base, referencia y licencia.
+También se conserva al duplicar una copia propia. Retirar la última versión base
+retira el recurso de nuevas selecciones sin volver a publicar la anterior; las
+copias propias y el historial ya guardado se conservan.
+
+La edición inicial contiene **nueve recursos**:
+
+- Una fuente USDA FoodData Central, SR Legacy.
+- Banana cruda, parte comestible: FDC **173944**, 89 kcal, 1,09 g de proteínas,
+  22,84 g de carbohidratos y 0,33 g de grasas por 100 g.
+- Leche entera sin vitaminas A/D agregadas: FDC **172217**, 61 kcal, 3,15 g de
+  proteínas, 4,78 g de carbohidratos y 3,27 g de grasas por 100 g.
+- Tres grupos descriptivos originales: frutas, lácteos y vegetales.
+- Una preparación original de banana pisada, un plato original de banana con leche
+  y un esquema original de fruta y lácteo por partes, para revisión y personalización.
+
+Los dos registros se consultaron directamente en la API oficial el **12/11/2026**.
+USDA publica FoodData Central bajo **CC0 1.0 Universal**, con atribución solicitada:
+[guía oficial](https://fdc.nal.usda.gov/api-guide/). Los registros exactos están en
+[Banana, FDC 173944](https://fdc.nal.usda.gov/fdc-app.html#/food-details/173944/nutrients)
+y [Leche, FDC 172217](https://fdc.nal.usda.gov/fdc-app.html#/food-details/172217/nutrients).
+Los carbohidratos son **por diferencia**, no se presentan como carbohidratos
+disponibles. La leche está expresada por **100 g**, no por 100 ml; es una referencia
+genérica estadounidense y no se equipara automáticamente a productos locales.
+La fuente y las notas de cada alimento conservan estas aclaraciones.
+
+Los textos y recetas restantes son originales de esta entrega y permiten
+reutilización y edición dentro de la aplicación. Los grupos no implican
+equivalencias nutricionales ni indicaciones individuales. No se importaron SARA 2,
+ARGENFOODS ni el catálogo de otro servicio. No se incluyeron suplementos de marcas
+sin una etiqueta y un permiso de uso revisados.
+
+### Base de datos y verificación
+
+La migración `20261112180000_biblioteca_suplementos_catalogo_base.sql` amplía la
+validación de recursos y relaciones para suplementos, conserva las restricciones
+de composición y agrega:
+
+- `biblioteca_base_versiones`: instantáneas de plataforma identificadas por id y
+  versión, con referencia, licencia y retiro explícito.
+- `biblioteca_procedencias_base`: procedencia inmutable para clientes de las copias
+  del consultorio, con referencia compuesta a recurso/consultorio y versión base.
+- RPC de listado y detalle base con RLS, y copia transaccional autenticada que lee
+  exclusivamente las instantáneas base persistidas. No recibe contenido del cliente.
+
+Ambas tablas tienen RLS por operación: lectura solo con membresía y cobertura
+vigentes, e INSERT/UPDATE/DELETE denegados a autenticados. Anónimos no tienen acceso.
+La función recursiva interna de copia no es ejecutable por clientes. Las escrituras
+propias pasan por las validaciones habituales y toman usuario/consultorio de sesión.
+Si un insumo base está retirado, la copia completa falla y revierte sus dependencias.
+
+Pruebas específicas: composición y mezclas, fracciones de medida, datos ausentes,
+fuente y referencias cruzadas, variantes inválidas, historial, duplicación,
+archivo/restauración, colección válida, permisos por operación, aislamiento,
+copias de todos los tipos iniciales, versiones posteriores, retiro, atomicidad,
+concurrencia existente y paginación. El estado de aplicación y los recorridos
+visuales se registran en [Despliegue](despliegue.md).
+
+Verificación del 12/11/2026: `npm run verificar` completo aprobado con **341 pruebas
+en 45 archivos**, lint, tipos y build. La migración se aplicó y registró en una
+transacción al Supabase de desarrollo vinculado `zisacjleazvlrklwilap`, con
+autorización del usuario. Se comprobaron RLS, cuatro políticas por tabla nueva,
+ausencia de escritura directa, denegación anónima y de ejecución del auxiliar interno.
+
+En localhost se comprobó el plato base de 180,5 kcal, su copia con ingredientes y
+fuentes propios y la edición independiente. Un suplemento ficticio con 120 kcal
+por medida y una variante con 200 g de la leche de referencia sumó 122 kcal de
+agregados y **242 kcal de mezcla**. Cambiar a ml sin conversión produjo Sin dato
+solo para el agregado y la mezcla; el producto conservó 120 kcal y la versión
+anterior conservó 242 kcal. Duplicación y cancelación del editor verificadas.
+
+Ficha y variantes revisadas a 390 px sin desborde horizontal medido (documento de
+390 px y diálogo de 341 px), y consola sin errores ni advertencias en el recorrido.
+Se restauró el ancho habitual. Los ocho recursos propios de ensayo, incluidos los
+insumos de la copia base, quedaron archivados con sus versiones; los nueve recursos
+base siguen disponibles. No se modificaron pacientes, planes ni finanzas.

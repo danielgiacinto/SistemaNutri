@@ -1,5 +1,26 @@
 # Despliegue
 
+## Biblioteca 11C — 12/11/2026
+
+- Suplementos con fuente versionada, medida declarada y variantes que separan
+  producto, agregados registrados y mezcla. Catálogo base de nueve recursos
+  protegidos y duplicables con sus dependencias y procedencia.
+- `npm run verificar` final aprobado: lint, tipos, **341 pruebas en 45 archivos**
+  y build. Se ejecutó fuera del sandbox por el bloqueo de escritura de `.next`
+  ya observado en este entorno.
+- Con autorización explícita del usuario, `20261112180000_biblioteca_suplementos_catalogo_base.sql`
+  se aplicó y registró en una transacción al Supabase de desarrollo vinculado
+  `zisacjleazvlrklwilap`. Las tablas nuevas tienen RLS y cuatro políticas cada una;
+  anónimos sin lectura/copia, autenticados sin escritura directa ni acceso al auxiliar.
+- Recorrido autenticado en localhost: base de solo lectura, copia con insumos
+  propios, edición independiente, suplemento ficticio de 120 kcal + 122 kcal de
+  agregado = 242 kcal de mezcla, duplicación, conversión ausente y versión anterior
+  intacta. Ficha y variantes a 390 px sin desborde horizontal; consola sin errores
+  ni advertencias observados. Los ocho recursos propios de ensayo quedaron archivados;
+  los nueve recursos base siguen disponibles.
+- Esta entrega no se desplegó en Vercel. La evidencia y los límites de las fuentes
+  se describen en [Biblioteca](biblioteca.md).
+
 ## Biblioteca 11B — 12/11/2026
 
 - Implementados cálculos por porción/100 g, peso informado o estimado con

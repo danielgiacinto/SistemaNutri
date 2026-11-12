@@ -5,12 +5,17 @@ import { guardarRecursoBiblioteca } from "@/acciones/biblioteca";
 import { type DetalleBiblioteca, type RecursoBiblioteca, type RelacionBiblioteca, type TipoBiblioteca } from "@/tipos/biblioteca";
 import { Button } from "@/componentes/ui/button";
 import { SelectorRecurso } from "./selector-recurso";
+import { EditorSuplemento } from "./editor-suplemento";
 
 const estilo = "w-full min-w-0 rounded-lg border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 function Campo({ titulo, children }: { titulo: string; children: ReactNode }) { return <label className="block min-w-0 space-y-1.5"><span className="text-xs font-medium">{titulo}</span>{children}</label>; }
 type FilaEditor = RelacionBiblioteca & { clave: string };
 
-export function EditorRecurso({ tipo, inicial, alGuardar, alCancelar, alCambiar, alPendiente }: { tipo: TipoBiblioteca; inicial?: DetalleBiblioteca; alGuardar: (id: string) => void; alCancelar: () => void; alCambiar: () => void; alPendiente: (pendiente: boolean) => void }) {
+export type PropiedadesEditorRecurso = { tipo: TipoBiblioteca; inicial?: DetalleBiblioteca; alGuardar: (id: string) => void; alCancelar: () => void; alCambiar: () => void; alPendiente: (pendiente: boolean) => void };
+export function EditorRecurso(propiedades: PropiedadesEditorRecurso) {
+  return propiedades.tipo === "suplemento" ? <EditorSuplemento {...propiedades}/> : <EditorRecursoGeneral {...propiedades}/>;
+}
+function EditorRecursoGeneral({ tipo, inicial, alGuardar, alCancelar, alCambiar, alPendiente }: PropiedadesEditorRecurso) {
   const esReceta = tipo === "plato" || tipo === "preparacion";
   const recurso = inicial?.recurso;
   const contenido = recurso?.contenido;
