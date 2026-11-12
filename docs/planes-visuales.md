@@ -1,9 +1,10 @@
 # Planes visuales — Fase 12
 
-Implementación local del 12 de noviembre de 2026. La fase todavía no está cerrada:
-su migración **no está aplicada al Supabase vinculado** y el código no se desplegó.
-La revisión automática rechazó la ejecución remota porque cambia el esquema y
-el historial de migraciones sin autorización explícita en este pedido.
+Implementación en desarrollo del 12 de noviembre de 2026. La migración **está
+aplicada y registrada en el Supabase vinculado** `zisacjleazvlrklwilap`, con la
+autorización explícita del usuario. El catálogo y editor están habilitados en
+localhost. El código todavía no se desplegó y la fase conserva los pendientes
+de verificación detallados al final.
 
 ## Experiencia implementada
 
@@ -57,10 +58,10 @@ consultorio; las instantáneas aportadas por el navegador se descartan. Se conse
 la versión de los insumos y la variante elegida, sin depender de cambios posteriores.
 El portal mantiene su RLS: solo publicaciones del paciente vinculado y activo.
 
-Hasta aplicar la migración se mantiene el listado y el editor anterior, para que
-los planes existentes sigan funcionando. La migración debe ejecutarse en una
-transacción y registrarse solo después de aplicarse correctamente; no reparar el
-historial completo ni usar `db push --include-all`.
+El código conserva compatibilidad con entornos anteriores a la migración. Esta
+se aplicó y registró en una única transacción, sin reparar el historial completo
+ni usar `db push --include-all`. Verificados RLS, cuatro políticas, ausencia de
+escritura directa autenticada, bloqueo anónimo de las RPC y una plantilla base.
 
 ## Verificación y pendientes
 
@@ -68,6 +69,11 @@ historial completo ni usar `db push --include-all`.
 build de producción. La primera ejecución encontró un bloqueo EPERM de Windows
 al crear un segmento de `.next`; la repetición con permisos locales completó
 la verificación sin cambios funcionales adicionales.
+
+Tras aplicar la migración se corrigió la carga progresiva del detalle del plan
+con un límite explícito de Suspense y se agregó identificación de paciente y
+consultorio a la impresión de versiones anteriores. La verificación completa
+volvió a aprobarse con **353 pruebas**, lint, tipos y build.
 
 - Pruebas de base: copia independiente, bases protegidas, permisos directos,
   anonimato, aislamiento, destinatario, publicación atómica, reintento idempotente,
@@ -84,7 +90,27 @@ la verificación sin cambios funcionales adicionales.
 - Verificado el listado real contra el esquema anterior: los planes existentes siguen
   accesibles mientras la migración está pendiente.
 
-Pendientes de cierre: autorización y aplicación de la migración, recorrido real
-plantilla → borrador → publicación → portal → nueva versión, prueba de impresión
-con documentos largos y despliegue. La exportación actual usa el diálogo del navegador;
-el correo opcional de 12D queda para una entrega posterior.
+## Validación después de aplicar la migración
+
+- Prueba remota dentro de BEGIN/ROLLBACK, con las RPC de la aplicación y el rol
+  autenticado: crear y duplicar plantilla, asignar como copia, modificar original
+  sin alterar el borrador, incorporar Biblioteca con instantánea del servidor,
+  publicar, reintentar sin duplicar, rechazar destinatario incorrecto sin guardar
+  parcialmente, detectar revisión desactualizada, cambiar Biblioteca/borrador sin
+  alterar la publicación y republicar una segunda versión.
+- Con identidad de paciente en la misma transacción se verificó que no lee
+  borradores ni plantillas privadas y sí sus publicaciones, con el contenido nuevo.
+  Todo se revirtió. Consulta posterior: cero plantillas, planes o cuentas de ensayo.
+- En navegador con la sesión existente: catálogo real habilitado, selector de
+  paciente sin crear borrador, listado de los tres planes anteriores, apertura en
+  editor visual, vista previa e impresión de una versión histórica con identificación.
+  Sin errores nuevos tras corregir la carga progresiva. No se modificaron planes existentes.
+- La revisión automática rechazó crear cuentas y consultorio ficticios mediante
+  la API administrativa por no estar esa operación explícitamente autorizada.
+  No se crearon cuentas; se usó la alternativa transaccional descrita arriba.
+
+Pendientes de cierre: recorrido de escritura completo en navegador con cuentas
+dedicadas, prueba de impresión con documentos largos y despliegue. La exportación
+actual usa el diálogo del navegador; el correo opcional de 12D queda para una
+entrega posterior. No es necesario reaplicar manualmente la migración al publicar
+contra este mismo Supabase.

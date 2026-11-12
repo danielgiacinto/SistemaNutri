@@ -479,11 +479,12 @@ de aislamiento de catálogo y archivos.
 
 ## Fase 12: Planes visuales y reutilización
 
-**Avance del 12/11/2026:** 12A–12C implementadas en código y pruebas locales, con
+**Avance del 12/11/2026:** 12A–12C implementadas en desarrollo, con
 una primera entrega de 12D por impresión/guardado PDF desde el navegador.
-La migración remota fue rechazada por la revisión automática por requerir
-autorización explícita. No se considera cerrada la fase: faltan aplicarla,
-validar el circuito autenticado completo y la impresión de documentos extensos.
+Migración aplicada con autorización explícita; permisos y pruebas transaccionales
+remotas aprobados, sin datos de ensayo persistentes. No se considera cerrada la fase:
+faltan el recorrido de escritura en navegador con cuentas dedicadas, la impresión
+de documentos extensos y el despliegue.
 El correo opcional no está implementado. Detalle en [Planes visuales](planes-visuales.md).
 
 Nutrisfera ya tiene planes por paciente, comidas e indicaciones, borradores y
