@@ -2,10 +2,10 @@
 
 import { useId, useRef, useState, useTransition } from "react";
 import { buscarOpcionesBiblioteca, leerRecursoBiblioteca } from "@/acciones/biblioteca";
-import { ESTANTES_BIBLIOTECA, type ListadoBiblioteca, type RecursoBiblioteca, type TipoBiblioteca } from "@/tipos/biblioteca";
+import { ESTANTES_BIBLIOTECA, type DetalleBiblioteca, type ListadoBiblioteca, type RecursoBiblioteca, type TipoBiblioteca } from "@/tipos/biblioteca";
 import { Button } from "@/componentes/ui/button";
 
-export function SelectorRecurso({ tipo, alElegir }: { tipo: TipoBiblioteca; alElegir: (recurso: RecursoBiblioteca) => void }) {
+export function SelectorRecurso({ tipo, alElegir }: { tipo: TipoBiblioteca; alElegir: (recurso: RecursoBiblioteca, detalle: DetalleBiblioteca) => void }) {
   const id = useId();
   const [busqueda, fijarBusqueda] = useState("");
   const [consulta, fijarConsulta] = useState("");
@@ -30,7 +30,7 @@ export function SelectorRecurso({ tipo, alElegir }: { tipo: TipoBiblioteca; alEl
       try {
         const detalle = await leerRecursoBiblioteca(opcion.id);
         if (!detalle || detalle.recurso.archivado_en) { fijarError("El recurso ya no está activo. Volvé a buscar."); return; }
-        alElegir(detalle.recurso);
+        alElegir(detalle.recurso, detalle);
       } catch { fijarError("No se pudo cargar el recurso elegido. Intentá nuevamente."); }
     });
   }

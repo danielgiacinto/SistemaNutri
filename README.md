@@ -6,7 +6,7 @@ clínica, mediciones, objetivos, planes alimentarios y portal del paciente.
 
 ## Estado
 
-Última actualización: 11 de noviembre de 2026. Las fases **1 a 4 y 6** están
+Última actualización: 12 de noviembre de 2026. Las fases **1 a 4 y 6** están
 implementadas para probar en desarrollo: registro, clínica, portal, planes alimentarios
 y desafíos de Comunidad. La aplicación corre en **localhost** y en el despliegue
 público de pruebas **https://nutrisfera.vercel.app**, con Supabase hospedado de desarrollo.
@@ -50,8 +50,8 @@ entrega real de recordatorios. Ver [Finanzas del consultorio](docs/finanzas-cons
 | 8 | Alta rápida de pacientes y modales de Nuevo turno, Servicios y precios y Horarios | ✅ Implementada; migración de contacto/cobertura aplicada en Supabase hospedado el 12/11/2026. Código disponible en el despliegue de producción del commit `9380b58`. |
 | 9 | Agenda y Caja integradas, tarjetas de consultas y catálogo de servicios | ✅ Cerrada el 12/11/2026. 9A–9D publicadas, migración del catálogo aplicada y guardado verificado en la web publicada, con revisión móvil y 291 pruebas aprobadas. Visibilidad pública de precios/reservas en fase 13. |
 | 10 | Inicio operativo, tareas e indicadores | Planificada |
-| 11 | Biblioteca reutilizable | 11A–11C implementadas: catálogo propio, cálculos y preparaciones, suplementos con variantes y nueve recursos base trazables, protegidos y duplicables. Ver [Biblioteca](docs/biblioteca.md). |
-| 12 | Planes visuales y plantillas | Planificada |
+| 11 | Biblioteca reutilizable | ✅ Completada en desarrollo el 12/11/2026 (11A–11C): catálogo propio, cálculos y preparaciones, suplementos con variantes y nueve recursos base trazables, protegidos y duplicables. Migraciones aplicadas; 341 pruebas, lint, tipos y build aprobados, con revisión móvil. Integración con planes en fase 12; despliegue de 11B/11C en Vercel pendiente. Ver [Biblioteca](docs/biblioteca.md). |
+| 12 | Planes visuales y plantillas | Implementada localmente: catálogo, editor por bloques, Biblioteca, grillas reutilizables, vista previa, publicación versionada e impresión para guardar PDF. Migración remota y recorrido real pendientes de autorización; sin desplegar. Ver [Planes visuales](docs/planes-visuales.md). |
 | 13 | Reservas, calendario e integraciones opcionales | Planificada |
 
 ### Qué se puede probar ahora (profesional)
@@ -237,8 +237,9 @@ deuda y egresos, coherentes con el gráfico y adaptadas al ancho disponible.
 El relevamiento funcional y estético completo, decisiones, dependencias, casos
 límite y criterios de aceptación están en
 [Hoja de ruta a partir de la referencia](docs/hoja-de-ruta-experiencia-consultorio.md).
-La fase 9 está cerrada y disponible en el entorno actual. Biblioteca tiene 11A,
-11B y 11C implementadas; las fases 10, 12 y 13 siguen **planificadas**:
+La fase 9 está cerrada y disponible en el entorno actual. La fase 11 está
+**completada en desarrollo (11A–11C)**. La fase 12 está implementada localmente,
+pendiente de autorizar su migración y completar el recorrido real. Las fases 10 y 13 siguen **planificadas**:
 
 1. **Fase 9 — Agenda y Caja integradas.** Mantener fecha/período al cambiar entre
    Día/Semana/Mes/Caja; tira de días, tarjetas de consultas, resumen mensual con
@@ -254,13 +255,15 @@ La fase 9 está cerrada y disponible en el entorno actual. Biblioteca tiene 11A,
    composición química, preparaciones y grupos de alimentos; buscadores, categorías,
    procedencia, porciones, macros e ingredientes. Contenido propio editable y recursos
    base duplicables; datos con fuente y licencia verificadas, sin copiar el catálogo ajeno.
-   **11A, 11B y 11C implementadas:** catálogo propio, cálculos por porción/100 g,
+   **✅ Completada en desarrollo (11A–11C):** catálogo propio, cálculos por porción/100 g,
    preparaciones reutilizables, suplementos con variantes y catálogo base de nueve
    recursos trazables y duplicables. Ver [Biblioteca](docs/biblioteca.md).
 4. **Fase 12 — Planes visuales.** Catálogo de plantillas separado de las entregas
    por paciente; filtros y etiquetas; grillas semanales, opciones por comida, bloques
    de texto e indicaciones; guardar grillas, copiar sin alterar originales, vista
-   previa y publicación versionada en el portal. PDF/correo como subfase posterior.
+   previa y publicación versionada en el portal. **Implementada localmente** junto
+   con impresión/guardado PDF desde el navegador; correo opcional y validación de
+   impresión extensa pendientes. Ver [Planes visuales](docs/planes-visuales.md).
 5. **Fase 13 — Integraciones opcionales.** Reservas online, Google Calendar,
    importación asistida e IA con revisión profesional. WhatsApp queda pendiente de
    definición de proveedor, consentimiento y funcionamiento; no bloquear las fases

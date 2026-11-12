@@ -29,12 +29,12 @@ async function ContenidoSeccion({ params }: Pick<PageProps<"/panel/pacientes/[pa
         titulo="Planes alimentarios"
         descripcion="El borrador se puede cambiar tranquilo. El paciente ve solo la versión que publiques."
         acciones={
-          <Button asChild>
+          <div className="flex flex-wrap gap-2"><Button asChild variant="outline"><Link href={`/panel/planes?vista=plantillas&paciente=${paciente.id}`}>Usar plantilla</Link></Button><Button asChild>
             <Link href={`/panel/pacientes/${paciente.id}/planes/nuevo`}>
               <Plus aria-hidden="true" />
-              Nuevo plan
+              Crear desde cero
             </Link>
-          </Button>
+          </Button></div>
         }
       />
       {planes.length === 0 ? (

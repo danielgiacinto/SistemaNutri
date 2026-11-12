@@ -1157,3 +1157,23 @@ html.dark .campo-tarjeta-mp iframe {
   .inicio-palta-pegajosa { position: relative; top: 0; min-height: 0; }
   .inicio-palta-progreso, .inicio-palta-indicacion { display: none; }
 }
+
+@media print {
+  :root, :root.dark, :root[data-paleta], :root.dark[data-paleta] {
+    --background: var(--correo-tarjeta);
+    --foreground: var(--correo-texto);
+    --card: var(--correo-tarjeta);
+    --card-foreground: var(--correo-texto);
+    --primary: var(--correo-primario);
+    --muted-foreground: var(--correo-secundario);
+    --muted: var(--correo-fondo);
+    --border: var(--correo-borde);
+    --accent: var(--correo-acento);
+    --accent-foreground: var(--correo-primario);
+  }
+  @page { size: A4; margin: 16mm; }
+  .documento-plan { border: 0; border-radius: 0; padding: 0; box-shadow: none; }
+  .documento-plan h3, .documento-plan h4 { break-after: avoid; }
+  .documento-plan .comida-documento { break-inside: avoid; }
+  .documento-plan { print-color-adjust: exact; }
+}

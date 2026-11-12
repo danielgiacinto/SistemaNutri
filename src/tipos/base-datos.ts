@@ -1027,6 +1027,11 @@ export type Database = {
       }
       planes_alimentarios: {
         Row: {
+          documento: Json | null
+          revision: number
+          plantilla_id: string | null
+          ultima_solicitud: string | null
+          ultima_respuesta: Json | null
           actualizado_en: string
           cambios_sin_publicar: boolean
           consultorio_id: string
@@ -1098,6 +1103,8 @@ export type Database = {
       }
       planes_publicaciones: {
         Row: {
+          documento: Json | null
+          presentacion: Json | null
           consultorio_id: string
           id: string
           indicaciones: string | null
@@ -1538,6 +1545,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consultar_plantillas_planes: { Args: Record<string, never>; Returns: Json }
+      gestionar_plantilla_plan: { Args: { p_accion: string; p_datos: Json }; Returns: Json }
+      crear_plan_desde_plantilla: { Args: { p_plantilla_id: string; p_paciente_id: string }; Returns: string }
+      guardar_plan_visual: { Args: { p_datos: Json }; Returns: Json }
       gestionar_biblioteca: { Args: { p_accion: string; p_datos: Json }; Returns: string }
       consultar_biblioteca: { Args: { p_filtros?: Json }; Returns: Json }
       obtener_recurso_biblioteca: { Args: { p_id: string; p_version?: number }; Returns: Json }

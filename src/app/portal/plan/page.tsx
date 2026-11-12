@@ -9,6 +9,10 @@ import { ETIQUETAS_MOMENTO_COMIDA } from "@/configuracion/clinica";
 import { formatearFechaHora } from "@/lib/fechas";
 import { obtenerFichaPortal } from "@/servicios/portal";
 import { Skeleton } from "@/componentes/ui/skeleton";
+import Link from "next/link";
+import { Button } from "@/componentes/ui/button";
+import { DocumentoDelPlan } from "@/componentes/planes/documento-plan";
+import type { DocumentoPlan } from "@/tipos/plan-visual";
 
 export const metadata: Metadata = { title: "Mi plan" };
 
@@ -37,7 +41,9 @@ async function Contenido() {
         />
       ) : (
         planes.map((plan) => (
-          <article key={plan.id} className="space-y-4 rounded-2xl border bg-card p-5">
+          <div key={plan.id} className="space-y-3">
+          <div className="flex justify-end"><Button asChild variant="outline" className="min-h-10"><Link href={`/planes/impresion/${plan.id}`} target="_blank">Imprimir / guardar PDF<span className="sr-only">, abre en otra pestaña</span></Link></Button></div>
+          {plan.documento ? <DocumentoDelPlan titulo={plan.titulo} indicaciones={plan.indicaciones ?? ""} documento={plan.documento as unknown as DocumentoPlan} paciente={ficha ? `${ficha.nombre} ${ficha.apellido}` : undefined} profesional={(plan.presentacion as { profesional?: string } | null)?.profesional ?? ficha?.consultorioNombre} version={plan.numero} fecha={formatearFechaHora(new Date(plan.publicada_en), zona)} /> : <article className="space-y-4 rounded-2xl border bg-card p-5">
             <div>
               <h2 className="text-lg font-semibold">{plan.titulo}</h2>
               <p className="text-sm text-muted-foreground">
@@ -53,7 +59,8 @@ async function Contenido() {
                 </li>
               ))}
             </ul>
-          </article>
+          </article>}
+          </div>
         ))
       )}
     </div>
