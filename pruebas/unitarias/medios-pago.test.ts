@@ -74,4 +74,15 @@ describe("distribución de ingresos por medios de pago", () => {
     expect(resumirMediosPago(datos([]), zona)).toEqual([]);
     expect(resumirMediosPago(datos([movimiento("solo-egreso", 10, "Efectivo", { tipo: "egreso" })]), zona)).toEqual([]);
   });
+
+  it("usa el mismo corte temporal que el resumen de caja sin perder correcciones posteriores", () => {
+    const prueba = datos([
+      movimiento("vigente", 200, "Efectivo"),
+      movimiento("futuro", 100, "Transferencia", { fecha: "2026-11-12T12:00:00Z" }),
+      movimiento("erroneo", 300, "Efectivo"),
+      movimiento("correccion", 300, "Efectivo", { tipo: "egreso", compensacion_de: "erroneo", fecha: "2026-11-12T12:00:00Z" }),
+    ]);
+    const resumen = resumirMediosPago(prueba, zona, prueba.ahora);
+    expect(resumen).toMatchObject([{ importe: 200, cantidad: 1, medios: [{ medio: "Efectivo", porcentaje: 100 }] }]);
+  });
 });

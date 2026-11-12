@@ -108,17 +108,22 @@ Endpoint: `GET /api/finanzas/recordatorios`, protegido por `CRON_SECRET` mediant
 `Authorization: Bearer …`. No depende del navegador ni de Mercado Pago.
 `vercel.json` define una ejecución diaria a las 12:00 UTC (09:00 de Argentina),
 compatible con Vercel Hobby. En ese plan puede ejecutarse entre las 09:00 y las
-09:59 de Argentina. El envío se realiza en la siguiente ejecución posterior al plazo,
-por lo que los avisos y reintentos pueden quedar pendientes hasta la ejecución del
-día siguiente; si se acumulan más de 10 avisos, el resto espera ejecuciones posteriores.
-Para procesarlos con mayor frecuencia se necesita un plan o scheduler que lo permita.
+09:59 de Argentina. El horario y el límite de 10 avisos por ejecución se conservan;
+no se garantiza enviar a todos los destinatarios si se supera ese límite.
 
-El profesional activa la función y configura los plazos (inicialmente 24 y 48 horas),
-texto, nombre e instrucciones. Además, debe registrar la autorización del paciente
-desde el detalle del cobro. No se infiere consentimiento del correo existente.
+El profesional solo activa o desactiva la función; la frecuencia automática es
+fija: como máximo un aviso diario por consulta atendida con deuda y autorización.
+Puede personalizar texto, nombre e instrucciones. La autorización del paciente se
+registra desde el detalle del cobro; no se infiere del correo existente.
+
+La migración `20261112120000_recordatorios_cobro_diarios.sql` implementa la frecuencia
+diaria y cancela los avisos automáticos pendientes del esquema anterior. Debe
+aplicarse en Supabase para activar este comportamiento. Los plazos históricos se
+conservan por compatibilidad de la base, pero ya no determinan los envíos.
 
 La preparación omite consultas gratuitas, bonificadas, saldadas o no atendidas. Una
-clave única por operación y plazo impide duplicar eventos. El trabajador reclama
+clave única por operación y fecha de Argentina impide duplicar el aviso del día.
+No se recuperan días omitidos ni se acumulan sus avisos. El trabajador reclama
 hasta 10 avisos con `FOR UPDATE SKIP LOCKED` y vuelve a consultar saldo y autorización
 inmediatamente antes de enviar. Un pago cancela futuros avisos pendientes. Los
 recordatorios manuales también requieren atención, saldo y consentimiento.

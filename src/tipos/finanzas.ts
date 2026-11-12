@@ -1,5 +1,5 @@
 export type ServicioConsultorio = { id: string; nombre: string; descripcion: string | null; precio: number; moneda: string; duracion_minutos: number | null; activo: boolean; aclaracion_paciente?: string };
-export type ConfiguracionFinanciera = { moneda: string; dias_vencimiento: number; recordatorios: boolean; plazos: number[]; instrucciones: string; texto_recordatorio: string; nombre_remitente: string; medios: string[]; nota_precios?: string };
+export type ConfiguracionFinanciera = { moneda: string; dias_vencimiento: number; recordatorios: boolean; instrucciones: string; texto_recordatorio: string; nombre_remitente: string; medios: string[]; nota_precios?: string };
 export type OperacionConsultorio = { id: string; turno_id: string; paciente_id: string; paciente: string; servicio_nombre: string; moneda: string; original: number; descuento: number; abonado: number; bonificado: boolean; motivo: string | null; vence_en: string | null; inicio: string; atendido_en: string | null; estado_turno: string };
 export type PagoConsultorio = { id: string; operacion_id: string; importe: number; fecha: string; medio: string; referencia: string | null; observaciones: string | null; revertido_en: string | null; motivo_reversion: string | null; tipo_reversion: string | null };
 export type MovimientoConsultorio = { id: string; pago_id: string | null; tipo: 'ingreso' | 'egreso'; categoria: string; descripcion: string; importe: number; moneda: string; medio: string; fecha: string; compensacion_de: string | null };
@@ -17,7 +17,7 @@ export type DatosFinanzas = {
   intentos: { id: string; recordatorio_id: string; fecha: string; resultado: string }[];
   atenciones: { paciente_id: string; fecha: string; servicio: string | null }[];
 };
-export const CONFIGURACION_FINANCIERA_INICIAL: ConfiguracionFinanciera = { moneda: 'ARS', dias_vencimiento: 0, recordatorios: false, plazos: [24,48], instrucciones: '', texto_recordatorio: 'Te recordamos que tenés un saldo pendiente. Comunicate con tu nutricionista para coordinar el pago.', nombre_remitente: 'Consultorio nutricional', medios: ['Efectivo','Transferencia','Tarjeta de débito','Tarjeta de crédito','Billetera virtual','Otro'] };
+export const CONFIGURACION_FINANCIERA_INICIAL: ConfiguracionFinanciera = { moneda: 'ARS', dias_vencimiento: 0, recordatorios: false, instrucciones: '', texto_recordatorio: 'Te recordamos que tenés un saldo pendiente. Comunicate con tu nutricionista para coordinar el pago.', nombre_remitente: 'Consultorio nutricional', medios: ['Efectivo','Transferencia','Tarjeta de débito','Tarjeta de crédito','Billetera virtual','Otro'] };
 export function saldoOperacion(operacion: OperacionConsultorio) { return Math.round((operacion.original-operacion.descuento-operacion.abonado)*100)/100; }
 export function estadoEconomico(operacion: OperacionConsultorio | undefined): string {
   if (!operacion) return 'Sin configurar';

@@ -16,7 +16,7 @@ export function FormularioFinanzas({accion,fijos={},children,boton='Guardar',alG
     const datos: Record<string,unknown>={...Object.fromEntries(campos),...fijos,accion};
     for (const campo of ['precio','importe','descuento','dias']) if (campo in datos) datos[campo]=Number(datos[campo]);
     for (const campo of ['activo','recordatorios','bonificado','autorizado']) if (formulario.elements.namedItem(campo)) datos[campo]=campos.get(campo)==='on';
-    for (const campo of ['plazos','medios']) if (typeof datos[campo]==='string') datos[campo]=String(datos[campo]).split(',').map(v=>campo==='plazos'?Number(v.trim()):v.trim()).filter(v=>v!=='');
+    if (typeof datos.medios==='string') datos.medios=datos.medios.split(',').map(v=>v.trim()).filter(Boolean);
     for (const campo of ['fecha','vence']) if (datos[campo]) datos[campo]=new Date(String(datos[campo])).toISOString();
     clave.current??=crypto.randomUUID(); datos.clave=clave.current;
     if (['servicio','servicio_catalogo'].includes(accion) && datos.id==='') datos.id=clave.current;

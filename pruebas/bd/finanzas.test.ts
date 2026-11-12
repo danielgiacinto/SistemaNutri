@@ -75,13 +75,13 @@ describe('finanzas de pacientes',()=>{
     await expect(comoUsuario(bd,usuario,tx=>tx.query('delete from public.pagos_consultorio'))).rejects.toThrow(/permission denied/);
   });
   it('prepara recordatorios sin duplicados y los cancela al saldar la deuda',async()=>{
-    const t=await crearTurno(servicio,'2027-01-04 17:00:00+00');
+    const t=await crearTurno(servicio,new Date(Date.now()-7200000).toISOString());
     await comoUsuario(bd,usuario,tx=>tx.query("update public.turnos set estado='completado' where id=$1",[t]));
     await accion('configuracion',{moneda:'ARS',dias:0,recordatorios:true,plazos:[24,48],instrucciones:'Contactar al consultorio',nombre:'Consultorio',texto:'Recordatorio',medios:['Efectivo']});
     await accion('consentimiento',{paciente,autorizado:true});
     await bd.exec('select public.preparar_recordatorios_cobro();select public.preparar_recordatorios_cobro()');
     const id=(await operacion(t)).id;
-    expect((await bd.query('select * from public.recordatorios_cobro where operacion_id=$1',[id])).rows).toHaveLength(2);
+    expect((await bd.query('select * from public.recordatorios_cobro where operacion_id=$1',[id])).rows).toHaveLength(1);
     await accion('pago',{turno:t,clave:randomUUID(),importe:40000,fecha:new Date().toISOString(),medio:'Efectivo'});
     expect((await bd.query<{estado:string}>('select estado from public.recordatorios_cobro where operacion_id=$1',[id])).rows.every(r=>r.estado==='cancelado')).toBe(true);
   });
@@ -100,14 +100,13 @@ describe('finanzas de pacientes',()=>{
     await expect(accion('ajuste',{turno,descuento:0,bonificado:false},colaborador)).rejects.toThrow(/sin_permiso/);
   });
   it('los recordatorios se reclaman una vez y se revalida el saldo antes del envío',async()=>{
-    const t=await crearTurno(servicio,'2027-01-04 19:00:00+00');
+    const t=await crearTurno(servicio,new Date(Date.now()-10800000).toISOString());
     await comoUsuario(bd,usuario,tx=>tx.query("update public.turnos set estado='completado' where id=$1",[t]));
     await bd.exec('select public.preparar_recordatorios_cobro()');
     const id=(await operacion(t)).id;
     await bd.query("update public.recordatorios_cobro set programado_en=now()-interval '1 minute' where operacion_id=$1",[id]);
-    await bd.query("update public.turnos set inicio=now()-interval '2 hours',fin=now()-interval '1 hour' where id=$1",[t]);
     const primer=(await bd.query<{lote:{id:string;reclamado_en:string}[]}>('select public.reclamar_recordatorios_cobro() as lote')).rows[0].lote;
-    expect(primer).toHaveLength(2);
+    expect(primer).toHaveLength(1);
     expect((await bd.query<{lote:unknown[]}>('select public.reclamar_recordatorios_cobro() as lote')).rows[0].lote).toHaveLength(0);
     await accion('pago',{turno:t,clave:randomUUID(),importe:10000,fecha:new Date().toISOString(),medio:'Efectivo'});
     expect((await bd.query<{datos:{saldo:number}}>('select public.validar_recordatorio_cobro($1) as datos',[primer[0].id])).rows[0].datos.saldo).toBe(30000);
@@ -122,6 +121,40 @@ describe('finanzas de pacientes',()=>{
     const lectura=await comoUsuario(bd,usuario,tx=>tx.query<{datos:{operaciones:{turno_id:string}[];atenciones:{fecha:string}[]}}>('select public.consultar_finanzas($1,null) as datos',[t]));
     expect(lectura.rows[0].datos.operaciones).toHaveLength(1);expect(lectura.rows[0].datos.atenciones).toHaveLength(0);
   });
+});
+
+describe('recordatorios automáticos diarios',()=>{
+ it('envía uno por día, no recupera días omitidos y no duplica al repetir el proceso',async()=>{
+  const t=await crearTurno(servicio,new Date(Date.now()-4*86400000).toISOString());
+  await bd.query("update public.turnos set estado='completado' where id=$1",[t]);
+  const id=(await operacion(t)).id;
+  await bd.exec('select public.preparar_recordatorios_cobro()');
+  await bd.query("update public.recordatorios_cobro set clave='automatico-diario-'||((now() at time zone 'America/Argentina/Buenos_Aires')::date-1),estado='enviado',enviado_en=now()-interval '1 day' where operacion_id=$1",[id]);
+  await bd.query("insert into public.recordatorios_cobro(operacion_id,consultorio_id,profesional_id,clave,programado_en) values($1,$2,$3,'automatico-48',now()-interval '2 days')",[id,consultorio,usuario]);
+  await bd.exec('select public.preparar_recordatorios_cobro();select public.preparar_recordatorios_cobro()');
+  const filas=(await bd.query<{estado:string;clave:string}>("select estado,clave from public.recordatorios_cobro where operacion_id=$1",[id])).rows;
+  expect(filas.filter(r=>r.estado==='pendiente')).toHaveLength(1);
+  expect(filas.find(r=>r.clave==='automatico-48')?.estado).toBe('cancelado');
+  await bd.query("update public.recordatorios_cobro set estado='enviado',enviado_en=now() where operacion_id=$1 and estado='pendiente'",[id]);
+  await bd.exec('select public.preparar_recordatorios_cobro()');
+  expect((await bd.query("select id from public.recordatorios_cobro where operacion_id=$1 and estado='pendiente'",[id])).rows).toHaveLength(0);
+ });
+ it('cancela pendientes al desactivar o revocar autorización y restringe la preparación al servicio',async()=>{
+  const t=await crearTurno(servicio,new Date(Date.now()-5*86400000).toISOString());
+  await bd.query("update public.turnos set estado='completado' where id=$1",[t]);
+  await bd.exec('select public.preparar_recordatorios_cobro()');
+  const id=(await operacion(t)).id;
+  await bd.query('update public.configuracion_financiera set recordatorios=false where profesional_id=$1',[usuario]);
+  await bd.exec('select public.preparar_recordatorios_cobro()');
+  expect((await bd.query<{estado:string}>('select estado from public.recordatorios_cobro where operacion_id=$1',[id])).rows[0].estado).toBe('cancelado');
+  await bd.query('update public.configuracion_financiera set recordatorios=true where profesional_id=$1',[usuario]);
+  await accion('consentimiento',{paciente,autorizado:false});
+  await bd.exec('select public.preparar_recordatorios_cobro()');
+  expect((await bd.query("select id from public.recordatorios_cobro where operacion_id=$1 and estado='pendiente'",[id])).rows).toHaveLength(0);
+  await accion('consentimiento',{paciente,autorizado:true});
+  await expect(comoUsuario(bd,usuario,tx=>tx.query('select public.preparar_recordatorios_cobro()'))).rejects.toThrow(/permission denied/);
+  await expect(comoAnonimo(bd,tx=>tx.query('select public.preparar_recordatorios_cobro()'))).rejects.toThrow(/permission denied/);
+ });
 });
 
 describe('envío inmediato y resumen para paciente',()=>{

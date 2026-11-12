@@ -19,5 +19,5 @@ export const esquemaFinanzas = z.discriminatedUnion('accion',[
   z.object({accion:z.literal('consentimiento'),paciente:id,autorizado:z.boolean()}),
   z.object({accion:z.literal('movimiento'),clave:id,tipo:z.enum(['ingreso','egreso']),categoria:texto.min(1).max(100),descripcion:texto.min(1).max(500),importe:dinero.refine(n=>n>0),moneda,medio:texto.min(1).max(100),fecha}),
   z.object({accion:z.literal('revertir_movimiento'),id,clave:id,motivo:texto.min(3).max(500)}),
-  z.object({accion:z.literal('configuracion'),moneda,dias:z.number().int().min(0).max(365),recordatorios:z.boolean(),plazos:z.array(z.number().int().min(1).max(8760)).min(1).max(5),instrucciones:texto.max(2000),texto:texto.min(1).max(2000),nombre:texto.min(1).max(100),medios:z.array(z.string().trim().min(1).max(100)).min(1).max(20)}),
+  z.object({accion:z.literal('configuracion'),moneda,dias:z.number().int().min(0).max(365),recordatorios:z.boolean(),instrucciones:texto.max(2000),texto:texto.min(1).max(2000),nombre:texto.min(1).max(100),medios:z.array(z.string().trim().min(1).max(100)).min(1).max(20)}),
 ]);

@@ -1,15 +1,15 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CalendarDays, CalendarRange, CalendarClock, Wallet, ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
+import { CalendarDays, CalendarRange, CalendarClock, ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import { cn } from "@/lib/utilidades";
 import { DIAS_SEMANA, ETIQUETAS_ESTADO_TURNO, type VistaAgenda } from "@/configuracion/clinica";
-import { agregarDias, fechaEnZona, formatearFechaIso, grillaMes, horaCortaEnZona, inicioDeMes, inicioDeSemana, instanteDesdeLocal, isoDiaSemana, minutosDesdeMedianoche, nombreMes } from "@/lib/fechas";
+import { agregarDias, fechaEnZona, formatearFechaIso, grillaMes, horaCortaEnZona, inicioDeMes, inicioDeSemana, instanteDesdeLocal, isoDiaSemana, minutosDesdeMedianoche } from "@/lib/fechas";
 import { nombreNatural } from "@/lib/antropometria";
 import type { BloqueoAgenda, HorarioAtencion } from "@/tipos/entidades";
 import type { TurnoConPaciente } from "@/servicios/turnos";
 import { distribuirTurnos, formatoMinutos, intervaloDelDia } from "./distribucion-turnos";
-import { ContenedorHorarioAgenda, IndicadorHoraAgenda, RelojAgenda } from "./reloj-agenda";
-import { enlaceAgenda, enlaceCajaAgenda, enlaceTurnoAgenda } from "./filtrar-periodo";
+import { ContenedorHorarioAgenda, IndicadorHoraAgenda } from "./reloj-agenda";
+import { enlaceAgenda, enlaceTurnoAgenda } from "./filtrar-periodo";
 
 export type PropiedadesCalendario = { vista: VistaAgenda; fecha: string; fechaHoy: string; horaHoy: string; zonaHoraria: string; turnos: TurnoConPaciente[]; horarios: HorarioAtencion[]; bloqueos: BloqueoAgenda[] };
 type Propiedades = PropiedadesCalendario & { alCambiarVista?: (vista: VistaAgenda) => void; contenidoDia?: ReactNode; contenidoMes?: ReactNode; mostrarLeyendaDia?: boolean; parametros?: string };
@@ -28,20 +28,17 @@ function cambiarFecha(vista: VistaAgenda, fecha: string, direccion: number) {
 }
 
 export function CalendarioAgenda(propiedades: Propiedades) {
-  const { vista, fecha, fechaHoy, horaHoy, zonaHoraria, turnos } = propiedades;
+  const { vista, fecha, fechaHoy } = propiedades;
   const dias = Array.from({ length: 7 }, (_, indice) => agregarDias(inicioDeSemana(fecha), indice));
   const hrefAgenda = (opcion: VistaAgenda, dia: string) => enlaceAgenda(opcion, dia, propiedades.parametros);
-  const cantidad = turnos.filter((turno) => turno.estado !== "cancelado" && (vista !== "mes" || fechaEnZona(new Date(turno.inicio), zonaHoraria).startsWith(fecha.slice(0, 7)))).length;
   return (
     <section className="min-w-0 space-y-5" aria-label="Calendario de turnos">
-      <div className="space-y-4 rounded-2xl border bg-card p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <nav aria-label="Vista de la agenda" className="grid grid-cols-4 gap-1 rounded-xl bg-muted/60 p-1 sm:w-fit">
+          <nav aria-label="Vista de la agenda" className="grid grid-cols-3 gap-1 rounded-xl bg-muted/60 p-1 sm:w-fit">
             {(["dia", "semana", "mes"] as const).map((opcion) => {
               const Icono = opcion === "dia" ? CalendarClock : opcion === "semana" ? CalendarRange : CalendarDays;
               return <Link key={opcion} href={hrefAgenda(opcion, fecha)} prefetch={false} onNavigate={propiedades.alCambiarVista ? (evento) => { evento.preventDefault(); propiedades.alCambiarVista?.(opcion); } : undefined} aria-current={vista === opcion ? "page" : undefined} className={cn("flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium transition-colors sm:px-3 sm:text-sm", vista === opcion ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}><Icono className="size-3.5" aria-hidden="true" />{opcion === "dia" ? "Día" : opcion === "semana" ? "Semana" : "Mes"}</Link>;
             })}
-            <Link href={enlaceCajaAgenda(fecha, propiedades.parametros)} className="flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground sm:px-3 sm:text-sm"><Wallet className="size-3.5" aria-hidden="true" />Caja</Link>
           </nav>
           <div className="flex items-center justify-between gap-2 sm:justify-end">
             <Link href={hrefAgenda(vista, fechaHoy)} className="rounded-lg border px-3 py-2 text-xs font-semibold transition-colors hover:bg-accent">Hoy</Link>
@@ -51,11 +48,6 @@ export function CalendarioAgenda(propiedades: Propiedades) {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0"><h2 className="text-lg font-semibold tracking-tight first-letter:uppercase sm:text-xl">{vista === "mes" ? nombreMes(fecha) : vista === "semana" ? `${formatearFechaIso(dias[0])} – ${formatearFechaIso(dias[6])}` : formatearFechaIso(fecha, "full")}</h2><p className="mt-1 text-xs text-muted-foreground">{cantidad} {cantidad === 1 ? "turno en este período" : "turnos en este período"}{vista === "semana" ? " · Elegí un día para ver sus horarios" : ""}</p></div>
-          <div className="shrink-0"><RelojAgenda zona={zonaHoraria} fechaInicial={fechaHoy} horaInicial={horaHoy} /></div>
-        </div>
-      </div>
       {vista === "mes" ? <><VistaMes {...propiedades} />{propiedades.contenidoMes}</> : vista === "semana" ? <><div className="xl:hidden"><ResumenSemana {...propiedades} dias={dias} /></div><div className="hidden xl:block"><GrillaHoraria {...propiedades} dias={dias} /></div></> : propiedades.contenidoDia ?? <GrillaHoraria {...propiedades} dias={[fecha]} />}
       {vista === "semana" || (vista === "dia" && propiedades.mostrarLeyendaDia !== false) ? <p className="flex flex-wrap items-center gap-x-5 gap-y-2 px-1 text-xs text-muted-foreground"><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" />Hora actual</span><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-muted-foreground/30" />Fuera de horario o pasado</span><span>Seleccioná un espacio libre para agendar.</span></p> : null}
     </section>

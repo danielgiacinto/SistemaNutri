@@ -18,7 +18,8 @@ export type ResumenMediosPago = {
 type AcumuladoMedio = { medio: string; centavos: number; cantidad: number };
 
 /** Ingresos brutos efectivos en ARS, por fecha local de cobro. Los egresos se muestran aparte. */
-export function resumirMediosPago(datos: DatosFinanzas, zona: string): ResumenMediosPago[] {
+export function resumirMediosPago(datos: DatosFinanzas, zona: string, hasta?: string): ResumenMediosPago[] {
+  const limite = hasta ? new Date(hasta).getTime() : null;
   const limpiar = (texto: string) => texto.trim().replace(/\s+/g, " ");
   const nombres = new Map((datos.configuracion?.medios ?? CONFIGURACION_FINANCIERA_INICIAL.medios)
     .map(medio => [limpiar(medio).toLocaleLowerCase("es-AR"), limpiar(medio)]));
@@ -26,7 +27,7 @@ export function resumirMediosPago(datos: DatosFinanzas, zona: string): ResumenMe
 
   // Resolver correcciones sobre el historial completo antes de separar los meses.
   for (const movimiento of movimientosEfectivos(datos)) {
-    if (movimiento.moneda !== "ARS" || movimiento.tipo !== "ingreso") continue;
+    if (movimiento.moneda !== "ARS" || movimiento.tipo !== "ingreso" || (limite !== null && new Date(movimiento.fecha).getTime() > limite)) continue;
     const mes = fechaEnZona(new Date(movimiento.fecha), zona).slice(0, 7);
     const nombre = limpiar(movimiento.medio) || "Sin especificar";
     const clave = nombre.toLocaleLowerCase("es-AR");
