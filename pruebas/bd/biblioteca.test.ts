@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PGlite } from "@electric-sql/pglite";
 import { comoAnonimo, comoUsuario, crearBaseDePruebas, crearUsuario } from "./base-de-pruebas";
+import { calcularComposicionBiblioteca } from "@/lib/composicion-biblioteca";
+import type { DetalleBiblioteca, RecursoBiblioteca } from "@/tipos/biblioteca";
 
 let bd: PGlite; let usuario: string; let ajeno: string; let consultorio: string; let fuente: string; let alimento: string; let grupo: string; let plato: string;
 const crear = (tipo: string, nombre: string, contenido: object, otros: object = {}) => ({ tipo, nombre, categoria: "Propios", etiquetas: ["prueba"], contenido, relaciones: [], ...otros });
@@ -114,5 +116,68 @@ describe("Biblioteca propia: permisos y versiones", () => {
     const segunda = (await comoUsuario(bd,usuario,tx => tx.query<{datos:{total:number;recursos:{id:string}[]}}>("select public.consultar_biblioteca('{\"tipo\":\"grupo\",\"q\":\"Paginación\",\"pagina\":2}') datos"))).rows[0].datos;
     expect(primera.total).toBe(28); expect(primera.recursos).toHaveLength(25); expect(segunda.recursos).toHaveLength(3);
     expect(new Set([...primera.recursos,...segunda.recursos].map(r=>r.id)).size).toBe(28);
+  });
+});
+
+describe("Preparaciones reutilizables y composición versionada", () => {
+  async function leer(id: string, version?: number) {
+    return (await comoUsuario(bd, usuario, tx => tx.query<{ datos: DetalleBiblioteca }>("select public.obtener_recurso_biblioteca($1,$2) datos", [id, version ?? null]))).rows[0].datos;
+  }
+  const receta = (nombre: string, referencia: string, tipo = "preparacion", versionReferencia = 1) => ({ ...crear(tipo, nombre, { porciones: 2, peso_final: 400, preparacion: "Ensayo", notas: "" }), relaciones: [{ referencia_id: referencia, referencia_version: versionReferencia, detalle: { cantidad: 200, unidad: "g", gramos_por_unidad: 1, rendimiento: 1 } }] });
+
+  it("conserva la composición elegida de alimentos y preparaciones al cambiar el catálogo", async () => {
+    const datosAlimento = { ...alimentoDatos(), nombre: "Insumo para preparación", contenido: { energia: 200, proteinas: 10, carbohidratos: 30, grasas: 0 } };
+    const insumo = await operar(usuario, "guardar", datosAlimento);
+    const datosPreparacion = receta("Preparación de ensayo", insumo);
+    const preparacion = await operar(usuario, "guardar", datosPreparacion);
+    const datosPlato = receta("Plato con preparación", preparacion, "plato");
+    const platoConPreparacion = await operar(usuario, "guardar", datosPlato);
+    const original = await leer(platoConPreparacion);
+    const copia = await operar(usuario, "duplicar", { id: platoConPreparacion, version: 1 });
+    expect(original.relaciones[0].instantanea.relaciones?.[0].instantanea.contenido.energia).toBe(200);
+    expect(calcularComposicionBiblioteca(original.recurso, original.relaciones).total.energia).toBe(200);
+
+    await operar(usuario, "guardar", { ...datosAlimento, id: insumo, version: 1, contenido: { ...datosAlimento.contenido, energia: 400 } });
+    await operar(usuario, "guardar", { ...datosPreparacion, id: preparacion, version: 1, relaciones: [{ ...datosPreparacion.relaciones[0], referencia_version: 2 }] });
+    const actualizado = await leer(preparacion);
+    expect(calcularComposicionBiblioteca(actualizado.recurso, actualizado.relaciones).por_100g.energia).toBe(200);
+    for (const id of [platoConPreparacion, copia]) {
+      const guardado = await leer(id);
+      expect(calcularComposicionBiblioteca(guardado.recurso, guardado.relaciones).total.energia).toBe(200);
+    }
+    await operar(usuario, "guardar", { ...datosPlato, id: platoConPreparacion, version: 1 });
+    expect((await leer(platoConPreparacion)).relaciones[0].instantanea.version).toBe(1);
+    const anterior = await leer(platoConPreparacion, 1);
+    expect(anterior.relaciones).toEqual(original.relaciones);
+
+    await operar(usuario, "archivar", { id: preparacion, version: 2 });
+    const archivado = await leer(platoConPreparacion);
+    expect(calcularComposicionBiblioteca(archivado.recurso, archivado.relaciones).total.energia).toBe(200);
+    await expect(operar(usuario, "guardar", receta("Uso de archivada", preparacion, "plato"))).rejects.toThrow("referencia_invalida");
+    await operar(usuario, "restaurar", { id: preparacion, version: 3 });
+    expect((await leer(preparacion)).recurso.version).toBe(4);
+    expect((await leer(preparacion, 1)).recurso.contenido.peso_final).toBe(400);
+  });
+
+  it("rechaza ciclos, referencias cruzadas y preparaciones sin ingredientes o porciones", async () => {
+    const preparacion = await operar(usuario, "guardar", receta("Base válida", alimento, "preparacion", 1));
+    await expect(operar(usuario, "guardar", receta("Preparación anidada", preparacion))).rejects.toThrow("referencia_invalida");
+    await expect(operar(usuario, "guardar", { ...receta("Ciclo", preparacion), id: preparacion, version: 1 })).rejects.toThrow("referencia_invalida");
+    await expect(operar(usuario, "guardar", receta("Plato como ingrediente", plato, "plato"))).rejects.toThrow("referencia_invalida");
+    await expect(operar(ajeno, "guardar", receta("Referencia ajena", preparacion, "plato"))).rejects.toThrow("referencia_invalida");
+    await expect(operar(usuario, "guardar", crear("preparacion", "Vacía", { porciones: 1, peso_final: null }))).rejects.toThrow("composicion_vacia");
+    await expect(operar(usuario, "guardar", { ...receta("Sin porciones", alimento), contenido: { peso_final: 400 } })).rejects.toThrow("datos_invalidos");
+    expect((await leer(preparacion)).recurso.version).toBe(1);
+  });
+
+  it("pagina preparaciones con sus insumos autorizados y el mismo cálculo que el detalle", async () => {
+    const listado = (await comoUsuario(bd, usuario, tx => tx.query<{ datos: { recursos: RecursoBiblioteca[]; contadores: { preparacion: number } } }>("select public.consultar_biblioteca('{\"tipo\":\"preparacion\"}') datos"))).rows[0].datos;
+    expect(listado.contadores.preparacion).toBeGreaterThan(0);
+    for (const recurso of listado.recursos) {
+      const detalle = await leer(recurso.id);
+      expect(calcularComposicionBiblioteca(recurso, recurso.relaciones ?? []).por_100g).toEqual(calcularComposicionBiblioteca(detalle.recurso, detalle.relaciones).por_100g);
+    }
+    const ajenas = (await comoUsuario(bd, ajeno, tx => tx.query<{ datos: { total: number; recursos: unknown[] } }>("select public.consultar_biblioteca('{\"tipo\":\"preparacion\"}') datos"))).rows[0].datos;
+    expect(ajenas).toMatchObject({ total: 0, recursos: [] });
   });
 });

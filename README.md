@@ -237,8 +237,8 @@ deuda y egresos, coherentes con el gráfico y adaptadas al ancho disponible.
 El relevamiento funcional y estético completo, decisiones, dependencias, casos
 límite y criterios de aceptación están en
 [Hoja de ruta a partir de la referencia](docs/hoja-de-ruta-experiencia-consultorio.md).
-La fase 9 está cerrada y disponible en el entorno actual. Las fases 10 a 13 siguen
-**planificadas**:
+La fase 9 está cerrada y disponible en el entorno actual. Biblioteca tiene 11A y
+11B implementadas; las fases 10, 12, 13 y la subfase 11C siguen **planificadas**:
 
 1. **Fase 9 — Agenda y Caja integradas.** Mantener fecha/período al cambiar entre
    Día/Semana/Mes/Caja; tira de días, tarjetas de consultas, resumen mensual con
@@ -254,6 +254,9 @@ La fase 9 está cerrada y disponible en el entorno actual. Las fases 10 a 13 sig
    composición química, preparaciones y grupos de alimentos; buscadores, categorías,
    procedencia, porciones, macros e ingredientes. Contenido propio editable y recursos
    base duplicables; datos con fuente y licencia verificadas, sin copiar el catálogo ajeno.
+   **11A y 11B implementadas:** catálogo propio, cálculos por porción/100 g y
+   preparaciones reutilizables con versiones guardadas. Pendiente 11C: suplementos
+   y catálogo base curado. Ver [Biblioteca](docs/biblioteca.md).
 4. **Fase 12 — Planes visuales.** Catálogo de plantillas separado de las entregas
    por paciente; filtros y etiquetas; grillas semanales, opciones por comida, bloques
    de texto e indicaciones; guardar grillas, copiar sin alterar originales, vista
@@ -344,7 +347,7 @@ Guía completa (Supabase, Google OAuth, Vercel, primer superadministrador) en
 - [Despliegue y variables de entorno](docs/despliegue.md)
 - [Facturación y Mercado Pago](docs/facturacion.md)
 - [Finanzas del consultorio — Fase 7](docs/finanzas-consultorio.md)
-- [Biblioteca propia — Fase 11A](docs/biblioteca.md)
+- [Biblioteca propia y cálculos — Fases 11A y 11B](docs/biblioteca.md)
 - [Avances y criterios de cierre del MVP](docs/avances.md)
 - [Hoja de ruta de experiencia — Fases 8 a 13](docs/hoja-de-ruta-experiencia-consultorio.md)
 - [Seguridad y privacidad](docs/seguridad-y-privacidad.md)

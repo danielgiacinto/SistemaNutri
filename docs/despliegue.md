@@ -1,5 +1,24 @@
 # Despliegue
 
+## Biblioteca 11B — 12/11/2026
+
+- Implementados cálculos por porción/100 g, peso informado o estimado con
+  rendimientos y preparaciones reutilizables con ingredientes versionados.
+- `npm run verificar` aprobado: lint, tipos, **323 pruebas en 43 archivos** y build.
+  La repetición final requirió ejecución fuera del sandbox tras un `EPERM` al crear
+  una carpeta de prerenderizado en `.next`; el comando completo terminó aprobado.
+- Con autorización explícita del usuario, `20261112160000_biblioteca_preparaciones.sql`
+  se aplicó y registró en una transacción al Supabase de desarrollo vinculado
+  `zisacjleazvlrklwilap`. Se conservan permisos, RLS e instantáneas anteriores.
+  No se reaplicaron ni repararon otras migraciones.
+- Recorrido autenticado en localhost aprobado: preparación normalizada, uso en un
+  plato, cálculo por porción, conversión ausente e historial previo intacto.
+  Sin desborde horizontal a 390 px; foco devuelto al listado y consola sin errores
+  ni advertencias en el recorrido. Los cuatro recursos ficticios quedaron archivados.
+  Detalle numérico y alcance en [Biblioteca](biblioteca.md).
+- Esta entrega no se desplegó en Vercel. El preview documentado abajo corresponde
+  a 11A y no acredita la interfaz de 11B.
+
 ## Biblioteca 11A — 12/11/2026
 
 - Verificación local aprobada: lint, tipos, 306 pruebas en 42 archivos y build.

@@ -1,9 +1,10 @@
-export const TIPOS_BIBLIOTECA = ["plato", "plato_grupos", "alimento", "grupo", "fuente"] as const;
+export const TIPOS_BIBLIOTECA = ["plato", "plato_grupos", "alimento", "preparacion", "grupo", "fuente"] as const;
 export type TipoBiblioteca = typeof TIPOS_BIBLIOTECA[number];
 export const ESTANTES_BIBLIOTECA: Record<TipoBiblioteca, { titulo: string; singular: string; descripcion: string }> = {
   plato: { titulo: "Platos", singular: "plato", descripcion: "Recetas propias con ingredientes, porciones y preparación." },
   plato_grupos: { titulo: "Por grupos", singular: "plato por grupos", descripcion: "Platos organizados por partes y elecciones de alimentos." },
   alimento: { titulo: "Composición química", singular: "alimento", descripcion: "Alimentos con composición declarada por 100 g y fuente trazable." },
+  preparacion: { titulo: "Preparaciones", singular: "preparación", descripcion: "Recetas propias normalizadas por 100 g para reutilizar como ingredientes de tus platos." },
   grupo: { titulo: "Grupos", singular: "grupo", descripcion: "Grupos de alimentos, ejemplos y métodos de cocción." },
   fuente: { titulo: "Fuentes", singular: "fuente", descripcion: "Referencias, versiones, bases de cálculo y permisos de uso." },
 };
@@ -16,6 +17,15 @@ export type RecursoBiblioteca = {
   id: string; tipo: TipoBiblioteca; nombre: string; categoria: string; etiquetas: string[]; version: number;
   archivado_en: string | null; actualizado_en: string; contenido: ContenidoBiblioteca;
   fuente_id?: string | null; fuente_instantanea?: RecursoBiblioteca | null; duplicado_de?: string | null;
+  calculo?: CalculoBiblioteca;
+  relaciones?: RelacionBiblioteca[];
+};
+export const NUTRIENTES_BIBLIOTECA = ["energia", "proteinas", "carbohidratos", "grasas"] as const;
+export type NutrientesBiblioteca = Record<typeof NUTRIENTES_BIBLIOTECA[number], number | null>;
+export type CalculoBiblioteca = {
+  total: NutrientesBiblioteca; por_porcion: NutrientesBiblioteca; por_100g: NutrientesBiblioteca;
+  peso_final: number | null; origen_peso: "informado" | "estimado" | "sin_dato";
+  ingredientes: { gramos: number | null; peso_preparado: number | null; aporte: NutrientesBiblioteca }[];
 };
 export type RelacionBiblioteca = {
   referencia_id: string; detalle: { cantidad?: number; unidad?: string; gramos_por_unidad?: number | null; rendimiento?: number; fraccion?: number; ejemplos?: string; coccion?: string };
