@@ -1,5 +1,67 @@
 # Despliegue
 
+## Biblioteca 11A — 12/11/2026
+
+- Verificación local aprobada: lint, tipos, 306 pruebas en 42 archivos y build.
+  Recorrido autenticado de Biblioteca verificado en localhost, incluidos guardado,
+  cancelación, duplicación, archivo/restauración, versiones, filtros y 390 px.
+  Los seis recursos ficticios de prueba quedaron archivados.
+- `20261112140000_biblioteca_propia.sql` aplicada y registrada en una transacción
+  en el Supabase de desarrollo vinculado `zisacjleazvlrklwilap`. RLS activa en
+  las tres tablas; lectura anónima y escritura directa denegadas.
+- Preview de Vercel del código local verificado:
+  [Biblioteca 11A](https://sistema-nutri-otb0ejff9-danielgiacintos-projects.vercel.app/panel/biblioteca),
+  despliegue `dpl_GjxNVoKQm31MuMsz2Xc3jdNpMHux`, estado **READY**.
+  El paquete enviado coincide con el código local, SHA-256
+  `4cf9d34bcf3328fedd1a0f636dc6eb267741b83a32271b136dda65fca0b31a6d`.
+- El primer preview compiló, pero devolvió 500 por ausencia de las dos variables
+  públicas de Supabase en Preview. Se configuraron exclusivamente
+  `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` para ese
+  entorno y se reconstruyó el mismo código en el despliegue indicado arriba.
+- La navegación del segundo preview quedó **pendiente**: la revisión automática
+  rechazó la comprobación mediante enlace temporal y el acceso alternativo del
+  navegador. READY acredita el build, no el recorrido autenticado en Vercel.
+  No se promovió este preview ni se modificó el despliegue de producción.
+
+## Cierre de fases 8 y 9 — 12 de noviembre de 2026
+
+- Producción comprobada en Vercel: proyecto `sistema-nutri`, equipo
+  `danielgiacintos-projects`, commit `9380b58239a4530afc0ffe0bf9efa53ff68b4d9d`,
+  despliegue `dpl_BxHz4q4yJj9uoPGjK9JPuiYdwQAy` en estado `READY` y dominio
+  [nutrisfera.vercel.app](https://nutrisfera.vercel.app). Ese commit ya estaba publicado.
+- En el proyecto Supabase de desarrollo vinculado (`zisacjleazvlrklwilap`) se
+  aplicaron, en ese orden, `20261111180000_alta_paciente_contacto_cobertura.sql` y
+  `20261111210000_presentacion_catalogo_servicios.sql`, con sus registros en
+  `supabase_migrations.schema_migrations`, dentro de una sola transacción.
+- Se usó `supabase db query --linked --project-ref` con el SQL exacto de ambas
+  migraciones, bloqueo transaccional, tiempo máximo de espera de locks y recarga
+  de esquema de PostgREST. Se conservó el historial de las demás versiones.
+- Verificados los cinco campos nuevos, RLS activa, RPC del catálogo habilitada
+  para autenticados y denegada a anónimos; sin permisos de actualización directa
+  sobre `aclaracion_paciente` o `nota_precios`.
+- La web publicada confirmó guardado y persistencia de aclaración y nota general,
+  los cuatro atajos, conservación del precio, cancelación, retorno Agenda–Caja,
+  ambos temas y 390 px. Los valores temporales de la prueba se restauraron y
+  comprobaron tras recargar. No se crearon pacientes, turnos, pagos ni movimientos.
+- `npm run verificar` aprobado: lint, tipos, 291 pruebas en 40 archivos y build.
+
+La fase 9 queda cerrada en el entorno actual. Las reservas y la exposición pública
+de precios siguen previstas para fase 13. Los registros anteriores de este documento
+conservan el estado histórico de cada entrega.
+
+### Recuperación del servidor local — 12/11/2026
+
+Después de la verificación, el proceso de desarrollo que seguía abierto dejó
+`/panel/agenda` en carga. Su registro mostraba fronteras de Suspense incompletas
+y recargas repetidas. Se reinició únicamente el `next dev` de este workspace;
+sin cambiar código ni datos, Agenda volvió a cargar y a soportar una recarga normal.
+Se comprobaron en el navegador local Día/Semana, Nuevo turno con fecha precargada,
+Servicios y precios, Caja y el regreso a Agenda: respuestas 200 y consola sin errores.
+El servidor quedó ejecutándose en el puerto 3000 y una pestaña local recuperada
+quedó disponible. Al terminar verificaciones que compilan producción con un servidor
+de desarrollo abierto, comprobar también localhost y reiniciar ese proceso si queda
+en un estado de carga inconsistente.
+
 ## Variables de entorno
 
 | Variable | Dónde | Descripción |

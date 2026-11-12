@@ -1,5 +1,6 @@
 import {
   Building2,
+  BookOpen,
   CalendarDays,
   ClipboardList,
   CreditCard,
@@ -51,6 +52,12 @@ export const NAVEGACION = {
       href: "/panel/planes",
       icono: Salad,
       descripcion: "Planes alimentarios con versiones y publicación controlada.",
+    },
+    {
+      titulo: "Biblioteca",
+      href: "/panel/biblioteca",
+      icono: BookOpen,
+      descripcion: "Alimentos, fuentes, grupos y platos reutilizables del consultorio.",
     },
     {
       titulo: "Comunidad",

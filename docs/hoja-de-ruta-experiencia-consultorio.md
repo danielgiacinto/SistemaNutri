@@ -107,7 +107,8 @@ desplegar. Se relaja la restricción de apellido y se añaden tres columnas opci
 Permisos explícitos de inserción y actualización por columna; se conservan las
 políticas RLS por operación y la prohibición de borrado. No se altera la invitación,
 la propiedad de la ficha ni la historia clínica. La migración se incluye en las
-pruebas PostgreSQL aisladas; su aplicación hospedada no forma parte de esta entrega.
+pruebas PostgreSQL aisladas y se aplicó al entorno hospedado el 12/11/2026, durante
+el cierre operativo de fase 9.
 
 ## Fase 9: Agenda, Caja y catálogo de servicios
 
@@ -182,7 +183,7 @@ limpia filtros anteriores antes de abrir Cobros. Movimientos conserva originales
 compensaciones y devoluciones, con signo, estado y diálogo de detalle (fecha local,
 medio, categoría, paciente, servicio y referencia); sus fechas amplían el mes inicial.
 
-**9D — Catálogo compacto, implementada con activación pendiente.** Alta y edición
+**9D — Catálogo compacto, activada y verificada el 12/11/2026.** Alta y edición
 dentro del mismo diálogo, estado de cambios, Guardar/Cancelar, precio cero y
 desactivación. Las altas reusan su identificador al reintentar. Se conservan duración
 y descripción. Aclaración independiente de hasta 300 caracteres, cuatro atajos que
@@ -190,14 +191,15 @@ solo afectan esa fila, y nota general de hasta 1000 caracteres. Se guardan media
 RPC transaccional autenticada, reutilizando validación monetaria y permisos del
 catálogo existente; no modifica operaciones históricas ni instrucciones de cobro.
 
-Activación de 9D: aplicar `20261111210000_presentacion_catalogo_servicios.sql` antes
-de verificar los nuevos campos en el entorno de destino. Sus columnas mantienen
+Activación de 9D: `20261111210000_presentacion_catalogo_servicios.sql` aplicada y
+registrada el 12/11/2026. En otros entornos debe aplicarse antes de comprobar sus campos.
+Sus columnas mantienen
 RLS de lectura por dueño/consultorio y no conceden escrituras directas ni borrado.
 Sin la migración, la aplicación conserva la edición compacta de campos anteriores;
 solo reconoce como compatibilidad la ausencia de las columnas, no errores de red
-o autorización. La migración se prueba en PostgreSQL aislado y no se aplica al
-Supabase hospedado en esta entrega. Validación visual de aclaraciones/nota y
-publicación en Vercel pendientes de esa activación. La visibilidad pública y las
+o autorización. La migración se prueba en PostgreSQL aislado y ya está aplicada al
+Supabase hospedado. Aclaraciones y nota se verificaron visualmente y con guardado
+en la web publicada. La visibilidad pública y las
 reservas siguen en fase 13; no se muestra un ojo que prometa una publicación inexistente.
 
 Verificación final de 9B–9D: `npm run verificar` aprobado con lint, tipos, 291 pruebas
@@ -209,8 +211,27 @@ Revisión local autenticada de Caja con datos y vacía, selector mensual compart
 regreso a Agenda tras consultar otro mes, selección y detalle mensual, movimiento y
 catálogo compacto con descarte; escritorio y 390 px, sin desbordes ni errores de consola
 observados. Sin altas, pagos ni cambios de servicios hospedados durante la revisión.
-El cierre operativo en destino requiere activar la migración y verificar allí los
-nuevos campos antes de desplegar; la implementación de estas entregas queda completa.
+El cierre operativo en destino quedó completado el 12/11/2026, según el registro siguiente.
+
+### Cierre operativo de fase 9 — 12/11/2026
+
+- Código publicado: commit `9380b58239a4530afc0ffe0bf9efa53ff68b4d9d`, Vercel
+  `READY` en producción, dominio `nutrisfera.vercel.app`.
+- Supabase hospedado de desarrollo: migraciones `20261111180000` y
+  `20261111210000` ejecutadas y registradas en una sola transacción. Verificados
+  los cinco campos nuevos, RLS activa, ejecución autenticada de la RPC, rechazo
+  anónimo y ausencia de permisos de escritura directa sobre aclaración/nota.
+- Guardado real desde la sesión publicada: aclaración por atajo y nota temporal
+  persistentes tras recargar, conservando el precio original. Después se guardaron
+  y comprobaron nuevamente los valores anteriores, sin dejar datos de prueba.
+  Los otros tres atajos se verificaron y descartaron sin guardar.
+- Revisión de la interfaz publicada en ambos temas y a 390 px, sin desbordes de
+  página/diálogo ni errores de consola observados. Regreso de Caja a la fecha/vista
+  de Agenda después de consultar otro mes comprobado en producción.
+- `npm run verificar` aprobado: lint, tipos, 291 pruebas en 40 archivos y build.
+
+Fase 9 cerrada. La visibilidad pública de precios depende de las reservas de fase 13
+y continúa como parte de esa fase, sin bloquear el cierre actual.
 
 Prioridad alta. Reutilizar el sistema financiero de fase 7: operaciones por turno,
 pagos parciales/anticipados, movimientos, descuentos, bonificaciones, egresos y
@@ -365,8 +386,15 @@ del panel fluida y gráficos legibles con teclado, lector de pantalla y en celul
 
 ## Fase 11: Biblioteca del profesional
 
-Biblioteca todavía no existe como módulo propio en Nutrisfera. Debe aportar recursos
-reutilizables sin mezclar la información de un paciente con el catálogo compartido.
+Estado al 12/11/2026: **11A implementada** como módulo propio en `/panel/biblioteca`.
+Incluye fuentes, alimentos, grupos, platos y platos por grupos del consultorio,
+con búsqueda, versiones, copias, archivo y RLS. Los cálculos de recetas y prearmados
+(11B), suplementos y catálogo base curado (11C) siguen pendientes. Alcance y evidencia
+en [Biblioteca propia](biblioteca.md). El Inicio conserva el diseño anterior.
+
+La Biblioteca aporta recursos reutilizables sin mezclar la información de un paciente
+con el catálogo compartido. Las siguientes secciones conservan la referencia y el
+alcance previsto para las subfases restantes.
 
 ### Estructura observada
 

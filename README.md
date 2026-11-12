@@ -47,10 +47,10 @@ entrega real de recordatorios. Ver [Finanzas del consultorio](docs/finanzas-cons
 | 5 | Suscripciones, pagos y administración | ✅ Validación funcional cerrada con cuentas ficticias: cobros, renovación automática de la misma autorización, webhooks/reintentos, correos, cancelación y recuperación. Prueba acelerada diaria; sin cobros reales. |
 | 6 | Comunidad y desafíos | ✅ Listo para probar |
 | 7 | Servicios, cobros a pacientes, caja, estadísticas y recordatorios | Migración aplicada; formularios, persistencia, panel y diseño móvil verificados en localhost. Lint, tipos, 230 pruebas y build aprobados. Pendientes scheduler desplegado y entrega real de correo. |
-| 8 | Alta rápida de pacientes y modales de Nuevo turno, Servicios y precios y Horarios | ✅ Implementada y verificada en localhost. Pendientes aplicar la migración de contacto/cobertura al entorno hospedado y desplegar; ver requisito de activación debajo. |
-| 9 | Agenda y Caja integradas, tarjetas de consultas y catálogo de servicios | 9A–9D implementadas en el repositorio y verificadas en local. Pendientes activar la migración del catálogo, comprobar sus nuevos campos en el entorno hospedado y desplegar. La visibilidad pública de precios depende de las reservas de fase 13. |
+| 8 | Alta rápida de pacientes y modales de Nuevo turno, Servicios y precios y Horarios | ✅ Implementada; migración de contacto/cobertura aplicada en Supabase hospedado el 12/11/2026. Código disponible en el despliegue de producción del commit `9380b58`. |
+| 9 | Agenda y Caja integradas, tarjetas de consultas y catálogo de servicios | ✅ Cerrada el 12/11/2026. 9A–9D publicadas, migración del catálogo aplicada y guardado verificado en la web publicada, con revisión móvil y 291 pruebas aprobadas. Visibilidad pública de precios/reservas en fase 13. |
 | 10 | Inicio operativo, tareas e indicadores | Planificada |
-| 11 | Biblioteca reutilizable | Planificada |
+| 11 | Biblioteca reutilizable | 11A implementada: fuentes, alimentos, grupos y platos propios con versiones y aislamiento por consultorio. Cálculos y preparaciones (11B), suplementos y catálogo base (11C) pendientes. Ver [Biblioteca](docs/biblioteca.md). |
 | 12 | Planes visuales y plantillas | Planificada |
 | 13 | Reservas, calendario e integraciones opcionales | Planificada |
 
@@ -143,12 +143,12 @@ Se comprobó además que su marco conserva la misma identidad al resolver la car
 que Servicios y precios y Horarios abren sobre Agenda y que sus formularios anidados
 cierran sin cerrar el modal principal. Revisión a 390 px y verificación completa aprobadas.
 
-**Requisito de activación:** aplicar primero
-`supabase/migrations/20261111180000_alta_paciente_contacto_cobertura.sql` al entorno
-que se vaya a usar y después desplegar el código. La migración permite apellido
-vacío y añade sexo/cobertura, con permisos por columna y las RLS existentes.
-La verificación aislada usa todas las migraciones; esta entrega no aplica cambios
-en Supabase hospedado ni publica en Vercel.
+**Activación completada el 12/11/2026:**
+`supabase/migrations/20261111180000_alta_paciente_contacto_cobertura.sql` aplicada y
+registrada en Supabase hospedado. Permite apellido vacío y añade sexo/cobertura,
+con permisos por columna y las RLS existentes. El código está disponible en el
+despliegue de producción del commit `9380b58`. En otros entornos, aplicar primero
+la migración y después desplegar el código.
 
 ### Próximas fases — Experiencia del consultorio
 
@@ -188,10 +188,11 @@ correcciones que no suman. Los filtros de fechas permiten ampliar el período.
 Servicios y precios permite alta y edición en el diálogo, con Guardar/Cancelar,
 aviso de cambios sin guardar y desactivación sin borrar historial. La ampliación
 incluye aclaración por servicio, atajos y nota general independiente de las
-instrucciones de cobro. **Para habilitar esos nuevos campos**, aplicar
-`supabase/migrations/20261111210000_presentacion_catalogo_servicios.sql` y revisar
-su guardado en el entorno de destino; antes de activarla, el catálogo compacto
-mantiene sus campos anteriores. No hay ojo de publicación ni papelera destructiva:
+instrucciones de cobro. **Activación completada el 12/11/2026:**
+`supabase/migrations/20261111210000_presentacion_catalogo_servicios.sql` aplicada y
+registrada, con guardado y persistencia comprobados en la web publicada. Para otros
+entornos se debe aplicar esa migración; el catálogo conserva compatibilidad con
+los campos anteriores hasta activarla. No hay ojo de publicación ni papelera destructiva:
 la exposición pública de precios queda para reservas en fase 13.
 
 La fase 9 quedó organizada en estas entregas:
@@ -203,7 +204,7 @@ La fase 9 quedó organizada en estas entregas:
 - **9C — Tablero de Caja:** implementado. Cobrado de consultas, turnos distintos con cobros, saldo
   exigible y promedio; gráfico por servicio, pendientes accionables y movimientos.
   Reutiliza los registros de Finanzas, con pagos parciales, anticipos, reversiones y egresos.
-- **9D — Catálogo compacto:** implementado; nuevos campos pendientes de activación.
+- **9D — Catálogo compacto:** activado y verificado en la web publicada.
   Edición en filas y aclaraciones/atajos/nota general.
   Visibilidad pública condicionada a reservas de fase 13; precios históricos intactos.
 
@@ -213,8 +214,17 @@ de fecha, comparación mensual y permisos/históricos del catálogo en PostgreSQ
 aislado. Revisión autenticada de Caja con datos y vacía, regreso a Agenda, selección
 mensual, detalle de movimiento y edición/cancelación de servicios; escritorio y
 390 px sin desborde horizontal ni errores de consola observados. No se guardaron
-datos de prueba en el entorno hospedado. Aclaraciones y nota requieren la activación
-y comprobación indicadas arriba.
+datos de prueba en el entorno hospedado durante esa revisión del 11/11.
+
+**Cierre operativo del 12/11/2026:** migraciones de fases 8 y 9 aplicadas en orden
+y registradas en una sola transacción, con RLS y permisos comprobados. Vercel sirve
+el commit `9380b58` en [Nutrisfera](https://nutrisfera.vercel.app). Se verificaron en
+esa versión las aclaraciones, los cuatro atajos, la nota general, el guardado y su
+persistencia tras recargar; después se restauraron los valores originales. El precio
+del servicio se conservó. También se comprobaron el regreso Agenda–Caja tras cambiar
+de mes, ambos temas y el catálogo a 390 px sin desbordes ni errores de consola.
+`npm run verificar` aprobado nuevamente: lint, tipos, **291 pruebas en 40 archivos**
+y build. No quedan tareas de fase 9; reservas y publicación de precios pertenecen a 13.
 
 **Avance de fase 9:** Finanzas ya muestra **Cómo te pagaron**, con barras por medio
 de pago, importes, porcentajes, cantidad de ingresos y navegación mensual. Está
@@ -227,8 +237,8 @@ deuda y egresos, coherentes con el gráfico y adaptadas al ancho disponible.
 El relevamiento funcional y estético completo, decisiones, dependencias, casos
 límite y criterios de aceptación están en
 [Hoja de ruta a partir de la referencia](docs/hoja-de-ruta-experiencia-consultorio.md).
-La implementación de fase 9 está lista para activar y revisar en el entorno de
-destino. Las fases 10 a 13 siguen **planificadas**:
+La fase 9 está cerrada y disponible en el entorno actual. Las fases 10 a 13 siguen
+**planificadas**:
 
 1. **Fase 9 — Agenda y Caja integradas.** Mantener fecha/período al cambiar entre
    Día/Semana/Mes/Caja; tira de días, tarjetas de consultas, resumen mensual con
@@ -253,7 +263,7 @@ destino. Las fases 10 a 13 siguen **planificadas**:
    definición de proveedor, consentimiento y funcionamiento; no bloquear las fases
    anteriores ni mostrar conexiones inexistentes.
 
-Orden recomendado: completar la activación de 8 y 9; continuar con 10 sobre los datos
+Orden recomendado: continuar con 10 sobre los datos
 existentes; construir 11 antes de la integración completa de 12. Reservas y visibilidad
 pública dependen de 13. Ver los criterios de cierre de cada fase en la hoja de ruta.
 
@@ -334,6 +344,7 @@ Guía completa (Supabase, Google OAuth, Vercel, primer superadministrador) en
 - [Despliegue y variables de entorno](docs/despliegue.md)
 - [Facturación y Mercado Pago](docs/facturacion.md)
 - [Finanzas del consultorio — Fase 7](docs/finanzas-consultorio.md)
+- [Biblioteca propia — Fase 11A](docs/biblioteca.md)
 - [Avances y criterios de cierre del MVP](docs/avances.md)
 - [Hoja de ruta de experiencia — Fases 8 a 13](docs/hoja-de-ruta-experiencia-consultorio.md)
 - [Seguridad y privacidad](docs/seguridad-y-privacidad.md)

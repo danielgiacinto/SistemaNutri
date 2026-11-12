@@ -397,9 +397,19 @@ de esa fila. La nota no modifica instrucciones de cobro ni comprobantes históri
 Las altas conservan su identificador al reintentar. Visibilidad pública pendiente
 de reservas (fase 13), sin controles que prometan publicación o borrado inexistentes.
 
-Verificación: `npm run verificar` aprobado, 291 pruebas en 40 archivos, lint, tipos
-y build. Conciliación y permisos/históricos probados en PostgreSQL aislado. Caja,
-movimientos y catálogo compacto revisados en localhost en escritorio y a 390 px,
-sin guardar datos de prueba hospedados. Pendientes aplicar la nueva migración y
-verificar visualmente y con persistencia las aclaraciones/nota en el destino; no se
-desplegó código ni se aplicaron migraciones a Supabase hospedado en esta entrega.
+Verificación inicial del 11/11: `npm run verificar` aprobado, 291 pruebas en 40
+archivos, lint, tipos y build. Conciliación y permisos/históricos probados en PostgreSQL
+aislado. Caja, movimientos y catálogo compacto revisados en localhost en escritorio
+y a 390 px, sin guardar datos de prueba hospedados durante esa revisión.
+
+**Cierre del 12/11/2026:** migración `20261111210000` aplicada y registrada en el
+Supabase hospedado de desarrollo, junto con la dependencia `20261111180000` en una
+sola transacción. RLS conservada; RPC del catálogo solo para autenticados y sin
+escritura directa sobre sus campos. Código de fase 9 confirmado en producción
+(`9380b58`, dominio `nutrisfera.vercel.app`). Guardado de aclaración y nota comprobado
+desde la interfaz publicada y persistente tras recargar, manteniendo el precio
+original; valores de prueba restaurados y verificados. Cuatro atajos, cancelación,
+ambos temas, 390 px y regreso de Caja a Agenda tras cambiar el mes revisados, sin
+desbordes ni errores de consola observados. Verificación completa repetida y aprobada
+con 291 pruebas en 40 archivos. Fase 9 cerrada; la publicación de precios al paciente
+queda en las reservas de fase 13.
